@@ -1,20 +1,16 @@
 import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "3.3.6"
 
 lazy val microservice = Project("crdl-cache", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .settings(CodeCoverageSettings.settings *)
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
     // suppress warnings in generated routes files
-    scalacOptions += "-Wconf:src=routes/.*:s",
-  )
-  .settings(resolvers += Resolver.jcenterRepo)
-  .settings(CodeCoverageSettings.settings: _*)
-  .settings(
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    scalacOptions += "-Wconf:src=routes/.*:s"
   )
 
 lazy val it = project

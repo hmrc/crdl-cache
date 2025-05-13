@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.controllers
 
-import com.google.inject.AbstractModule
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import play.api.http.Status
+import play.api.test.Helpers._
+import play.api.test.{FakeRequest, Helpers}
 
-class Module extends AbstractModule {
+class CodeListsControllerSpec extends AnyWordSpec with Matchers {
 
-  override def configure(): Unit = {
+  private val fakeRequest = FakeRequest("GET", "/")
+  private val controller  = new CodeListsController(Helpers.stubControllerComponents())
 
-    bind(classOf[AppConfig]).asEagerSingleton()
+  "GET /" should {
+    "return 200" in {
+      val result = controller.hello()(fakeRequest)
+      status(result) shouldBe Status.OK
+    }
   }
 }
