@@ -21,7 +21,7 @@ import play.api.libs.json.Format
 sealed abstract class CodeListCode(val code: String) extends Product with Serializable {}
 
 object CodeListCode {
-  case object BC08                 extends CodeListCode("BC08")
+  case object BC08                              extends CodeListCode("BC08")
   case class Unknown(override val code: String) extends CodeListCode(code)
 
   private val values: Set[CodeListCode]        = Set(BC08)

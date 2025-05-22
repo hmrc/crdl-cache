@@ -29,16 +29,17 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig) {
-    
+
   private val base64Encoder = Base64.getEncoder
 
   def fetchCodelist(code: CodeListCode)(using
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): Future[Either[UpstreamErrorResponse, CodeListResponse]] = {
-    val dpsUrl     = url"${appConfig.dpsUrl}/${appConfig.dpsPath}"
+    val dpsUrl            = url"${appConfig.dpsUrl}/${appConfig.dpsPath}"
     val clientIdAndSecret = s"${appConfig.dpsClientId}:${appConfig.dpsClientSecret}"
-    val authSecret = base64Encoder.encodeToString(clientIdAndSecret.getBytes(StandardCharsets.UTF_8))
+    val authSecret =
+      base64Encoder.encodeToString(clientIdAndSecret.getBytes(StandardCharsets.UTF_8))
 
     val headerCarrierWithAuth = hc.copy(authorization = Some(Authorization(s"Basic $authSecret")))
 
