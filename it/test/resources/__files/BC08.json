@@ -1,0 +1,121 @@
+{
+  "name": "iv_crdl_reference_data",
+  "elements": [
+    {
+      "code_list_code": "BC08",
+      "code_list_name": "Country",
+      "rdentry": [
+        {
+          "dataitem": [
+            {
+              "dataitem_name": "CountryCode",
+              "dataitem_value": "AW"
+            },
+            {
+              "dataitem_name": "Action_Operation",
+              "dataitem_value": "U"
+            },
+            {
+              "dataitem_name": "Action_ActivationDate",
+              "dataitem_value": "17-01-2024"
+            },
+            {
+              "dataitem_name": "Action_ActionIdentification",
+              "dataitem_value": "811"
+            },
+            {
+              "dataitem_name": "Action_ResponsibleDataManager",
+              "dataitem_value": null
+            },
+            {
+              "dataitem_name": "Action_ModificationDateAndTime",
+              "dataitem_value": "17-01-2024"
+            }
+          ],
+          "language": [
+            {
+              "lang_code": "en",
+              "lang_desc": "Aruba"
+            }
+          ]
+        },
+        {
+          "dataitem": [
+            {
+              "dataitem_name": "CountryCode",
+              "dataitem_value": "AX"
+            },
+            {
+              "dataitem_name": "Action_Operation",
+              "dataitem_value": "U"
+            },
+            {
+              "dataitem_name": "Action_ActivationDate",
+              "dataitem_value": "17-01-2024"
+            },
+            {
+              "dataitem_name": "Action_ActionIdentification",
+              "dataitem_value": "812"
+            },
+            {
+              "dataitem_name": "Action_ResponsibleDataManager",
+              "dataitem_value": null
+            },
+            {
+              "dataitem_name": "Action_ModificationDateAndTime",
+              "dataitem_value": "17-01-2024"
+            }
+          ],
+          "language": [
+            {
+              "lang_code": "en",
+              "lang_desc": "ÅLAND ISLANDS"
+            }
+          ]
+        },
+        {
+          "dataitem": [
+            {
+              "dataitem_name": "CountryCode",
+              "dataitem_value": "AZ"
+            },
+            {
+              "dataitem_name": "Action_Operation",
+              "dataitem_value": "U"
+            },
+            {
+              "dataitem_name": "Action_ActivationDate",
+              "dataitem_value": "17-01-2024"
+            },
+            {
+              "dataitem_name": "Action_ActionIdentification",
+              "dataitem_value": "813"
+            },
+            {
+              "dataitem_name": "Action_ResponsibleDataManager",
+              "dataitem_value": null
+            },
+            {
+              "dataitem_name": "Action_ModificationDateAndTime",
+              "dataitem_value": "17-01-2024"
+            }
+          ],
+          "language": [
+            {
+              "lang_code": "en",
+              "lang_desc": "Azerbaijan"
+            }
+          ]
+        }
+      ],
+      "languagecode": "EN",
+      "snapshotversion": 19
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?codelist_code=BC08"
+    }
+  ]
+}
