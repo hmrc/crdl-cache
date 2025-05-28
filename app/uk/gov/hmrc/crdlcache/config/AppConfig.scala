@@ -18,9 +18,14 @@ package uk.gov.hmrc.crdlcache.config
 
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject() (config: Configuration) {
+class AppConfig @Inject() (config: Configuration) extends ServicesConfig(config) {
 
-  val appName: String = config.get[String]("appName")
+  val appName: String         = config.get[String]("appName")
+  val dpsUrl: String          = baseUrl("dps-api")
+  val dpsPath: String         = config.get[String]("microservice.services.dps-api.path")
+  val dpsClientId: String     = config.get[String]("microservice.services.dps-api.clientId")
+  val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 }
