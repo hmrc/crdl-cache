@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.schedulers
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import org.quartz.{Job, JobExecutionContext}
+import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-class Module extends AbstractModule {
+import javax.inject.Inject
+import scala.concurrent.duration.*
 
-  override def configure(): Unit = {
+class ImportCodeListsJob @Inject() (val lockRepository: MongoLockRepository)
+  extends Job
+  with LockService {
 
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
+  def execute(context: JobExecutionContext): Unit = () // TODO: Job
+
+  val lockId: String = "import-code-lists"
+  val ttl: Duration  = 1.hour
 }

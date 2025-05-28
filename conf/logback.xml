@@ -21,6 +21,7 @@
         </encoder>
     </appender>
 
+    <logger name="org.quartz" level="INFO"/>
 
     <logger name="com.google.inject" level="INFO"/>
 
