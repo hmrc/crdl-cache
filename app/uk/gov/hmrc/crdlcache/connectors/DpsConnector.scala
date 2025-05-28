@@ -49,7 +49,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     new URI(
       baseUri.getScheme,
       baseUri.getUserInfo,
-      baseUri.getAuthority,
+      baseUri.getHost,
       baseUri.getPort,
       baseUri.getPath,
       // Drop the leading `?` from the DPS next relation

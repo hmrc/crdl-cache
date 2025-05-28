@@ -19,8 +19,6 @@ package uk.gov.hmrc.crdlcache.models.dps
 import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.crdlcache.models.CodeListCode
 
-import java.net.URI
-
 case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
 
 object CodeListResponse {
@@ -65,9 +63,9 @@ object Relation {
 sealed abstract class RelationType(val name: String) extends Product with Serializable {}
 
 object RelationType {
-  case object Self extends RelationType("self")
-  case object Prev extends RelationType("prev")
-  case object Next extends RelationType("next")
+  case object Self                              extends RelationType("self")
+  case object Prev                              extends RelationType("prev")
+  case object Next                              extends RelationType("next")
   case class Unknown(override val name: String) extends RelationType(name)
 
   private val values: Set[RelationType]        = Set(Self, Next, Prev)
