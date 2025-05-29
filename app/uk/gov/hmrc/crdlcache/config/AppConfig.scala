@@ -33,6 +33,8 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val dpsClientId: String     = config.get[String]("microservice.services.dps-api.clientId")
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
+  val importCodelistsSchedule = config.get[String]("import-codelists.schedule")
+
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("import-codelists.last-updated-date.default"))
 

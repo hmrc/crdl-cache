@@ -65,6 +65,7 @@ class DpsConnectorSpec
       "microservice.services.dps-api.port"         -> wireMockPort,
       "microservice.services.dps-api.clientId"     -> clientId,
       "microservice.services.dps-api.clientSecret" -> clientSecret,
+      "import-codelists.schedule"                  -> "* * * * * ?",
       "import-codelists.last-updated-date.default" -> "2025-05-29",
       "import-codelists.codelists"                 -> List.empty,
       "http-verbs.retries.intervals"               -> List("1.millis")
