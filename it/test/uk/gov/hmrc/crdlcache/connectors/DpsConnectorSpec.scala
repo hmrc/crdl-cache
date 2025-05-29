@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.crdlcache.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{ok, *}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.stubbing.Scenario
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.Sink
 import org.scalatest.EitherValues
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.must.Matchers
@@ -26,15 +28,13 @@ import play.api.Configuration
 import play.api.http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.*
+import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.http.test.{HttpClientV2Support, WireMockSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import java.time.{LocalDate, ZoneOffset}
-import java.util.concurrent.ConcurrentLinkedDeque
 import scala.concurrent.Future
-import scala.jdk.CollectionConverters.*
 
 class DpsConnectorSpec
   extends AsyncFlatSpec
@@ -49,27 +49,33 @@ class DpsConnectorSpec
 
   given hc: HeaderCarrier = HeaderCarrier()
 
-  val clientId     = "a0ce80bc-14b6-48eb-a8c0-96f1a927a573"
-  val clientSecret = "5a8e64bc855c4e6445cab63cee753bc1"
-  val expectedEncodedAuthHeader =
+  private val clientId     = "a0ce80bc-14b6-48eb-a8c0-96f1a927a573"
+  private val clientSecret = "5a8e64bc855c4e6445cab63cee753bc1"
+
+  // Basic auth header, produced by:
+  // printf "$CLIENT_ID:$CLIENT_SECRET" | base64
+  private val expectedEncodedAuthHeader =
     "Basic YTBjZTgwYmMtMTRiNi00OGViLWE4YzAtOTZmMWE5MjdhNTczOjVhOGU2NGJjODU1YzRlNjQ0NWNhYjYzY2VlNzUzYmMx"
-  val config = AppConfig(
+
+  private val config = AppConfig(
     Configuration(
       "appName"                                    -> "crdl-cache",
       "microservice.services.dps-api.host"         -> "localhost",
       "microservice.services.dps-api.path"         -> "iv_crdl_reference_data",
       "microservice.services.dps-api.port"         -> wireMockPort,
       "microservice.services.dps-api.clientId"     -> clientId,
-      "microservice.services.dps-api.clientSecret" -> clientSecret
+      "microservice.services.dps-api.clientSecret" -> clientSecret,
+      "http-verbs.retries.intervals"               -> List("1.millis")
     )
   )
-  val connector =
+
+  private val connector =
     new DpsConnector(
       httpClientV2,
       config
     )
 
-  val codelistResponse = CodeListResponse(
+  private val codelistResponse = CodeListResponse(
     List(
       CodeListSnapshot(
         BC08,
@@ -120,7 +126,7 @@ class DpsConnectorSpec
     )
   )
 
-  val snapshotsPage1: CodeListResponse = CodeListResponse(
+  private val snapshotsPage1 = CodeListResponse(
     List(
       CodeListSnapshot(
         BC08,
@@ -164,7 +170,7 @@ class DpsConnectorSpec
     )
   )
 
-  val snapshotsPage2: CodeListResponse = CodeListResponse(
+  private val snapshotsPage2 = CodeListResponse(
     List(
       CodeListSnapshot(
         BC08,
@@ -209,7 +215,7 @@ class DpsConnectorSpec
   )
 
   override lazy val wireMockRootDirectory = "it/test/resources"
-  val uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+  private val uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
   "DpsConnector.fetchCodelist" should "return a codelist response when DPS API returns 200" in {
     stubFor(
@@ -252,11 +258,13 @@ class DpsConnectorSpec
     }
   }
 
-  "DPSConnector.fetchCodelistSnapshots" should "call the processResponse function for each page of snapshots" in {
+  "DPSConnector.fetchCodelistSnapshots" should "produce a CodeListResponse for each page of codelist snapshots" in {
     val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
 
+    // Page 1
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .withHeader("correlationId", matching(uuidRegex))
         .withQueryParam("code_list_code", equalTo("BC08"))
         .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
         .withQueryParam("$start_index", equalTo("0"))
@@ -269,8 +277,10 @@ class DpsConnectorSpec
         )
     )
 
+    // Page 2
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .withHeader("correlationId", matching(uuidRegex))
         .withQueryParam("code_list_code", equalTo("BC08"))
         .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
         .withQueryParam("$start_index", equalTo("10"))
@@ -283,15 +293,26 @@ class DpsConnectorSpec
         )
     )
 
-    val responses = new ConcurrentLinkedDeque[CodeListResponse]()
+    // Page 3 (empty)
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .withHeader("correlationId", matching(uuidRegex))
+        .withQueryParam("code_list_code", equalTo("BC08"))
+        .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
+        .withQueryParam("$start_index", equalTo("20"))
+        .withQueryParam("$count", equalTo("10"))
+        .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
+        .willReturn(
+          ok()
+            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+            .withBodyFile("BC08_snapshots_page3.json")
+        )
+    )
 
     connector
-      .fetchCodelistSnapshots(BC08, lastUpdatedDate) { response =>
-        Future.successful(responses.addLast(response))
-      }
-      .map { _ =>
-        responses.asScala.toList mustBe List(snapshotsPage1, snapshotsPage2)
-      }
+      .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+      .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
+      .map(_ mustBe List(snapshotsPage1, snapshotsPage2))
   }
 
   it should "throw UpstreamErrorResponse when there is a client error in the first page" in {
@@ -310,7 +331,9 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCodelistSnapshots(BC08, lastUpdatedDate)(_ => Future.unit)
+      connector
+        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
 
@@ -330,37 +353,16 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCodelistSnapshots(BC08, lastUpdatedDate)(_ => Future.unit)
-    }
-  }
-
-  it should "rethrow the underlying exception when there is an error while processing the first page" in {
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
-
-    stubFor(
-      get(urlPathEqualTo("/iv_crdl_reference_data"))
-        .withQueryParam("code_list_code", equalTo("BC08"))
-        .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
-        .withQueryParam("$start_index", equalTo("0"))
-        .withQueryParam("$count", equalTo("10"))
-        .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
-        .willReturn(
-          ok()
-            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page1.json")
-        )
-    )
-
-    recoverToSucceededIf[RuntimeException] {
-      connector.fetchCodelistSnapshots(BC08, lastUpdatedDate)(_ =>
-        Future.failed(new RuntimeException("Oh no!"))
-      )
+      connector
+        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
 
   it should "throw UpstreamErrorResponse when there is a client error in the second page" in {
     val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
 
+    // Page 1
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
         .withQueryParam("code_list_code", equalTo("BC08"))
@@ -375,6 +377,7 @@ class DpsConnectorSpec
         )
     )
 
+    // Page 2 (Bad Request)
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
         .withQueryParam("code_list_code", equalTo("BC08"))
@@ -388,13 +391,16 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCodelistSnapshots(BC08, lastUpdatedDate)(_ => Future.unit)
+      connector
+        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
 
   it should "throw UpstreamErrorResponse when there is a server error in the second page" in {
     val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
 
+    // Page 1
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
         .withQueryParam("code_list_code", equalTo("BC08"))
@@ -409,6 +415,7 @@ class DpsConnectorSpec
         )
     )
 
+    // Page 2 (Internal Server Error)
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
         .withQueryParam("code_list_code", equalTo("BC08"))
@@ -422,15 +429,37 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCodelistSnapshots(BC08, lastUpdatedDate)(_ => Future.unit)
+      connector
+        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
 
-  it should "rethrow the underlying exception when there is an error while processing the second page" in {
+  it should "not retry when there is a client error while fetching a page" in {
+    val retryScenario = "Retry"
+    val failedState = "Failed"
     val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
 
+    // Page 1 (Bad Request)
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .inScenario(retryScenario)
+        .whenScenarioStateIs(Scenario.STARTED)
+        .withQueryParam("code_list_code", equalTo("BC08"))
+        .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
+        .withQueryParam("$start_index", equalTo("0"))
+        .withQueryParam("$count", equalTo("10"))
+        .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
+        .willReturn(
+          badRequest().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+        ).willSetStateTo(failedState)
+    )
+
+    // Page 1 (Retry, OK) - it would succeed if it did retry, but it shouldn't do that!
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .inScenario(retryScenario)
+        .whenScenarioStateIs(failedState)
         .withQueryParam("code_list_code", equalTo("BC08"))
         .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
         .withQueryParam("$start_index", equalTo("0"))
@@ -443,8 +472,54 @@ class DpsConnectorSpec
         )
     )
 
+    recoverToSucceededIf[UpstreamErrorResponse] {
+      connector
+        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
+    }
+  }
+
+  it should "retry when there is a server error while fetching a page" in {
+    val retryScenario = "Retry"
+    val failedState = "Failed"
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+
+    // Page 1 (Internal Server Error)
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .inScenario(retryScenario)
+        .whenScenarioStateIs(Scenario.STARTED)
+        .withQueryParam("code_list_code", equalTo("BC08"))
+        .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
+        .withQueryParam("$start_index", equalTo("0"))
+        .withQueryParam("$count", equalTo("10"))
+        .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
+        .willReturn(
+          serverError().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+        ).willSetStateTo(failedState)
+    )
+
+    // Page 1 (Retry, OK)
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .inScenario(retryScenario)
+        .whenScenarioStateIs(failedState)
+        .withQueryParam("code_list_code", equalTo("BC08"))
+        .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
+        .withQueryParam("$start_index", equalTo("0"))
+        .withQueryParam("$count", equalTo("10"))
+        .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
+        .willReturn(
+          ok()
+            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+            .withBodyFile("BC08_snapshots_page1.json")
+        )
+    )
+
+    // Page 2
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .withHeader("correlationId", matching(uuidRegex))
         .withQueryParam("code_list_code", equalTo("BC08"))
         .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
         .withQueryParam("$start_index", equalTo("10"))
@@ -457,20 +532,25 @@ class DpsConnectorSpec
         )
     )
 
-    val responses = new ConcurrentLinkedDeque[CodeListResponse]()
+    // Page 3 (empty)
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_reference_data"))
+        .withHeader("correlationId", matching(uuidRegex))
+        .withQueryParam("code_list_code", equalTo("BC08"))
+        .withQueryParam("last_updated_date", equalTo("2025-05-28T00:00:00Z"))
+        .withQueryParam("$start_index", equalTo("20"))
+        .withQueryParam("$count", equalTo("10"))
+        .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
+        .willReturn(
+          ok()
+            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+            .withBodyFile("BC08_snapshots_page3.json")
+        )
+    )
 
-    recoverToSucceededIf[RuntimeException] {
-      connector.fetchCodelistSnapshots(BC08, lastUpdatedDate) { response =>
-        if (response.links.exists(_.rel == Next))
-          Future.successful(responses.addLast(response))
-        else {
-          // Throw an exception on the final page
-          Future.failed(new RuntimeException("Oh no!"))
-        }
-      }
-    }.map { _ =>
-      // We should still receive the initial page
-      responses.asScala.toList mustBe List(snapshotsPage1)
-    }
+    connector
+      .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+      .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
+      .map(_ mustBe List(snapshotsPage1, snapshotsPage2))
   }
 }

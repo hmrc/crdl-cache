@@ -16,17 +16,26 @@
 
 package uk.gov.hmrc.crdlcache.connectors
 
-import org.apache.pekko.stream.Materializer
+import com.typesafe.config.Config
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl
 import org.apache.pekko.stream.scaladsl.Source
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.Next
-import uk.gov.hmrc.crdlcache.models.dps.{CodeListResponse, Relation}
+import uk.gov.hmrc.crdlcache.models.dps.CodeListResponse
 import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{
+  Authorization,
+  HeaderCarrier,
+  HttpReads,
+  Retries,
+  StringContextOps,
+  UpstreamErrorResponse
+}
 
-import java.net.{URI, URL, URLDecoder}
 import java.nio.charset.StandardCharsets
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -35,28 +44,15 @@ import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(using
-  mat: Materializer
-) {
+  system: ActorSystem
+) extends Retries {
+  override protected def actorSystem: ActorSystem = system
+  override protected def configuration: Config    = appConfig.config.underlying
 
   private val base64Encoder = Base64.getEncoder
   private val dateFormatter = DateTimeFormatter.ISO_DATE_TIME
 
   private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath}"
-  private val baseUri = baseUrl.toURI
-
-  private def baseUrlWithQuery(relation: Relation) = {
-    val decodedQuery = URLDecoder.decode(relation.href, StandardCharsets.UTF_8)
-    new URI(
-      baseUri.getScheme,
-      baseUri.getUserInfo,
-      baseUri.getHost,
-      baseUri.getPort,
-      baseUri.getPath,
-      // Drop the leading `?` from the DPS next relation
-      decodedQuery.substring(1),
-      null
-    ).toURL
-  }
 
   private def headerCarrierWithAuth(hc: HeaderCarrier) = {
     val clientIdAndSecret =
@@ -67,43 +63,45 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     hc.copy(authorization = Some(Authorization(s"Basic $authSecret")))
   }
 
-  def fetchCodelistSnapshots(code: CodeListCode, lastUpdatedDate: ZonedDateTime)(
-    processResponse: CodeListResponse => Future[Unit]
-  )(using ec: ExecutionContext): Future[Unit] = {
-    // Produce the URL for the first page
+  private def fetchCodelistSnapshot(
+    code: CodeListCode,
+    lastUpdatedDate: ZonedDateTime,
+    startIndex: Int
+  )(using ec: ExecutionContext): Future[CodeListResponse] = {
     val queryParams = Map(
       "code_list_code"    -> code.code,
       "last_updated_date" -> dateFormatter.format(lastUpdatedDate),
-      "$start_index"      -> 0,
+      "$start_index"      -> startIndex,
       "$count"            -> 10,
       "$orderby"          -> "snapshotversion ASC"
     )
 
-    val initialDpsUrl = url"$baseUrl?$queryParams"
+    val dpsUrl = url"$baseUrl?$queryParams"
 
-    Source
-      .unfoldAsync[URL, Unit](initialDpsUrl) { dpsUrl =>
-        // Fetch each page
-        httpClient
-          .get(dpsUrl)(headerCarrierWithAuth(HeaderCarrier()))
-          .setHeader("correlationId" -> UUID.randomUUID().toString)
-          .execute[Either[UpstreamErrorResponse, CodeListResponse]]
-          .flatMap {
-            case Left(err) =>
-              // Rethrow errors
-              Future.failed(err)
-            case Right(response) =>
-              // Provide the page to our processing function
-              processResponse(response).map { _ =>
-                // If we find a "next" link, we can produce a URL for the next page
-                val nextLink = response.links.find(_.rel == Next)
-                nextLink.map(link => (baseUrlWithQuery(link), ()))
-              }
-          }
-      }
-      .run()
-      .map(_ => ())
+    retryFor(s"fetch of $code snapshots at index $startIndex as of $lastUpdatedDate") {
+      // No point in retrying if our request is wrong
+      case Upstream4xxResponse(_) => false
+      // Attempt to recover from intermittent connectivity issues
+      case Upstream5xxResponse(_) => true
+    } {
+      httpClient
+        .get(dpsUrl)(headerCarrierWithAuth(HeaderCarrier()))
+        .setHeader("correlationId" -> UUID.randomUUID().toString)
+        .execute[CodeListResponse](using throwOnFailure(readEitherOf[CodeListResponse]), ec)
+    }
   }
+
+  def fetchCodelistSnapshots(code: CodeListCode, lastUpdatedDate: ZonedDateTime)(using
+    ec: ExecutionContext
+  ): Source[CodeListResponse, NotUsed] = Source
+    .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
+      fetchCodelistSnapshot(code, lastUpdatedDate, startIndex).map { response =>
+        if (response.elements.isEmpty)
+          None
+        else
+          Some((startIndex + 10, response))
+      }
+    }
 
   def fetchCodelist(code: CodeListCode)(using
     ec: ExecutionContext,
