@@ -23,14 +23,14 @@ import org.quartz.impl.StdSchedulerFactory
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class JobScheduler @Inject() (lifecycle: ApplicationLifecycle, jobFactory: ScheduledJobFactory)(
   using ec: ExecutionContext
 ) extends Logging {
 
-  logger.info("JobScheduler runs!")
   val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
 
   quartz.setJobFactory(jobFactory)

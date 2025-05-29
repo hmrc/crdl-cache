@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.schedulers
+package uk.gov.hmrc.crdlcache.models.errors
 
-import org.quartz
-import org.quartz.Job
-import org.quartz.spi.{JobFactory, TriggerFiredBundle}
-import play.api.inject.Injector
-
-import javax.inject.{Inject, Singleton}
-
-@Singleton
-class ScheduledJobFactory @Inject() (injector: Injector) extends JobFactory {
-  override def newJob(bundle: TriggerFiredBundle, scheduler: quartz.Scheduler): Job =
-    injector.instanceOf(bundle.getJobDetail.getJobClass)
+enum MongoError(val message: String, val cause: Throwable = null)
+  extends Exception(message, cause) {
+  case NotAcknowledged    extends MongoError("Mongo write was not acknowledged")
+  case NoMatchingDocument extends MongoError("Mongo update did not match any documents")
 }

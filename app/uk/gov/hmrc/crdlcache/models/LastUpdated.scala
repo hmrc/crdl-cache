@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.schedulers
+package uk.gov.hmrc.crdlcache.models
 
-import org.quartz
-import org.quartz.Job
-import org.quartz.spi.{JobFactory, TriggerFiredBundle}
-import play.api.inject.Injector
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import javax.inject.{Inject, Singleton}
+import java.time.Instant
 
-@Singleton
-class ScheduledJobFactory @Inject() (injector: Injector) extends JobFactory {
-  override def newJob(bundle: TriggerFiredBundle, scheduler: quartz.Scheduler): Job =
-    injector.instanceOf(bundle.getJobDetail.getJobClass)
+case class LastUpdated(date: Instant)
+
+object LastUpdated extends MongoJavatimeFormats.Implicits {
+  given format: Format[LastUpdated] = Json.format[LastUpdated]
 }

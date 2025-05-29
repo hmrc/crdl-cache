@@ -40,9 +40,10 @@ import java.nio.charset.StandardCharsets
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.{Base64, UUID}
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(using
   system: ActorSystem
 ) extends Retries {

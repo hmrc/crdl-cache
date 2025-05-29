@@ -18,6 +18,9 @@ lazy val it = project
   .enablePlugins(PlayScala)
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
-  .settings(libraryDependencies ++= AppDependencies.it)
+  .settings(
+    libraryDependencies ++= AppDependencies.it,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+  )
 
 addCommandAlias("runAllChecks", ";clean;compile;scalafmtAll;coverage;test;it/test;coverageReport")
