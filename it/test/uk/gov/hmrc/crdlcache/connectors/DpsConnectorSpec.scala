@@ -65,6 +65,8 @@ class DpsConnectorSpec
       "microservice.services.dps-api.port"         -> wireMockPort,
       "microservice.services.dps-api.clientId"     -> clientId,
       "microservice.services.dps-api.clientSecret" -> clientSecret,
+      "import-codelists.last-updated-date.default" -> "2025-05-29",
+      "import-codelists.codelists"                 -> List.empty,
       "http-verbs.retries.intervals"               -> List("1.millis")
     )
   )
@@ -436,8 +438,8 @@ class DpsConnectorSpec
   }
 
   it should "not retry when there is a client error while fetching a page" in {
-    val retryScenario = "Retry"
-    val failedState = "Failed"
+    val retryScenario   = "Retry"
+    val failedState     = "Failed"
     val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
 
     // Page 1 (Bad Request)
@@ -452,7 +454,8 @@ class DpsConnectorSpec
         .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
         .willReturn(
           badRequest().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-        ).willSetStateTo(failedState)
+        )
+        .willSetStateTo(failedState)
     )
 
     // Page 1 (Retry, OK) - it would succeed if it did retry, but it shouldn't do that!
@@ -480,8 +483,8 @@ class DpsConnectorSpec
   }
 
   it should "retry when there is a server error while fetching a page" in {
-    val retryScenario = "Retry"
-    val failedState = "Failed"
+    val retryScenario   = "Retry"
+    val failedState     = "Failed"
     val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
 
     // Page 1 (Internal Server Error)
@@ -496,7 +499,8 @@ class DpsConnectorSpec
         .withQueryParam("$orderby", equalTo("snapshotversion ASC"))
         .willReturn(
           serverError().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-        ).willSetStateTo(failedState)
+        )
+        .willSetStateTo(failedState)
     )
 
     // Page 1 (Retry, OK)

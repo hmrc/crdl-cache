@@ -27,4 +27,6 @@ object CodeListCode {
   private val values: Set[CodeListCode]        = Set(BC08)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
   given Format[CodeListCode] = Format.of[String].bimap(codes.withDefault(Unknown.apply), _.code)
+
+  def fromString(code: String) = codes.getOrElse(code, Unknown(code))
 }

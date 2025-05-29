@@ -16,16 +16,34 @@
 
 package uk.gov.hmrc.crdlcache.config
 
-import javax.inject.{Inject, Singleton}
+import com.typesafe.config.Config
 import play.api.Configuration
+import uk.gov.hmrc.crdlcache.models.CodeListCode
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import java.time.LocalDate
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(config) {
+  val appName: String = config.get[String]("appName")
 
-  val appName: String         = config.get[String]("appName")
   val dpsUrl: String          = baseUrl("dps-api")
   val dpsPath: String         = config.get[String]("microservice.services.dps-api.path")
   val dpsClientId: String     = config.get[String]("microservice.services.dps-api.clientId")
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
+
+  val defaultLastUpdated: LocalDate =
+    LocalDate.parse(config.get[String]("import-codelists.last-updated-date.default"))
+
+  val codelistConfigs: List[CodelistConfig] =
+    config
+      .get[Seq[Config]]("import-codelists.codelists")
+      .map { codelistConfig =>
+        CodelistConfig(
+          CodeListCode.fromString(codelistConfig.getString("code")),
+          codelistConfig.getString("keyProperty")
+        )
+      }
+      .toList
 }
