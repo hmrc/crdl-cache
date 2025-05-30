@@ -18,8 +18,8 @@ package uk.gov.hmrc.crdlcache.models.dps
 
 import play.api.libs.json.{Json, Reads}
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class LanguageDescription(lang_code: String, lang_desc: String)
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object LanguageDescription {
+  given Reads[LanguageDescription] = Json.reads[LanguageDescription]
 }

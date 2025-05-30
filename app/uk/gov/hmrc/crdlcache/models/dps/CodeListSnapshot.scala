@@ -17,9 +17,15 @@
 package uk.gov.hmrc.crdlcache.models.dps
 
 import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.models.CodeListCode
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class CodeListSnapshot(
+  code_list_code: CodeListCode,
+  code_list_name: String,
+  snapshotversion: Int,
+  rdentry: List[CodeListEntry]
+)
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object CodeListSnapshot {
+  given Reads[CodeListSnapshot] = Json.reads[CodeListSnapshot]
 }

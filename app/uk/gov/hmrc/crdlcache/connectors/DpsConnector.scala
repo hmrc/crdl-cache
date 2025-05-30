@@ -64,7 +64,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     hc.copy(authorization = Some(Authorization(s"Basic $authSecret")))
   }
 
-  private def fetchCodelistSnapshot(
+  private def fetchCodeListSnapshot(
     code: CodeListCode,
     lastUpdatedDate: ZonedDateTime,
     startIndex: Int
@@ -92,11 +92,11 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     }
   }
 
-  def fetchCodelistSnapshots(code: CodeListCode, lastUpdatedDate: ZonedDateTime)(using
+  def fetchCodeListSnapshots(code: CodeListCode, lastUpdatedDate: ZonedDateTime)(using
     ec: ExecutionContext
   ): Source[CodeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
-      fetchCodelistSnapshot(code, lastUpdatedDate, startIndex).map { response =>
+      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex).map { response =>
         if (response.elements.isEmpty)
           None
         else
@@ -104,7 +104,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       }
     }
 
-  def fetchCodelist(code: CodeListCode)(using
+  def fetchCodeList(code: CodeListCode)(using
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): Future[Either[UpstreamErrorResponse, CodeListResponse]] = {

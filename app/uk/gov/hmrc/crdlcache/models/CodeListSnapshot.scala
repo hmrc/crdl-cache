@@ -14,12 +14,31 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.config.CodeListConfig
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class CodeListSnapshot(
+  code: CodeListCode,
+  name: String,
+  version: Int,
+  entries: Set[CodeListEntry]
+)
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object CodeListSnapshot {
+  def fromDpsSnapshot(
+    config: CodeListConfig,
+    dpsSnapshot: dps.CodeListSnapshot
+  ): CodeListSnapshot = {
+    CodeListSnapshot(
+      dpsSnapshot.code_list_code,
+      dpsSnapshot.code_list_name,
+      dpsSnapshot.snapshotversion,
+      dpsSnapshot.rdentry
+        .map(
+          CodeListEntry.fromDpsEntry(config, _)
+        )
+        .toSet
+    )
+  }
 }

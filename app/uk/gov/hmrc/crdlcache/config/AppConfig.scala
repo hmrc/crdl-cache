@@ -18,7 +18,7 @@ package uk.gov.hmrc.crdlcache.config
 
 import com.typesafe.config.Config
 import play.api.Configuration
-import uk.gov.hmrc.crdlcache.models.CodeListCode
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.time.LocalDate
@@ -33,18 +33,19 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val dpsClientId: String     = config.get[String]("microservice.services.dps-api.clientId")
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
-  val importCodelistsSchedule = config.get[String]("import-codelists.schedule")
+  val importCodeListsSchedule = config.get[String]("import-codelists.schedule")
 
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("import-codelists.last-updated-date.default"))
 
-  val codelistConfigs: List[CodelistConfig] =
+  val codeListConfigs: List[CodeListConfig] =
     config
       .get[Seq[Config]]("import-codelists.codelists")
-      .map { codelistConfig =>
-        CodelistConfig(
-          CodeListCode.fromString(codelistConfig.getString("code")),
-          codelistConfig.getString("keyProperty")
+      .map { codeListConfig =>
+        CodeListConfig(
+          CodeListCode.fromString(codeListConfig.getString("code")),
+          CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+          codeListConfig.getString("keyProperty")
         )
       }
       .toList

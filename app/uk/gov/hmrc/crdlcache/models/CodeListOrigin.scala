@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models
 
-import uk.gov.hmrc.crdlcache.models.CodeListCode
+enum CodeListOrigin {
+  case SEED
+  case CSRD2
 
-case class CodelistConfig(code: CodeListCode, keyProperty: String)
+  def activeDateProperty: String = this match {
+    case SEED  => "Action_ActivationDate"
+    case CSRD2 => "RDEntry_activeFrom"
+  }
+
+  def modificationDateProperty: Option[String] = this match {
+    case SEED  => Some("Action_ModificationDateAndTime")
+    case CSRD2 => None
+  }
+}

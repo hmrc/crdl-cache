@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.config
 
-import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
-
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
-}
+case class CodeListConfig(code: CodeListCode, origin: CodeListOrigin, keyProperty: String)

@@ -21,6 +21,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.Configuration
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, Unknown}
+import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 
 import java.time.LocalDate
 
@@ -37,8 +38,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-codelists.schedule"                  -> "*/10 * * * * ?",
         "import-codelists.last-updated-date.default" -> "2025-05-29",
         "import-codelists.codelists" -> List(
-          Map("code" -> "BC08", "keyProperty" -> "CountryCode"),
-          Map("code" -> "BC36", "keyProperty" -> "ExciseProductCode")
+          Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
+          Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode")
         )
       )
     )
@@ -50,11 +51,11 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.dpsClientId mustBe "abc123"
     appConfig.dpsClientSecret mustBe "def456"
 
-    appConfig.importCodelistsSchedule mustBe "*/10 * * * * ?"
+    appConfig.importCodeListsSchedule mustBe "*/10 * * * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 5, 29)
-    appConfig.codelistConfigs mustBe List(
-      CodelistConfig(BC08, "CountryCode"),
-      CodelistConfig(Unknown("BC36"), "ExciseProductCode")
+    appConfig.codeListConfigs mustBe List(
+      CodeListConfig(BC08, SEED, "CountryCode"),
+      CodeListConfig(Unknown("BC36"), SEED, "ExciseProductCode")
     )
   }
 
@@ -67,8 +68,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.dpsClientId mustBe "client_id_must_be_set_in_app-config-xxx"
     appConfig.dpsClientSecret mustBe "client_secret_must_be_set_in_app-config-xxx"
 
-    appConfig.importCodelistsSchedule mustBe "0 0 4 * * ?"
+    appConfig.importCodeListsSchedule mustBe "0 0 4 * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
-    appConfig.codelistConfigs mustBe List(CodelistConfig(BC08, "CountryCode"))
+    appConfig.codeListConfigs mustBe List(CodeListConfig(BC08, SEED, "CountryCode"))
   }
 }

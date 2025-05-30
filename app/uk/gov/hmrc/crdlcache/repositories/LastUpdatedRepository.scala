@@ -38,6 +38,9 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     indexes = Seq.empty[IndexModel]
   ) {
 
+  // This is a single-document collection
+  override lazy val requiresTtlIndex: Boolean = false
+
   def fetchLastUpdated(): Future[Option[Instant]] = {
     collection.find().headOption().map(_.map(_.date))
   }

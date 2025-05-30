@@ -45,7 +45,7 @@ class JobScheduler @Inject() (
     .withIdentity("import-code-lists")
     .build()
 
-  val schedule = CronScheduleBuilder.cronSchedule(config.importCodelistsSchedule)
+  val schedule = CronScheduleBuilder.cronSchedule(config.importCodeListsSchedule)
 
   val trigger =
     newTrigger()

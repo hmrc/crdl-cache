@@ -17,9 +17,16 @@
 package uk.gov.hmrc.crdlcache.models.dps
 
 import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.models.dps.DataItem.uncapitalize
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class DataItem(dataitem_name: String, dataitem_value: Option[String]) {
+  lazy val propertyName: String = uncapitalize(dataitem_name.split('_').last)
+}
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object DataItem {
+  given Reads[DataItem] = Json.reads[DataItem]
+
+  private def uncapitalize(s: String) =
+    if (s == null || s.isEmpty || !s.charAt(0).isUpper) s
+    else s.updated(0, s.charAt(0).toLower)
 }

@@ -230,7 +230,7 @@ class DpsConnectorSpec
           ok().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON).withBodyFile("BC08.json")
         )
     )
-    connector.fetchCodelist(BC08).map { result =>
+    connector.fetchCodeList(BC08).map { result =>
       result.value mustBe codelistResponse
     }
   }
@@ -243,7 +243,7 @@ class DpsConnectorSpec
           badRequest().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
         )
     )
-    connector.fetchCodelist(BC08).map { result =>
+    connector.fetchCodeList(BC08).map { result =>
       result.left.value mustBe a[UpstreamErrorResponse]
     }
   }
@@ -256,7 +256,7 @@ class DpsConnectorSpec
           serverError().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
         )
     )
-    connector.fetchCodelist(BC08).map { result =>
+    connector.fetchCodeList(BC08).map { result =>
       result.left.value mustBe a[UpstreamErrorResponse]
     }
   }
@@ -313,7 +313,7 @@ class DpsConnectorSpec
     )
 
     connector
-      .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+      .fetchCodeListSnapshots(BC08, lastUpdatedDate)
       .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
       .map(_ mustBe List(snapshotsPage1, snapshotsPage2))
   }
@@ -335,7 +335,7 @@ class DpsConnectorSpec
 
     recoverToSucceededIf[UpstreamErrorResponse] {
       connector
-        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .fetchCodeListSnapshots(BC08, lastUpdatedDate)
         .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
@@ -357,7 +357,7 @@ class DpsConnectorSpec
 
     recoverToSucceededIf[UpstreamErrorResponse] {
       connector
-        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .fetchCodeListSnapshots(BC08, lastUpdatedDate)
         .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
@@ -395,7 +395,7 @@ class DpsConnectorSpec
 
     recoverToSucceededIf[UpstreamErrorResponse] {
       connector
-        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .fetchCodeListSnapshots(BC08, lastUpdatedDate)
         .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
@@ -433,7 +433,7 @@ class DpsConnectorSpec
 
     recoverToSucceededIf[UpstreamErrorResponse] {
       connector
-        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .fetchCodeListSnapshots(BC08, lastUpdatedDate)
         .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
@@ -478,7 +478,7 @@ class DpsConnectorSpec
 
     recoverToSucceededIf[UpstreamErrorResponse] {
       connector
-        .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+        .fetchCodeListSnapshots(BC08, lastUpdatedDate)
         .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
     }
   }
@@ -554,7 +554,7 @@ class DpsConnectorSpec
     )
 
     connector
-      .fetchCodelistSnapshots(BC08, lastUpdatedDate)
+      .fetchCodeListSnapshots(BC08, lastUpdatedDate)
       .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
       .map(_ mustBe List(snapshotsPage1, snapshotsPage2))
   }

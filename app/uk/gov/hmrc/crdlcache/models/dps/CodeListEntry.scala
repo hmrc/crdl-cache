@@ -18,8 +18,11 @@ package uk.gov.hmrc.crdlcache.models.dps
 
 import play.api.libs.json.{Json, Reads}
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class CodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
+  def getProperty(itemName: String): Option[DataItem] =
+    dataitem.find(item => item.dataitem_name == itemName)
+}
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object CodeListEntry {
+  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
 }

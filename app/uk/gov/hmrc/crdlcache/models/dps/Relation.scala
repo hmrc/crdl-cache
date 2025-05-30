@@ -18,8 +18,8 @@ package uk.gov.hmrc.crdlcache.models.dps
 
 import play.api.libs.json.{Json, Reads}
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class Relation(rel: RelationType, href: String)
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object Relation {
+  given Reads[Relation] = Json.reads[Relation]
 }

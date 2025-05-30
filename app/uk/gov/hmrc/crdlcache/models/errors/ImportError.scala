@@ -1,0 +1,36 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.crdlcache.models.errors
+
+enum ImportError(val message: String, val cause: Throwable = null)
+  extends Exception(message, cause) {
+
+  case RequiredDataItemMissing(itemName: String)
+    extends ImportError(
+      s"A data item with name '$itemName' is required, but missing from a reference data entry"
+    )
+
+  case RequiredDataItemsMissing(itemNames: String*)
+    extends ImportError(
+      s"A data item with one of the following names is required, but missing from a reference data entry: ${itemNames.mkString("'", "', '", "'")}"
+    )
+
+  case LanguageDescriptionMissing
+    extends ImportError(
+      s"Language description for language code 'en' was missing from a reference data entry"
+    )
+}
