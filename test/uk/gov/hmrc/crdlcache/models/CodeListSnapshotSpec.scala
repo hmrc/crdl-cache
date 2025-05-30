@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.config.CodeListConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
+import uk.gov.hmrc.crdlcache.models.Operation.Update
 
 import java.time.Instant
 
@@ -36,15 +37,13 @@ class CodeListSnapshotSpec extends AnyFlatSpec with Matchers with TestData {
       "Country",
       1,
       Set(
-        CodeListEntry(
-          BC08,
+        CodeListSnapshotEntry(
           "AW",
           "Aruba",
           Instant.parse("2024-01-17T00:00:00Z"),
-          None,
           Some(Instant.parse("2024-01-17T00:00:00Z")),
+          Some(Update),
           Json.obj(
-            "operation"              -> "U",
             "actionIdentification"   -> "811",
             "responsibleDataManager" -> (null: String)
           )

@@ -29,4 +29,9 @@ enum CodeListOrigin {
     case SEED  => Some("Action_ModificationDateAndTime")
     case CSRD2 => None
   }
+
+  def operationProperty: Option[String] = this match {
+    case SEED  => Some("Action_Operation")
+    case CSRD2 => None
+  }
 }

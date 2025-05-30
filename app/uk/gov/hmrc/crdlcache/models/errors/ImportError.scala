@@ -29,6 +29,11 @@ enum ImportError(val message: String, val cause: Throwable = null)
       s"A data item with one of the following names is required, but missing from a reference data entry: ${itemNames.mkString("'", "', '", "'")}"
     )
 
+  case UnknownOperation(code: String)
+    extends ImportError(
+      s"An unknown reference data operation '$code' was found in a SEED reference data entry"
+    )
+
   case LanguageDescriptionMissing
     extends ImportError(
       s"Language description for language code 'en' was missing from a reference data entry"

@@ -21,7 +21,7 @@ import org.apache.pekko.stream.scaladsl.Source
 import org.quartz.{Job, JobExecutionContext}
 import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
-import uk.gov.hmrc.crdlcache.models.CodeListEntry
+import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListSnapshot}
 import uk.gov.hmrc.crdlcache.repositories.LastUpdatedRepository
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
@@ -56,7 +56,13 @@ class ImportCodeListsJob @Inject() (
       // TODO: Choose a representation for the running fold over codelist snapshots
       outputCodeList <- dpsConnector
         .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
-        .runFold(Map.empty[String, CodeListEntry]) { (codeList, codeListResponse) =>
+        .mapConcat(_.elements)
+        .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
+        .runFold(Map.empty[String, CodeListEntry]) { (codeList, codeListSnapshot) =>
+          val currentKeySet  = codeList.keySet
+          val incomingKeySet = codeListSnapshot.entries.map(_.key)
+          val removedEntries = currentKeySet.diff(incomingKeySet)
+
           codeList
         }
       // TODO: Insert the updated codelist data

@@ -17,19 +17,9 @@
 package uk.gov.hmrc.crdlcache.models
 
 import play.api.libs.functional.syntax.*
-import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.*
-import play.api.libs.json.OptionHandlers.WritesNull
-import uk.gov.hmrc.crdlcache.config.CodeListConfig
-import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
-import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
-  LanguageDescriptionMissing,
-  RequiredDataItemMissing,
-  RequiredDataItemsMissing
-}
 
-import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.Instant
 
 case class CodeListEntry(
   codeListCode: CodeListCode,
@@ -42,58 +32,6 @@ case class CodeListEntry(
 )
 
 object CodeListEntry {
-  private val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-
-  private val knownProperties = Set(
-    SEED.activeDateProperty,
-    SEED.modificationDateProperty.get,
-    CSRD2.activeDateProperty
-  )
-
-  private def parseDate(value: String) =
-    LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
-
-  def fromDpsEntry(
-    config: CodeListConfig,
-    dpsEntry: dps.CodeListEntry
-  ): CodeListEntry = {
-    val key = dpsEntry
-      .getProperty(config.keyProperty)
-      .flatMap(_.dataitem_value)
-      .getOrElse(throw RequiredDataItemMissing(config.keyProperty))
-
-    val value = dpsEntry.language
-      .find(_.lang_code.equalsIgnoreCase("en"))
-      .map(_.lang_desc)
-      .getOrElse(throw LanguageDescriptionMissing)
-
-    val activeFrom = dpsEntry
-      .getProperty(config.origin.activeDateProperty)
-      .flatMap(_.dataitem_value)
-      .map(parseDate)
-      .getOrElse(throw RequiredDataItemsMissing(CodeListOrigin.values.map(_.activeDateProperty)*))
-
-    val updatedAt = config.origin.modificationDateProperty
-      .flatMap(dpsEntry.getProperty)
-      .flatMap(_.dataitem_value)
-      .map(parseDate)
-
-    val usedProperties = knownProperties.incl(config.keyProperty)
-
-    val builder = Json.newBuilder
-
-    dpsEntry.dataitem
-      .filterNot(item => usedProperties.contains(item.dataitem_name))
-      .foreach { item =>
-        val propertyValue: JsValueWrapper =
-          if (item.propertyName.endsWith("Flag")) item.dataitem_value.contains("1")
-          else item.dataitem_value.orNull
-        builder += (item.propertyName -> propertyValue)
-      }
-
-    CodeListEntry(config.code, key, value, activeFrom, None, updatedAt, builder.result())
-  }
-
   // Only serialize the key, value and properties in JSON responses
   given Writes[CodeListEntry] = (
     (JsPath \ "key").write[String] and

@@ -16,29 +16,20 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import uk.gov.hmrc.crdlcache.config.CodeListConfig
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
+import play.api.libs.json.{JsString, Json}
 
-case class CodeListSnapshot(
-  code: CodeListCode,
-  name: String,
-  version: Int,
-  entries: Set[CodeListSnapshotEntry]
-)
+class OperationSpec extends AnyFlatSpec with Matchers {
+  "Format[Operation]" should "read operations from JSON" in {
+    Operation.values.zip(Operation.codes).foreach { case (value, code) =>
+      Json.fromJson[Operation](JsString(code)).get mustBe value
+    }
+  }
 
-object CodeListSnapshot {
-  def fromDpsSnapshot(
-    config: CodeListConfig,
-    dpsSnapshot: dps.CodeListSnapshot
-  ): CodeListSnapshot = {
-    CodeListSnapshot(
-      dpsSnapshot.code_list_code,
-      dpsSnapshot.code_list_name,
-      dpsSnapshot.snapshotversion,
-      dpsSnapshot.rdentry
-        .map(
-          CodeListSnapshotEntry.fromDpsEntry(config, _)
-        )
-        .toSet
-    )
+  it should "write operations to JSON" in {
+    Operation.values.zip(Operation.codes).foreach { case (value, code) =>
+      Json.toJson(value) mustBe JsString(code)
+    }
   }
 }
