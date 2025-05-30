@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models.dps
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.models.dps.DataItem.uncapitalize
 
-class Module extends AbstractModule {
+case class DataItem(dataitem_name: String, dataitem_value: Option[String]) {
+  lazy val propertyName: String = uncapitalize(dataitem_name.split('_').last)
+}
 
-  override def configure(): Unit = {
+object DataItem {
+  given Reads[DataItem] = Json.reads[DataItem]
 
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
+  private def uncapitalize(s: String) =
+    if (s == null || s.isEmpty || !s.charAt(0).isUpper) s
+    else s.updated(0, s.charAt(0).toLower)
 }

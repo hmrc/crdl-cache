@@ -1,0 +1,10 @@
+{
+  "name": "iv_crdl_reference_data",
+  "elements": [],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=BC08&%24start_index=30&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
+    }
+  ]
+}

@@ -14,16 +14,31 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import uk.gov.hmrc.crdlcache.config.CodeListConfig
 
-class Module extends AbstractModule {
+case class CodeListSnapshot(
+  code: CodeListCode,
+  name: String,
+  version: Int,
+  entries: Set[CodeListSnapshotEntry]
+)
 
-  override def configure(): Unit = {
-
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[JobScheduler]).asEagerSingleton()
+object CodeListSnapshot {
+  def fromDpsSnapshot(
+    config: CodeListConfig,
+    dpsSnapshot: dps.CodeListSnapshot
+  ): CodeListSnapshot = {
+    CodeListSnapshot(
+      dpsSnapshot.code_list_code,
+      dpsSnapshot.code_list_name,
+      dpsSnapshot.snapshotversion,
+      dpsSnapshot.rdentry
+        .map(
+          CodeListSnapshotEntry.fromDpsEntry(config, _)
+        )
+        .toSet
+    )
   }
 }

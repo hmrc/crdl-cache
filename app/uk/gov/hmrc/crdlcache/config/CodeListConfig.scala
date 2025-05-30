@@ -16,14 +16,6 @@
 
 package uk.gov.hmrc.crdlcache.config
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
-}
+case class CodeListConfig(code: CodeListCode, origin: CodeListOrigin, keyProperty: String)
