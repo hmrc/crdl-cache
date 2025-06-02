@@ -23,6 +23,7 @@ import java.time.Instant
 
 case class CodeListEntry(
   codeListCode: CodeListCode,
+  snapshotVersion: Int,
   key: String,
   value: String,
   activeFrom: Instant,

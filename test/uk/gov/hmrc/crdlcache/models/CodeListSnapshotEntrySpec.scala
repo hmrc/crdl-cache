@@ -22,12 +22,8 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.config.CodeListConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
-import uk.gov.hmrc.crdlcache.models.Operation.Update
-import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
-  LanguageDescriptionMissing,
-  RequiredDataItemMissing,
-  RequiredDataItemsMissing
-}
+import uk.gov.hmrc.crdlcache.models.Operation.{Create, Update}
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.{LanguageDescriptionMissing, RequiredDataItemMissing, RequiredDataItemsMissing, UnknownOperation}
 
 import java.time.Instant
 
@@ -41,8 +37,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     Some(Instant.parse("2024-01-17T00:00:00Z")),
     Some(Update),
     Json.obj(
-      "actionIdentification"   -> "811",
-      "responsibleDataManager" -> (null: String)
+      "actionIdentification" -> "811"
     )
   )
 
@@ -117,6 +112,45 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       Instant.parse("2024-01-17T00:00:00Z"),
       None,
       None,
+      Json.obj()
+    )
+
+    CodeListSnapshotEntry.fromDpsEntry(BC08Config, inputEntry) mustBe expectedEntry
+  }
+
+  it should "fail when the operation property does not correspond to any known operation" in {
+    val unknownOperation =
+      the[UnknownOperation] thrownBy CodeListSnapshotEntry.fromDpsEntry(
+        BC08Config,
+        dps.CodeListEntry(
+          List(
+            dps.DataItem(BC08Config.keyProperty, Some("AW")),
+            dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
+            dps.DataItem("Action_Operation", Some("X"))
+          ),
+          List(dps.LanguageDescription("en", "Aruba"))
+        )
+      )
+
+    unknownOperation.code mustBe "X"
+  }
+
+  it should "succeed when the operation property is recognised" in {
+    val inputEntry = dps.CodeListEntry(
+      List(
+        dps.DataItem(BC08Config.keyProperty, Some("AW")),
+        dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
+        dps.DataItem("Action_Operation", Some("C")),
+      ),
+      List(dps.LanguageDescription("en", "Aruba"))
+    )
+
+    val expectedEntry = CodeListSnapshotEntry(
+      "AW",
+      "Aruba",
+      Instant.parse("2024-01-17T00:00:00Z"),
+      None,
+      Some(Create),
       Json.obj()
     )
 

@@ -88,6 +88,7 @@ object CodeListSnapshotEntry {
 
     dpsEntry.dataitem
       .filterNot(item => usedProperties.contains(item.dataitem_name))
+      .filterNot(item => item.dataitem_value.isEmpty)
       .foreach { item =>
         val propertyValue: JsValueWrapper =
           if (item.propertyName.endsWith("Flag")) item.dataitem_value.contains("1")

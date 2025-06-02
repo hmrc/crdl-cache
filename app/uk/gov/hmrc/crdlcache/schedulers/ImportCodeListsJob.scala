@@ -18,14 +18,18 @@ package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.stream.{ActorAttributes, Supervision}
 import org.quartz.{Job, JobExecutionContext}
+import play.api.Logging
 import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
-import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListSnapshot}
-import uk.gov.hmrc.crdlcache.repositories.LastUpdatedRepository
+import uk.gov.hmrc.crdlcache.models.*
+import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
+import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Update}
+import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-import java.time.{ZoneOffset, ZonedDateTime}
+import java.time.{Clock, LocalDate, ZoneOffset, ZonedDateTime}
 import javax.inject.Inject
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -33,40 +37,106 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 class ImportCodeListsJob @Inject() (
   val lockRepository: MongoLockRepository,
   lastUpdatedRepository: LastUpdatedRepository,
+  codeListsRepository: CodeListsRepository,
   dpsConnector: DpsConnector,
-  appConfig: AppConfig
+  appConfig: AppConfig,
+  clock: Clock
 )(using system: ActorSystem, ec: ExecutionContext)
   extends Job
-  with LockService {
+  with LockService
+  with Logging {
   val lockId: String = "import-code-lists"
   val ttl: Duration  = 1.hour
 
-  // * Detect removed entries
-  // * Deduplicate new entries
-  // * Process lifecycle events
-  // * Sort entries according to their modification date and time
-  // * Sort entries according to their activation date
+  def fetchCurrentEntries(codeListCode: CodeListCode): Future[Set[String]] =
+    codeListsRepository.fetchCodeListEntries(codeListCode).map(_.map(_.key))
 
-  // * Key sets?
-  //   currentCodelist.keySet.diff(codelistSnapshot.keySet)
+  def executeInstructions(instructions: List[Instruction]): Future[Unit] =
+    codeListsRepository.executeInstructions(instructions)
 
-  def importCodeList(lastUpdated: ZonedDateTime)(codeListConfig: CodeListConfig): Future[Unit] =
-    for {
-      // TODO: Fetch any existing codelist data to use as the initial value
-      // TODO: Choose a representation for the running fold over codelist snapshots
-      outputCodeList <- dpsConnector
-        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
-        .mapConcat(_.elements)
-        .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
-        .runFold(Map.empty[String, CodeListEntry]) { (codeList, codeListSnapshot) =>
-          val currentKeySet  = codeList.keySet
-          val incomingKeySet = codeListSnapshot.entries.map(_.key)
-          val removedEntries = currentKeySet.diff(incomingKeySet)
+  def processEntry(
+    codeListCode: CodeListCode,
+    snapshotVersion: Int,
+    newEntry: CodeListSnapshotEntry
+  ): Instruction = {
+    val updatedEntry: CodeListEntry = CodeListEntry(
+      codeListCode,
+      snapshotVersion,
+      newEntry.key,
+      newEntry.value,
+      newEntry.activeFrom,
+      None,
+      newEntry.updatedAt,
+      newEntry.properties
+    )
 
-          codeList
+    newEntry.operation match {
+      case Some(Create)     => UpsertEntry(updatedEntry)
+      case Some(Update)     => UpsertEntry(updatedEntry)
+      case Some(Invalidate) => InvalidateEntry(updatedEntry)
+      case Some(Delete)     => InvalidateEntry(updatedEntry)
+      case None             => UpsertEntry(updatedEntry)
+    }
+  }
+
+  def processSnapshot(
+    codeListConfig: CodeListConfig,
+    newSnapshot: CodeListSnapshot
+  ): Future[Unit] =
+    fetchCurrentEntries(codeListConfig.code).flatMap { currentKeySet =>
+      val incomingKeySet = newSnapshot.entries.map(_.key)
+      val mergedKeySet   = currentKeySet.union(incomingKeySet)
+
+      val groupedEntries = newSnapshot.entries.toList.groupBy(_.key)
+
+      val instructions = List.newBuilder[Instruction]
+
+      for (key <- mergedKeySet) {
+        val hasExistingEntry = currentKeySet.contains(key)
+        val maybeNewEntries  = groupedEntries.get(key)
+
+        // In case of multiple entries for a given key with the same activation date,
+        // the one with the latest modification timestamp is used.
+        val entriesByDate = maybeNewEntries.map { newEntries =>
+          newEntries
+            .groupBy(_.activeFrom) // Group by activation date
+            .view
+            .mapValues(_.maxBy(_.updatedAt)) // Pick the latest modification
+            .values
+            .toSet
         }
-      // TODO: Insert the updated codelist data
-    } yield ()
+
+        (hasExistingEntry, entriesByDate) match {
+          case (_, Some(newEntries)) =>
+            instructions ++= newEntries.map(
+              processEntry(codeListConfig.code, newSnapshot.version, _)
+            )
+
+          case (true, None) =>
+            // DPS provides no snapshot dates:
+            // the best we can do with removed entries is to use the start of today as their deactivation date
+            val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
+            instructions += RecordMissingEntry(key, startOfToday.toInstant)
+
+          case _ =>
+            throw IllegalStateException(
+              "Impossible case - we have neither a new nor existing entry for a key"
+            )
+        }
+      }
+
+      executeInstructions(instructions.result())
+    }
+
+  def importCodeList(lastUpdated: ZonedDateTime, codeListConfig: CodeListConfig): Future[Unit] =
+    dpsConnector
+      .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
+      .mapConcat(_.elements)
+      .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
+      .mapAsync(1)(processSnapshot(codeListConfig, _))
+      .withAttributes(ActorAttributes.withSupervisionStrategy(Supervision.stoppingDecider))
+      .run()
+      .map(_ => ())
 
   def importCodeLists(): Future[Unit] =
     for {
@@ -76,7 +146,7 @@ class ImportCodeListsJob @Inject() (
       lastUpdated = storedLastUpdated.map(_.atZone(ZoneOffset.UTC)).getOrElse(defaultLastUpdated)
       // Import all configured code lists
       _ <- Source(appConfig.codeListConfigs)
-        .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList(lastUpdated))
+        .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList(lastUpdated, _))
         .run()
     } yield ()
 
