@@ -28,8 +28,8 @@ import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{
-  Authorization,
   HeaderCarrier,
+  HeaderNames,
   HttpReads,
   Retries,
   StringContextOps,
@@ -53,15 +53,14 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   private val base64Encoder = Base64.getEncoder
   private val dateFormatter = DateTimeFormatter.ISO_INSTANT
 
-  private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath}"
+  private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath.split('/')}"
 
-  private def headerCarrierWithAuth(hc: HeaderCarrier) = {
+  private lazy val basicAuthSecret = {
     val clientIdAndSecret =
       s"${appConfig.dpsClientId}:${appConfig.dpsClientSecret}"
     val authSecret =
       base64Encoder.encodeToString(clientIdAndSecret.getBytes(StandardCharsets.UTF_8))
-
-    hc.copy(authorization = Some(Authorization(s"Basic $authSecret")))
+    s"Basic $authSecret"
   }
 
   private def fetchCodeListSnapshot(
@@ -86,8 +85,11 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       case Upstream5xxResponse(_) => true
     } {
       httpClient
-        .get(dpsUrl)(headerCarrierWithAuth(HeaderCarrier()))
-        .setHeader("correlationId" -> UUID.randomUUID().toString)
+        .get(dpsUrl)(HeaderCarrier())
+        .setHeader(
+          "correlationId"           -> UUID.randomUUID().toString,
+          HeaderNames.authorisation -> basicAuthSecret
+        )
         .execute[CodeListResponse](using throwOnFailure(readEitherOf[CodeListResponse]), ec)
     }
   }
@@ -111,8 +113,11 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     val queryParams = Map("code_list_code" -> code.code)
     val dpsUrl      = url"${appConfig.dpsUrl}/${appConfig.dpsPath}?$queryParams"
     httpClient
-      .get(dpsUrl)(headerCarrierWithAuth(hc))
-      .setHeader("correlationId" -> UUID.randomUUID().toString)
+      .get(dpsUrl)
+      .setHeader(
+        "correlationId"           -> UUID.randomUUID().toString,
+        HeaderNames.authorisation -> basicAuthSecret
+      )
       .execute[Either[UpstreamErrorResponse, CodeListResponse]]
   }
 }

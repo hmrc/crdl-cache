@@ -16,6 +16,9 @@
 
 package uk.gov.hmrc.crdlcache.repositories
 
+import org.mongodb.scala.*
+import org.mongodb.scala.model.Filters.*
+import org.mongodb.scala.model.{Filters, Sorts}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
@@ -23,19 +26,16 @@ import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
 import uk.gov.hmrc.crdlcache.models.CodeListEntry
+import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.mongo.test.{
   CleanMongoCollectionSupport,
   IndexedMongoQueriesSupport,
   PlayMongoRepositorySupport
 }
-import org.mongodb.scala.*
-import org.mongodb.scala.model.{Filters, Sorts}
-import org.mongodb.scala.model.Filters.{and, equal, exists, lt, or}
-import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 
-import scala.concurrent.duration.*
 import java.time.Instant
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.*
 
 class CodeListsRepositorySpec
   extends AnyFlatSpec

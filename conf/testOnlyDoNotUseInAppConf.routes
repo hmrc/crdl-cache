@@ -11,3 +11,6 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
+
+POST       /test-only/codelists          uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCodeLists()
+DELETE     /test-only/codelists          uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCodeLists()

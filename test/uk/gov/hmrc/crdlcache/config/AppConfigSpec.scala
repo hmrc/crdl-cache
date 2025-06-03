@@ -32,7 +32,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "appName"                                    -> "crdl-cache",
         "microservice.services.dps-api.host"         -> "localhost",
         "microservice.services.dps-api.port"         -> 7255,
-        "microservice.services.dps-api.path"         -> "/views/iv_crdl_reference_data",
+        "microservice.services.dps-api.path"         -> "views/iv_crdl_reference_data",
         "microservice.services.dps-api.clientId"     -> "abc123",
         "microservice.services.dps-api.clientSecret" -> "def456",
         "import-codelists.schedule"                  -> "*/10 * * * * ?",
@@ -47,7 +47,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.appName mustBe "crdl-cache"
 
     appConfig.dpsUrl mustBe "http://localhost:7255"
-    appConfig.dpsPath mustBe "/views/iv_crdl_reference_data"
+    appConfig.dpsPath mustBe "views/iv_crdl_reference_data"
     appConfig.dpsClientId mustBe "abc123"
     appConfig.dpsClientSecret mustBe "def456"
 
@@ -64,7 +64,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.appName mustBe "crdl-cache"
 
     appConfig.dpsUrl mustBe "http://localhost:7253"
-    appConfig.dpsPath mustBe "/crdl-ref-data-dps-stub/iv_crdl_reference_data/"
+    appConfig.dpsPath mustBe "crdl-ref-data-dps-stub/iv_crdl_reference_data/"
     appConfig.dpsClientId mustBe "client_id_must_be_set_in_app-config-xxx"
     appConfig.dpsClientSecret mustBe "client_secret_must_be_set_in_app-config-xxx"
 
