@@ -81,7 +81,9 @@ class ImportCodeListsJob @Inject() (
     codeListConfig: CodeListConfig,
     newSnapshot: CodeListSnapshot
   ): Future[List[Instruction]] = {
-    logger.info(s"Importing ${codeListConfig.origin} codelist ${codeListConfig.code}")
+    logger.info(
+      s"Importing ${codeListConfig.origin} codelist ${codeListConfig.code} (${newSnapshot.name}) version ${newSnapshot.version}"
+    )
 
     fetchCurrentEntries(codeListConfig.code).map { currentKeySet =>
       val incomingKeySet = newSnapshot.entries.map(_.key)
