@@ -21,6 +21,7 @@
         </encoder>
     </appender>
 
+    <logger name="org.quartz" level="INFO"/>
 
     <logger name="com.google.inject" level="INFO"/>
 
@@ -28,7 +29,7 @@
 
     <logger name="application" level="DEBUG"/>
 
-    <logger name="connector" level="TRACE">
+    <logger name="connector" level="TRACE" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 

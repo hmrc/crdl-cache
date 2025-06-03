@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.schedulers
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import org.quartz
+import org.quartz.Job
+import org.quartz.spi.{JobFactory, TriggerFiredBundle}
+import play.api.inject.Injector
 
-import java.time.Clock
+import javax.inject.{Inject, Singleton}
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
+@Singleton
+class ScheduledJobFactory @Inject() (injector: Injector) extends JobFactory {
+  override def newJob(bundle: TriggerFiredBundle, scheduler: quartz.Scheduler): Job =
+    injector.instanceOf(bundle.getJobDetail.getJobClass)
 }

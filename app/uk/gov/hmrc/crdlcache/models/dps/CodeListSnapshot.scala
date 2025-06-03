@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models.dps
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.models.CodeListCode
 
-import java.time.Clock
+case class CodeListSnapshot(
+  code_list_code: CodeListCode,
+  code_list_name: String,
+  snapshotversion: Int,
+  rdentry: List[CodeListEntry]
+)
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
+object CodeListSnapshot {
+  given Reads[CodeListSnapshot] = Json.reads[CodeListSnapshot]
 }

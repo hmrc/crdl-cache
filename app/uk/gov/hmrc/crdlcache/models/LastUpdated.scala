@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
-import java.time.Clock
+import java.time.Instant
 
-class Module extends AbstractModule {
+case class LastUpdated(date: Instant)
 
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
+object LastUpdated extends MongoJavatimeFormats.Implicits {
+  given format: Format[LastUpdated] = Json.format[LastUpdated]
 }

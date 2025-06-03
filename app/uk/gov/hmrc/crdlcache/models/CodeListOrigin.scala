@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+enum CodeListOrigin {
+  case SEED
+  case CSRD2
 
-import java.time.Clock
+  def activeDateProperty: String = this match {
+    case SEED  => "Action_ActivationDate"
+    case CSRD2 => "RDEntry_activeFrom"
+  }
 
-class Module extends AbstractModule {
+  def modificationDateProperty: Option[String] = this match {
+    case SEED  => Some("Action_ModificationDateAndTime")
+    case CSRD2 => None
+  }
 
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[JobScheduler]).asEagerSingleton()
+  def operationProperty: Option[String] = this match {
+    case SEED  => Some("Action_Operation")
+    case CSRD2 => None
   }
 }

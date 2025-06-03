@@ -16,37 +16,108 @@
 
 package uk.gov.hmrc.crdlcache.connectors
 
+import com.typesafe.config.Config
+import org.apache.pekko.NotUsed
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.scaladsl
+import org.apache.pekko.stream.scaladsl.Source
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode
 import uk.gov.hmrc.crdlcache.models.dps.CodeListResponse
-import uk.gov.hmrc.http.{Authorization, HeaderCarrier, StringContextOps, UpstreamErrorResponse}
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads.Implicits.*
+import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{
+  HeaderCarrier,
+  HeaderNames,
+  HttpReads,
+  Retries,
+  StringContextOps,
+  UpstreamErrorResponse
+}
 
 import java.nio.charset.StandardCharsets
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import java.util.{Base64, UUID}
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig) {
+@Singleton
+class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(using
+  system: ActorSystem
+) extends Retries {
+  override protected def actorSystem: ActorSystem = system
+  override protected def configuration: Config    = appConfig.config.underlying
 
   private val base64Encoder = Base64.getEncoder
+  private val dateFormatter = DateTimeFormatter.ISO_INSTANT
 
-  def fetchCodelist(code: CodeListCode)(using
+  private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath.split('/')}"
+
+  private lazy val basicAuthSecret = {
+    val clientIdAndSecret =
+      s"${appConfig.dpsClientId}:${appConfig.dpsClientSecret}"
+    val authSecret =
+      base64Encoder.encodeToString(clientIdAndSecret.getBytes(StandardCharsets.UTF_8))
+    s"Basic $authSecret"
+  }
+
+  private def fetchCodeListSnapshot(
+    code: CodeListCode,
+    lastUpdatedDate: Instant,
+    startIndex: Int
+  )(using ec: ExecutionContext): Future[CodeListResponse] = {
+    val queryParams = Map(
+      "code_list_code"    -> code.code,
+      "last_updated_date" -> dateFormatter.format(lastUpdatedDate),
+      "$start_index"      -> startIndex,
+      "$count"            -> 10,
+      "$orderby"          -> "snapshotversion ASC"
+    )
+
+    val dpsUrl = url"$baseUrl?$queryParams"
+
+    retryFor(s"fetch of $code snapshots at index $startIndex as of $lastUpdatedDate") {
+      // No point in retrying if our request is wrong
+      case Upstream4xxResponse(_) => false
+      // Attempt to recover from intermittent connectivity issues
+      case Upstream5xxResponse(_) => true
+    } {
+      httpClient
+        .get(dpsUrl)(HeaderCarrier())
+        .setHeader(
+          "correlationId"           -> UUID.randomUUID().toString,
+          HeaderNames.authorisation -> basicAuthSecret
+        )
+        .execute[CodeListResponse](using throwOnFailure(readEitherOf[CodeListResponse]), ec)
+    }
+  }
+
+  def fetchCodeListSnapshots(code: CodeListCode, lastUpdatedDate: Instant)(using
+    ec: ExecutionContext
+  ): Source[CodeListResponse, NotUsed] = Source
+    .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
+      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex).map { response =>
+        if (response.elements.isEmpty)
+          None
+        else
+          Some((startIndex + 10, response))
+      }
+    }
+
+  def fetchCodeList(code: CodeListCode)(using
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): Future[Either[UpstreamErrorResponse, CodeListResponse]] = {
-    val dpsUrl            = url"${appConfig.dpsUrl}/${appConfig.dpsPath}"
-    val clientIdAndSecret = s"${appConfig.dpsClientId}:${appConfig.dpsClientSecret}"
-    val authSecret =
-      base64Encoder.encodeToString(clientIdAndSecret.getBytes(StandardCharsets.UTF_8))
-
-    val headerCarrierWithAuth = hc.copy(authorization = Some(Authorization(s"Basic $authSecret")))
-
+    val queryParams = Map("code_list_code" -> code.code)
+    val dpsUrl      = url"${appConfig.dpsUrl}/${appConfig.dpsPath}?$queryParams"
     httpClient
-      .get(dpsUrl)(headerCarrierWithAuth)
-      .setHeader("correlationId" -> UUID.randomUUID().toString)
-      .transform(_.withQueryStringParameters("code_list_code" -> code.code))
+      .get(dpsUrl)
+      .setHeader(
+        "correlationId"           -> UUID.randomUUID().toString,
+        HeaderNames.authorisation -> basicAuthSecret
+      )
       .execute[Either[UpstreamErrorResponse, CodeListResponse]]
   }
 }

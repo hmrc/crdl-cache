@@ -1,0 +1,34 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.crdlcache.models
+
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
+import uk.gov.hmrc.crdlcache.models.errors.MongoError
+
+class MongoErrorSpec extends AnyFlatSpec with Matchers {
+
+  "MongoError.NotAcknowledged" should "provide the correct exception message and cause" in {
+    MongoError.NotAcknowledged.message mustBe "Mongo write was not acknowledged"
+    MongoError.NotAcknowledged.cause mustBe null
+  }
+
+  "MongoError.NoMatchingDocument" should "provide the correct exception message and cause" in {
+    MongoError.NoMatchingDocument.message mustBe "Mongo update did not match any documents"
+    MongoError.NoMatchingDocument.cause mustBe null
+  }
+}

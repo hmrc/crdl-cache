@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
+import play.api.libs.json.{JsString, Json}
 
-import java.time.Clock
+class OperationSpec extends AnyFlatSpec with Matchers {
+  "Format[Operation]" should "read operations from JSON" in {
+    Operation.values.zip(Operation.codes).foreach { case (value, code) =>
+      Json.fromJson[Operation](JsString(code)).get mustBe value
+    }
+  }
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[JobScheduler]).asEagerSingleton()
+  it should "write operations to JSON" in {
+    Operation.values.zip(Operation.codes).foreach { case (value, code) =>
+      Json.toJson(value) mustBe JsString(code)
+    }
   }
 }

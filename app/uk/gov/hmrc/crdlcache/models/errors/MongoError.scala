@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models.errors
 
-import com.google.inject.AbstractModule
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
-
-import java.time.Clock
-
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[JobScheduler]).asEagerSingleton()
-  }
+enum MongoError(val message: String, val cause: Throwable = null)
+  extends Exception(message, cause) {
+  case NotAcknowledged    extends MongoError("Mongo write was not acknowledged")
+  case NoMatchingDocument extends MongoError("Mongo update did not match any documents")
 }
