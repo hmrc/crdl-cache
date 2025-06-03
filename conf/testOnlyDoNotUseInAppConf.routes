@@ -10,7 +10,8 @@
 # Failing to follow this rule may result in test routes deployed in production.
 
 # Add all the application routes to the prod.routes file
-->         /                          prod.Routes
+->            /                              prod.Routes
 
-POST       /test-only/codelists          uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCodeLists()
-DELETE     /test-only/codelists          uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCodeLists()
+POST          /test-only/codelists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCodeLists()
+DELETE        /test-only/codelists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCodeLists()
+DELETE        /test-only/last-updated        uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteLastUpdated()

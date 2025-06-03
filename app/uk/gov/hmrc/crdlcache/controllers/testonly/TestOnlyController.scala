@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.controllers.testonly
 import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
+import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -30,6 +30,7 @@ import scala.concurrent.ExecutionContext
 class TestOnlyController @Inject() (
   cc: ControllerComponents,
   jobScheduler: JobScheduler,
+  lastUpdatedRepository: LastUpdatedRepository,
   codeListsRepository: CodeListsRepository
 )(using ec: ExecutionContext)
   extends BackendController(cc) {
@@ -41,6 +42,13 @@ class TestOnlyController @Inject() (
 
   def deleteCodeLists(): Action[AnyContent] = Action.async {
     codeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
+      case result if result.wasAcknowledged() => Ok
+      case _                                  => InternalServerError
+    }
+  }
+
+  def deleteLastUpdated(): Action[AnyContent] = Action.async {
+    lastUpdatedRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
       case _                                  => InternalServerError
     }
