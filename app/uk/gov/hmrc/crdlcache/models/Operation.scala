@@ -24,8 +24,6 @@ enum Operation(val code: String) {
   case Delete     extends Operation("D")
   case Invalidate extends Operation("I")
 
-  def isCreateOrUpdate  = this == Create || this == Update
-  def isDeleteOperation = this == Delete || this == Invalidate
 }
 
 object Operation {

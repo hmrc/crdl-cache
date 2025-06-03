@@ -22,6 +22,7 @@ sealed abstract class CodeListCode(val code: String) extends Product with Serial
 
 object CodeListCode {
   case object BC08                              extends CodeListCode("BC08")
+  case object BC66                              extends CodeListCode("BC66")
   case class Unknown(override val code: String) extends CodeListCode(code)
 
   private val values: Set[CodeListCode]        = Set(BC08)

@@ -23,7 +23,12 @@ import uk.gov.hmrc.crdlcache.config.CodeListConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Update}
-import uk.gov.hmrc.crdlcache.models.errors.ImportError.{LanguageDescriptionMissing, RequiredDataItemMissing, RequiredDataItemsMissing, UnknownOperation}
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
+  LanguageDescriptionMissing,
+  RequiredDataItemMissing,
+  RequiredDataItemsMissing,
+  UnknownOperation
+}
 
 import java.time.Instant
 
@@ -140,7 +145,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       List(
         dps.DataItem(BC08Config.keyProperty, Some("AW")),
         dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-        dps.DataItem("Action_Operation", Some("C")),
+        dps.DataItem("Action_Operation", Some("C"))
       ),
       List(dps.LanguageDescription("en", "Aruba"))
     )

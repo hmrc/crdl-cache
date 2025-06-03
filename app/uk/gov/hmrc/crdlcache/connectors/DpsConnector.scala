@@ -37,7 +37,7 @@ import uk.gov.hmrc.http.{
 }
 
 import java.nio.charset.StandardCharsets
-import java.time.ZonedDateTime
+import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.{Base64, UUID}
 import javax.inject.{Inject, Singleton}
@@ -51,7 +51,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   override protected def configuration: Config    = appConfig.config.underlying
 
   private val base64Encoder = Base64.getEncoder
-  private val dateFormatter = DateTimeFormatter.ISO_DATE_TIME
+  private val dateFormatter = DateTimeFormatter.ISO_INSTANT
 
   private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath}"
 
@@ -66,7 +66,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
 
   private def fetchCodeListSnapshot(
     code: CodeListCode,
-    lastUpdatedDate: ZonedDateTime,
+    lastUpdatedDate: Instant,
     startIndex: Int
   )(using ec: ExecutionContext): Future[CodeListResponse] = {
     val queryParams = Map(
@@ -92,7 +92,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     }
   }
 
-  def fetchCodeListSnapshots(code: CodeListCode, lastUpdatedDate: ZonedDateTime)(using
+  def fetchCodeListSnapshots(code: CodeListCode, lastUpdatedDate: Instant)(using
     ec: ExecutionContext
   ): Source[CodeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CodeListResponse](0) { startIndex =>

@@ -26,7 +26,6 @@ import java.time.Instant
 class CodeListEntrySpec extends AnyFlatSpec with Matchers with TestData {
   private val sampleEntry = CodeListEntry(
     BC08,
-    1,
     "AW",
     "Aruba",
     Instant.parse("2024-01-17T00:00:00Z"),
@@ -39,10 +38,9 @@ class CodeListEntrySpec extends AnyFlatSpec with Matchers with TestData {
   )
 
   private val mongoJson = Json.obj(
-    "codeListCode"    -> "BC08",
-    "snapshotVersion" -> 1,
-    "key"             -> "AW",
-    "value"           -> "Aruba",
+    "codeListCode" -> "BC08",
+    "key"          -> "AW",
+    "value"        -> "Aruba",
     "activeFrom" -> Json.obj(
       "$date" -> Json.obj("$numberLong" -> sampleEntry.activeFrom.toEpochMilli.toString)
     ),

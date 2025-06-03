@@ -262,7 +262,7 @@ class DpsConnectorSpec
   }
 
   "DPSConnector.fetchCodelistSnapshots" should "produce a CodeListResponse for each page of codelist snapshots" in {
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     // Page 1
     stubFor(
@@ -319,7 +319,7 @@ class DpsConnectorSpec
   }
 
   it should "throw UpstreamErrorResponse when there is a client error in the first page" in {
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
@@ -341,7 +341,7 @@ class DpsConnectorSpec
   }
 
   it should "throw UpstreamErrorResponse when there is a server error in the first page" in {
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     stubFor(
       get(urlPathEqualTo("/iv_crdl_reference_data"))
@@ -363,7 +363,7 @@ class DpsConnectorSpec
   }
 
   it should "throw UpstreamErrorResponse when there is a client error in the second page" in {
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     // Page 1
     stubFor(
@@ -401,7 +401,7 @@ class DpsConnectorSpec
   }
 
   it should "throw UpstreamErrorResponse when there is a server error in the second page" in {
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     // Page 1
     stubFor(
@@ -441,7 +441,7 @@ class DpsConnectorSpec
   it should "not retry when there is a client error while fetching a page" in {
     val retryScenario   = "Retry"
     val failedState     = "Failed"
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     // Page 1 (Bad Request)
     stubFor(
@@ -486,7 +486,7 @@ class DpsConnectorSpec
   it should "retry when there is a server error while fetching a page" in {
     val retryScenario   = "Retry"
     val failedState     = "Failed"
-    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC)
+    val lastUpdatedDate = LocalDate.of(2025, 5, 28).atStartOfDay(ZoneOffset.UTC).toInstant
 
     // Page 1 (Internal Server Error)
     stubFor(

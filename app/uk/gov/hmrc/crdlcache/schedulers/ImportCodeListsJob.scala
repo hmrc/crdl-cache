@@ -29,7 +29,7 @@ import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Updat
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-import java.time.{Clock, LocalDate, ZoneOffset, ZonedDateTime}
+import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -49,19 +49,17 @@ class ImportCodeListsJob @Inject() (
   val ttl: Duration  = 1.hour
 
   def fetchCurrentEntries(codeListCode: CodeListCode): Future[Set[String]] =
-    codeListsRepository.fetchCodeListEntries(codeListCode).map(_.map(_.key))
+    codeListsRepository.fetchCodeListEntryKeys(codeListCode)
 
   def executeInstructions(instructions: List[Instruction]): Future[Unit] =
     codeListsRepository.executeInstructions(instructions)
 
   def processEntry(
     codeListCode: CodeListCode,
-    snapshotVersion: Int,
     newEntry: CodeListSnapshotEntry
   ): Instruction = {
     val updatedEntry: CodeListEntry = CodeListEntry(
       codeListCode,
-      snapshotVersion,
       newEntry.key,
       newEntry.value,
       newEntry.activeFrom,
@@ -109,14 +107,14 @@ class ImportCodeListsJob @Inject() (
         (hasExistingEntry, entriesByDate) match {
           case (_, Some(newEntries)) =>
             instructions ++= newEntries.map(
-              processEntry(codeListConfig.code, newSnapshot.version, _)
+              processEntry(codeListConfig.code, _)
             )
 
           case (true, None) =>
             // DPS provides no snapshot dates:
             // the best we can do with removed entries is to use the start of today as their deactivation date
             val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
-            instructions += RecordMissingEntry(key, startOfToday.toInstant)
+            instructions += RecordMissingEntry(codeListConfig.code, key, startOfToday.toInstant)
 
           case _ =>
             throw IllegalStateException(
@@ -128,7 +126,7 @@ class ImportCodeListsJob @Inject() (
       executeInstructions(instructions.result())
     }
 
-  def importCodeList(lastUpdated: ZonedDateTime, codeListConfig: CodeListConfig): Future[Unit] =
+  def importCodeList(lastUpdated: Instant, codeListConfig: CodeListConfig): Future[Unit] =
     dpsConnector
       .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
       .mapConcat(_.elements)
@@ -142,8 +140,8 @@ class ImportCodeListsJob @Inject() (
     for {
       // Fetch last updated date
       storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated()
-      defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC)
-      lastUpdated = storedLastUpdated.map(_.atZone(ZoneOffset.UTC)).getOrElse(defaultLastUpdated)
+      defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
+      lastUpdated        = storedLastUpdated.getOrElse(defaultLastUpdated)
       // Import all configured code lists
       _ <- Source(appConfig.codeListConfigs)
         .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList(lastUpdated, _))

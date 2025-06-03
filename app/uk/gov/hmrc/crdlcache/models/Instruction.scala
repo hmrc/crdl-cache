@@ -22,12 +22,12 @@ enum Instruction {
   case UpsertEntry(codeListEntry: CodeListEntry)
   case InvalidateEntry(codeListEntry: CodeListEntry)
   // case DeleteEntry(codeListEntry: CodeListEntry)
-  case RecordMissingEntry(key: String, removedAt: Instant)
+  case RecordMissingEntry(codeListCode: CodeListCode, key: String, removedAt: Instant)
 
   def activeFrom = this match {
     case Instruction.UpsertEntry(codeListEntry)     => codeListEntry.activeFrom
     case Instruction.InvalidateEntry(codeListEntry) => codeListEntry.activeFrom
     // case Instruction.DeleteEntry(codeListEntry)     => codeListEntry.activeFrom
-    case Instruction.RecordMissingEntry(_, removedAt) => removedAt
+    case Instruction.RecordMissingEntry(_, _, removedAt) => removedAt
   }
 }

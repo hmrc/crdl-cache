@@ -23,7 +23,7 @@ import uk.gov.hmrc.crdlcache.models.LastUpdated
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-
+import org.mongodb.scala.*
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,7 +52,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
         Updates.set("date", instant),
         UpdateOptions().upsert(true)
       )
-      .head()
+      .toFuture()
       .map { result =>
         if (!result.wasAcknowledged())
           throw MongoError.NotAcknowledged
