@@ -55,7 +55,7 @@ class CodeListsRepositorySpec
   override given patienceConfig: PatienceConfig =
     PatienceConfig(timeout = 30.seconds, interval = 100.millis)
 
-  val existingCzechEntry = CodeListEntry(
+  private val existingCzechEntry = CodeListEntry(
     BC08,
     "CZ",
     "Czech Republic",
@@ -67,7 +67,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val activeCodelistEntries = Seq(
+  private val activeCodelistEntries = Seq(
     CodeListEntry(
       BC08,
       "AW",
@@ -103,7 +103,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val differentCodeListEntries = Seq(
+  private val differentCodeListEntries = Seq(
     CodeListEntry(
       BC66,
       "B",
@@ -117,7 +117,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val supersededCodeListEntries = Seq(
+  private val supersededCodeListEntries = Seq(
     CodeListEntry(
       BC08,
       "BL",
@@ -131,20 +131,21 @@ class CodeListsRepositorySpec
     )
   )
 
-  val invalidatedIoEntry =
+  private val invalidatedIoEntry =
     CodeListEntry(
       BC08,
       "IO",
       "British Indian Ocean Territory",
       Instant.parse("2024-01-31T00:00:00Z"),
-      Some(Instant.parse("2025-05-22T00:00:00Z")),
+      // We don't know exactly when / if IO will cease to be used
+      Some(Instant.parse("2026-05-22T00:00:00Z")),
       Some(Instant.parse("2025-05-21T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "1024"
       )
     )
 
-  val activeIoEntry = CodeListEntry(
+  private val activeIoEntry = CodeListEntry(
     BC08,
     "IO",
     "British Indian Ocean Territory",
@@ -156,7 +157,19 @@ class CodeListsRepositorySpec
     )
   )
 
-  val updatedCzechEntry = CodeListEntry(
+  private val postDatedEntry = CodeListEntry(
+    BC08,
+    "QZ",
+    "Disputed Western Territories",
+    Instant.parse("2026-06-05T00:00:00Z"),
+    None,
+    None,
+    Json.obj(
+      "actionIdentification" -> "9999"
+    )
+  )
+
+  private val updatedCzechEntry = CodeListEntry(
     BC08,
     "CZ",
     "Czechia",
@@ -168,7 +181,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val newCountryEntry = CodeListEntry(
+  private val newCountryEntry = CodeListEntry(
     BC08,
     "SS",
     "South Sudan",
@@ -185,8 +198,10 @@ class CodeListsRepositorySpec
     test
   }
 
-  val codelistEntries =
-    activeCodelistEntries ++ differentCodeListEntries ++ supersededCodeListEntries :+ invalidatedIoEntry
+  private val entriesWithNoEndDate = activeCodelistEntries :+ postDatedEntry
+
+  private val codelistEntries =
+    activeCodelistEntries ++ differentCodeListEntries ++ supersededCodeListEntries :+ invalidatedIoEntry :+ postDatedEntry
 
   "CodeListsRepository.fetchCodeListEntryKeys" should "return entries that have been superseded" in withCodeListEntries(
     codelistEntries
@@ -203,9 +218,45 @@ class CodeListsRepositorySpec
   }
 
   it should "contain the active code list entry keys" in withCodeListEntries(codelistEntries) {
-    repository.fetchCodeListEntryKeys(BC08).futureValue mustBe activeCodelistEntries
+    repository
+      .fetchCodeListEntryKeys(BC08)
+      .futureValue mustBe entriesWithNoEndDate
       .map(_.key)
       .toSet
+  }
+
+  "CodeListsRepository.fetchCodeListEntries" should "return the codelist entries whose activeFrom date is before the requested date" in withCodeListEntries(
+    codelistEntries
+  ) {
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .futureValue must contain allElementsOf activeCodelistEntries
+  }
+
+  it should "not return entries from other lists" in withCodeListEntries(codelistEntries) {
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .futureValue must contain noElementsOf differentCodeListEntries
+  }
+
+  it should "not return entries that have been superseded" in withCodeListEntries(codelistEntries) {
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .futureValue must contain noElementsOf supersededCodeListEntries
+  }
+
+  it should "not return entries that are not yet active" in withCodeListEntries(codelistEntries) {
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .futureValue mustNot contain(postDatedEntry)
+  }
+
+  it should "return entries that have been invalidated if the invalidation date is in the future" in withCodeListEntries(
+    codelistEntries
+  ) {
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .futureValue must contain(invalidatedIoEntry)
   }
 
   "CodeListsRepository.executeInstructions" should "invalidate existing entries" in withCodeListEntries(
