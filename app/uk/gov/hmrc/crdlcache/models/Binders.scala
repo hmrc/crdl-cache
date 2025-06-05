@@ -14,23 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.controllers
+package uk.gov.hmrc.crdlcache.models
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status
-import play.api.test.Helpers._
-import play.api.test.{FakeRequest, Helpers}
+import play.api.mvc.QueryStringBindable
 
-class CodeListsControllerSpec extends AnyWordSpec with Matchers {
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
-  private val fakeRequest = FakeRequest("GET", "/")
-  private val controller  = new CodeListsController(Helpers.stubControllerComponents())
+object Binders {
+  private val formatter = DateTimeFormatter.ISO_INSTANT
 
-  "GET /" should {
-    "return 200" in {
-      val result = controller.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
-    }
-  }
+  given bindableInstant: QueryStringBindable[Instant] = new QueryStringBindable.Parsing[Instant](
+    Instant.parse,
+    formatter.format,
+    (key, e) => s"Cannot parse parameter $key as Instant: ${e.getMessage}"
+  )
 }

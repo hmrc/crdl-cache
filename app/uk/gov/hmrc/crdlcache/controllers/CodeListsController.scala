@@ -16,15 +16,32 @@
 
 package uk.gov.hmrc.crdlcache.controllers
 
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
+import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 @Singleton()
-class CodeListsController @Inject() (cc: ControllerComponents) extends BackendController(cc) {
+class CodeListsController @Inject() (
+  cc: ControllerComponents,
+  codeListsRepository: CodeListsRepository,
+  clock: Clock
+)(using ec: ExecutionContext)
+  extends BackendController(cc) {
 
-  def hello(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok("Hello world"))
+  def fetchCodeListEntries(
+    codeListCode: CodeListCode,
+    activeAt: Option[Instant]
+  ): Action[AnyContent] = Action.async { _ =>
+    codeListsRepository
+      .fetchCodeListEntries(codeListCode, activeAt.getOrElse(clock.instant()))
+      .map { entries =>
+        Ok(Json.toJson(entries))
+      }
   }
 }
