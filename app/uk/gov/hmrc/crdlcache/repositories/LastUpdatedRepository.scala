@@ -19,11 +19,13 @@ package uk.gov.hmrc.crdlcache.repositories
 import com.mongodb.client.model.{IndexModel, UpdateOptions}
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.{Filters, Updates}
-import uk.gov.hmrc.crdlcache.models.LastUpdated
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.*
+import org.mongodb.scala.model.Filters.equal
+
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,14 +43,18 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
   // This is a single-document collection
   override lazy val requiresTtlIndex: Boolean = false
 
-  def fetchLastUpdated(): Future[Option[Instant]] = {
-    collection.find().headOption().map(_.map(_.date))
+  def fetchLastUpdated(code: CodeListCode): Future[Option[Instant]] = {
+    collection.find(equal("codeListCode", code.code)).headOption().map(_.map(_.date))
   }
 
-  def setLastUpdated(instant: Instant): Future[Unit] = {
+  def fetchAllLastUpdated(): Future[Seq[LastUpdated]] = {
+    collection.find().toFuture()
+  }
+
+  def setLastUpdated(code: CodeListCode, instant: Instant): Future[Unit] = {
     collection
       .updateOne(
-        Filters.empty(),
+        equal("codeListCode", code.code),
         Updates.set("date", instant),
         UpdateOptions().upsert(true)
       )

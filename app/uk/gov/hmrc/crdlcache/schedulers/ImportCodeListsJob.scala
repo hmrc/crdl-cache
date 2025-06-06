@@ -29,7 +29,7 @@ import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Updat
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 
-import java.time.{Clock, Instant, LocalDate, ZoneOffset}
+import java.time.{Clock, LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -45,14 +45,18 @@ class ImportCodeListsJob @Inject() (
   extends Job
   with LockService
   with Logging {
-  val lockId: String = "import-code-lists"
-  val ttl: Duration  = 1.hour
+  val lockId: String     = "import-code-lists"
+  val ttl: Duration      = 1.hour
+  val defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
 
   private def fetchCurrentEntries(codeListCode: CodeListCode): Future[Set[String]] =
     codeListsRepository.fetchCodeListEntryKeys(codeListCode)
 
   private def executeInstructions(instructions: List[Instruction]): Future[Unit] =
     codeListsRepository.executeInstructions(instructions)
+
+  private def updateLastUpdated(codeListCode: CodeListCode): Future[Unit] =
+    lastUpdatedRepository.setLastUpdated(codeListCode, clock.instant())
 
   private[schedulers] def processEntry(
     codeListCode: CodeListCode,
@@ -131,37 +135,35 @@ class ImportCodeListsJob @Inject() (
     }
   }
 
-  private def importCodeList(lastUpdated: Instant, codeListConfig: CodeListConfig): Future[Unit] =
-    dpsConnector
-      .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
-      .delay(1.second, DelayOverflowStrategy.backpressure)
-      .mapConcat(_.elements)
-      .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
-      .mapAsync(1)(processSnapshot(codeListConfig, _))
-      .mapAsync(1)(executeInstructions)
-      .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
-        logger.error("Stopping codelist import job due to exception", err)
-        Supervision.stop
-      })
-      .run()
-      .map(_ => ())
+  private def importCodeList(codeListConfig: CodeListConfig): Future[Unit] = {
+    for {
+      // Fetch last updated timestamp
+      storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
+      lastUpdated = storedLastUpdated.getOrElse(defaultLastUpdated)
+      _ <- dpsConnector
+        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
+        .delay(1.second, DelayOverflowStrategy.backpressure)
+        .mapConcat(_.elements)
+        .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
+        .mapAsync(1)(processSnapshot(codeListConfig, _))
+        .mapAsync(1)(executeInstructions)
+        .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
+          logger.error("Stopping codelist import job due to exception", err)
+          Supervision.stop
+        })
+        .run()
+      // Update the last updated timestamp
+      _ <- updateLastUpdated(codeListConfig.code)
+    } yield ()
+  }
 
   private[schedulers] def importCodeLists(): Future[Unit] =
     for {
-      // Fetch last updated timestamp
-      storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated()
-      defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
-      lastUpdated        = storedLastUpdated.getOrElse(defaultLastUpdated)
-
-      _ = logger.info(s"Importing codelists from DPS with last updated timestamp ${lastUpdated}")
 
       // Import all configured code lists
       _ <- Source(appConfig.codeListConfigs)
-        .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList(lastUpdated, _))
+        .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
         .run()
-      // Update the last updated timestamp
-      _ <- lastUpdatedRepository.setLastUpdated(clock.instant())
-
       _ = logger.info("Importing codelists completed successfully")
 
     } yield ()
