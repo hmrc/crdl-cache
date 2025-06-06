@@ -1,0 +1,107 @@
+openapi: 3.1.0
+
+info:
+  version: 1.0.0
+  title: CRDL Reference Data API
+  description: |
+    This service provides an API and caching layer for transit and excise reference data.
+    
+    The data originates from the EU CS/RD2 and SEED reference data systems and is hosted at DPS (Data Platform Services).
+    
+    This service exists to reduce the load on the DPS reference data APIs by caching reference data within MDTP.
+
+servers:
+  - url: http://localhost:7252/crdl-cache
+    description: Local
+  - url: https://crdl-cache.protected.mdtp/crdl-cache
+    description: MDTP
+
+components:
+  responses:
+    badRequest:
+      description: Bad Request
+      summary: |
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - status
+              - message
+            properties:
+              status:
+                type: number
+                description: The HTTP status code of the response.
+                minimum: 100
+                maximum: 599
+                examples:
+                  - 400
+              message:
+                type: string
+                description: The message indicating the cause of the bad request status.
+                examples:
+                  - "bad request, cause: REDACTED"
+
+paths:
+  /lists/{code}:
+    get:
+      summary: Fetch Codelist Entries
+      description: |
+        This endpoint is used to fetch entries of a reference data codelist.
+      parameters:
+        - name: code
+          in: path
+          description: A unique code identifying a reference data codelist.
+          required: true
+          schema:
+            type: string
+            example: BC08
+            examples:
+              - BC08
+              - BC36
+              - CL239
+        - name: activeAt
+          in: query
+          description: |
+            The timestamp at which to view entries. If omitted the current timestamp is used.
+            Historical data support is best-effort only as it requires cooperation from the DPS API.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2025-06-05T00:00:00Z"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - key
+                    - value
+                    - properties
+                  additionalProperties: false
+                  properties:
+                    key:
+                      type: string
+                      description: The unique key of the codelist entry.
+                      examples:
+                        - BM
+                    value:
+                      type: string
+                      description: The description of the codelist entry.
+                      examples:
+                        - Bermuda
+                    properties:
+                      type: object
+                      description: Feed-specific and codelist-specific properties.
+                      examples:
+                        - actionIdentification: "823"
+
+        400:
+          $ref: "#/components/responses/badRequest"
+
+
