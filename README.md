@@ -8,8 +8,6 @@ This service exists to reduce the load on the DPS reference data APIs by caching
 
 ## Usage
 
-[API Documentation (1.0)](https://cdn.jsdelivr.net/gh/hmrc/crdl-cache@main/public/api/1.0/doc.html)
-
 ### Fetch Codelist Entries
 
 This endpoint is used to fetch entries of a reference data codelist.
