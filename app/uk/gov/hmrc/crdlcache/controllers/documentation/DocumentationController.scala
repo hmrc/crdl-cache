@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.controllers
+package uk.gov.hmrc.crdlcache.controllers.documentation
 
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.views

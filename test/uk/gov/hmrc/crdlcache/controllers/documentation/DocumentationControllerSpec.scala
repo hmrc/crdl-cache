@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.controllers
+package uk.gov.hmrc.crdlcache.controllers.documentation
 
 import controllers.AssetsFinder
 import org.mockito.Mockito.when
