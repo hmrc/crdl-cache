@@ -17,7 +17,7 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, Updates}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, Sorts, Updates}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, Instruction}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -57,12 +57,24 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
       .find(
         and(
           equal("codeListCode", code.code),
-          or(equal("activeTo", null), exists("activeTo", false))
+          equal("activeTo", null)
         )
       )
       .map(_.key)
       .toFuture
       .map(_.toSet)
+
+  def fetchCodeListEntries(code: CodeListCode, activeAt: Instant): Future[Seq[CodeListEntry]] =
+    collection
+      .find(
+        and(
+          equal("codeListCode", code.code),
+          lte("activeFrom", activeAt),
+          or(equal("activeTo", null), gt("activeTo", activeAt))
+        )
+      )
+      .sort(Sorts.ascending("key"))
+      .toFuture()
 
   private def supersedePreviousEntries(
     session: ClientSession,

@@ -82,7 +82,7 @@ class ImportCodeListsJob @Inject() (
     newSnapshot: CodeListSnapshot
   ): Future[List[Instruction]] = {
     logger.info(
-      s"Importing ${codeListConfig.origin} codelist ${codeListConfig.code} (${newSnapshot.name}) version ${newSnapshot.version}"
+      s"Importing ${codeListConfig.origin} codelist ${codeListConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
     )
 
     fetchCurrentEntries(codeListConfig.code).map { currentKeySet =>
