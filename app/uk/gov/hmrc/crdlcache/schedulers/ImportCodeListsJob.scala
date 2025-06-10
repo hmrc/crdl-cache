@@ -71,7 +71,7 @@ class ImportCodeListsJob @Inject() (
   private def setLastUpdated(
     session: ClientSession,
     codeListCode: CodeListCode,
-    snapshotVersion: Int,
+    snapshotVersion: Long,
     lastUpdated: Instant
   ) = lastUpdatedRepository.setLastUpdated(session, codeListCode, snapshotVersion, lastUpdated)
 

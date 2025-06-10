@@ -18,7 +18,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
-import org.mockito.ArgumentMatchers.{any, anyInt, eq as equalTo}
+import org.mockito.ArgumentMatchers.{any, anyLong, eq as equalTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.*
 import org.mongodb.scala.{ClientSession, MongoClient, MongoDatabase, SingleObservable}
@@ -227,7 +227,7 @@ class ImportCodeListsJobSpec
       lastUpdatedRepository.setLastUpdated(
         equalTo(clientSession),
         any(),
-        anyInt(),
+        anyLong(),
         equalTo(fixedInstant)
       )
     )
@@ -303,7 +303,7 @@ class ImportCodeListsJobSpec
     verify(lastUpdatedRepository, times(2)).setLastUpdated(
       equalTo(clientSession),
       equalTo(BC08),
-      anyInt(),
+      anyLong(),
       equalTo(fixedInstant)
     )
 
@@ -311,7 +311,7 @@ class ImportCodeListsJobSpec
     verify(lastUpdatedRepository, never()).setLastUpdated(
       equalTo(clientSession),
       equalTo(BC66),
-      anyInt(),
+      anyLong(),
       equalTo(fixedInstant)
     )
 
@@ -335,7 +335,7 @@ class ImportCodeListsJobSpec
       lastUpdatedRepository.setLastUpdated(
         equalTo(clientSession),
         any(),
-        anyInt(),
+        anyLong(),
         equalTo(fixedInstant)
       )
     )
@@ -377,7 +377,7 @@ class ImportCodeListsJobSpec
     verify(lastUpdatedRepository, times(1)).setLastUpdated(
       equalTo(clientSession),
       equalTo(BC08),
-      equalTo(2),
+      equalTo(2L),
       equalTo(fixedInstant)
     )
 
@@ -385,7 +385,7 @@ class ImportCodeListsJobSpec
     verify(lastUpdatedRepository, never()).setLastUpdated(
       equalTo(clientSession),
       equalTo(BC66),
-      anyInt(),
+      anyLong(),
       equalTo(fixedInstant)
     )
 
@@ -406,7 +406,7 @@ class ImportCodeListsJobSpec
       lastUpdatedRepository.setLastUpdated(
         equalTo(clientSession),
         any(),
-        anyInt(),
+        anyLong(),
         equalTo(fixedInstant)
       )
     )
@@ -483,7 +483,7 @@ class ImportCodeListsJobSpec
     verify(lastUpdatedRepository, times(1)).setLastUpdated(
       equalTo(clientSession),
       equalTo(BC08),
-      equalTo(1),
+      equalTo(1L),
       equalTo(fixedInstant)
     )
 
@@ -491,7 +491,7 @@ class ImportCodeListsJobSpec
     verify(lastUpdatedRepository, never()).setLastUpdated(
       equalTo(clientSession),
       equalTo(BC66),
-      anyInt(),
+      anyLong(),
       equalTo(fixedInstant)
     )
 

@@ -52,7 +52,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
   def setLastUpdated(
     session: ClientSession,
     codeListCode: CodeListCode,
-    snapshotVersion: Int,
+    snapshotVersion: Long,
     lastUpdated: Instant
   ): Future[Unit] = {
     collection
