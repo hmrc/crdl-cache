@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.models
 import play.api.libs.json.Json
 
 trait TestData {
-  val BC08Aruba = Json
+  val BC08Aruba: dps.CodeListEntry = Json
     .fromJson[dps.CodeListEntry](
       Json.parse(
         """{
