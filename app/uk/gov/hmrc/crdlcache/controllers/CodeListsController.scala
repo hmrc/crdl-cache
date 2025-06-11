@@ -47,7 +47,7 @@ class CodeListsController @Inject() (
   }
 
   def fetchCodeListVersions: Action[AnyContent] = Action.async { _ =>
-    lastUpdatedRepository.fetchAllLastUpdated()
+    lastUpdatedRepository.fetchAllLastUpdated
       .map { lastUpdatedEntries =>
         Ok(Json.toJson(lastUpdatedEntries))
       }

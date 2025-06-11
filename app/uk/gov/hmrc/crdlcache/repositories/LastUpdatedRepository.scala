@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.crdlcache.repositories
 
-import com.mongodb.client.model.{IndexModel, UpdateOptions}
+import com.mongodb.client.model.{IndexModel, IndexOptions, UpdateOptions}
+import org.mongodb.scala.*
 import org.mongodb.scala.bson.BsonNull
-import org.mongodb.scala.model.{Filters, Updates}
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.{Filters, Indexes, Updates}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import org.mongodb.scala.*
-import org.mongodb.scala.model.Filters.equal
+import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
@@ -36,26 +37,36 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 ) extends PlayMongoRepository[LastUpdated](
     mongoComponent,
     collectionName = "last-updated",
-    domainFormat = LastUpdated.format,
-    indexes = Seq.empty[IndexModel]
-  ) {
+    domainFormat = LastUpdated.mongoFormat,
+    indexes = Seq(IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(true)))
+  )
+  with Transactions {
 
-  // This is a single-document collection
+  // This collection contains only one document per codelist
   override lazy val requiresTtlIndex: Boolean = false
 
-  def fetchLastUpdated(code: CodeListCode): Future[Option[Instant]] = {
-    collection.find(equal("codeListCode", code.code)).headOption().map(_.map(_.date))
+  def fetchLastUpdated(codeListCode: CodeListCode): Future[Option[LastUpdated]] = {
+    collection.find(equal("codeListCode", codeListCode.code)).headOption()
   }
 
-  def fetchAllLastUpdated(): Future[Seq[LastUpdated]] = {
-    collection.find().toFuture()
+  def fetchAllLastUpdated: Future[Seq[LastUpdated]] = {
+    collection.find().toFuture().map(_.toSeq)
   }
 
-  def setLastUpdated(code: CodeListCode, instant: Instant): Future[Unit] = {
+  def setLastUpdated(
+    session: ClientSession,
+    codeListCode: CodeListCode,
+    snapshotVersion: Long,
+    lastUpdated: Instant
+  ): Future[Unit] = {
     collection
       .updateOne(
-        equal("codeListCode", code.code),
-        Updates.set("date", instant),
+        session,
+        equal("codeListCode", codeListCode.code),
+        Updates.combine(
+          Updates.set("lastUpdated", lastUpdated),
+          Updates.set("snapshotVersion", snapshotVersion)
+        ),
         UpdateOptions().upsert(true)
       )
       .toFuture()

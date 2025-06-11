@@ -14,31 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models
+package uk.gov.hmrc.crdlcache.controllers.documentation
 
-import uk.gov.hmrc.crdlcache.config.CodeListConfig
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.crdlcache.views
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-case class CodeListSnapshot(
-  code: CodeListCode,
-  name: String,
-  version: Long,
-  entries: Set[CodeListSnapshotEntry]
-)
+import javax.inject.{Inject, Singleton}
 
-object CodeListSnapshot {
-  def fromDpsSnapshot(
-    config: CodeListConfig,
-    dpsSnapshot: dps.CodeListSnapshot
-  ): CodeListSnapshot = {
-    CodeListSnapshot(
-      dpsSnapshot.code_list_code,
-      dpsSnapshot.code_list_name,
-      dpsSnapshot.snapshotversion,
-      dpsSnapshot.rdentry
-        .map(
-          CodeListSnapshotEntry.fromDpsEntry(config, _)
-        )
-        .toSet
-    )
+@Singleton
+class DocumentationController @Inject() (
+  cc: ControllerComponents,
+  view: views.html.OpenApi
+) extends BackendController(cc) {
+  def docs(version: String): Action[AnyContent] = Action {
+    Ok(view(version))
   }
 }

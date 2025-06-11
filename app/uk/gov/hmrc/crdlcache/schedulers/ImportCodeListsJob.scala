@@ -19,6 +19,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervision}
+import org.mongodb.scala.ClientSession
 import org.quartz.{Job, JobExecutionContext}
 import play.api.Logging
 import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
@@ -27,14 +28,17 @@ import uk.gov.hmrc.crdlcache.models.*
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Update}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
+import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
+import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
 
-import java.time.{Clock, LocalDate, ZoneOffset}
+import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class ImportCodeListsJob @Inject() (
+  val mongoComponent: MongoComponent,
   val lockRepository: MongoLockRepository,
   lastUpdatedRepository: LastUpdatedRepository,
   codeListsRepository: CodeListsRepository,
@@ -44,19 +48,32 @@ class ImportCodeListsJob @Inject() (
 )(using system: ActorSystem, ec: ExecutionContext)
   extends Job
   with LockService
-  with Logging {
-  val lockId: String     = "import-code-lists"
-  val ttl: Duration      = 1.hour
-  val defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
+  with Logging
+  with Transactions {
 
-  private def fetchCurrentEntries(codeListCode: CodeListCode): Future[Set[String]] =
-    codeListsRepository.fetchCodeListEntryKeys(codeListCode)
+  given TransactionConfiguration = TransactionConfiguration.strict
 
-  private def executeInstructions(instructions: List[Instruction]): Future[Unit] =
-    codeListsRepository.executeInstructions(instructions)
+  val lockId: String = "import-code-lists"
+  val ttl: Duration  = 1.hour
 
-  private def updateLastUpdated(codeListCode: CodeListCode): Future[Unit] =
-    lastUpdatedRepository.setLastUpdated(codeListCode, clock.instant())
+  private def fetchCurrentEntries(
+    session: ClientSession,
+    codeListCode: CodeListCode
+  ): Future[Set[String]] =
+    codeListsRepository.fetchCodeListEntryKeys(session, codeListCode)
+
+  private def executeInstructions(
+    session: ClientSession,
+    instructions: List[Instruction]
+  ): Future[Unit] =
+    codeListsRepository.executeInstructions(session, instructions)
+
+  private def setLastUpdated(
+    session: ClientSession,
+    codeListCode: CodeListCode,
+    snapshotVersion: Long,
+    lastUpdated: Instant
+  ) = lastUpdatedRepository.setLastUpdated(session, codeListCode, snapshotVersion, lastUpdated)
 
   private[schedulers] def processEntry(
     codeListCode: CodeListCode,
@@ -82,6 +99,7 @@ class ImportCodeListsJob @Inject() (
   }
 
   private[schedulers] def processSnapshot(
+    session: ClientSession,
     codeListConfig: CodeListConfig,
     newSnapshot: CodeListSnapshot
   ): Future[List[Instruction]] = {
@@ -89,7 +107,7 @@ class ImportCodeListsJob @Inject() (
       s"Importing ${codeListConfig.origin} codelist ${codeListConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
     )
 
-    fetchCurrentEntries(codeListConfig.code).map { currentKeySet =>
+    fetchCurrentEntries(session, codeListConfig.code).map { currentKeySet =>
       val incomingKeySet = newSnapshot.entries.map(_.key)
       val mergedKeySet   = currentKeySet.union(incomingKeySet)
 
@@ -139,34 +157,55 @@ class ImportCodeListsJob @Inject() (
     for {
       // Fetch last updated timestamp
       storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
-      lastUpdated = storedLastUpdated.getOrElse(defaultLastUpdated)
+      defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
+      lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
+
+      _ = logger.info(
+        s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp ${lastUpdated}"
+      )
+
       _ <- dpsConnector
         .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
+        // Add a delay between calls to avoid overwhelming DPS
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
+        .dropWhile { snapshot =>
+          // Ignore snapshot versions that we already have
+          storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
+        }
         .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
-        .mapAsync(1)(processSnapshot(codeListConfig, _))
-        .mapAsync(1)(executeInstructions)
+        .mapAsync(1) { snapshot =>
+          // Ensure that we roll back if something goes wrong processing the snapshot
+          withSessionAndTransaction { session =>
+            for {
+              instructions <- processSnapshot(session, codeListConfig, snapshot)
+              _            <- executeInstructions(session, instructions)
+              _ <- setLastUpdated(session, codeListConfig.code, snapshot.version, clock.instant())
+            } yield ()
+          }
+        }
         .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
-          logger.error("Stopping codelist import job due to exception", err)
+          logger.error(
+            s"Stopping codelist ${codeListConfig.code.code} import job due to exception",
+            err
+          )
           Supervision.stop
         })
         .run()
-      // Update the last updated timestamp
-      _ <- updateLastUpdated(codeListConfig.code)
+
     } yield ()
   }
 
-  private[schedulers] def importCodeLists(): Future[Unit] =
-    for {
+  private[schedulers] def importCodeLists(): Future[Unit] = {
+    val importCodeLists = Source(appConfig.codeListConfigs)
+      .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
+      .run()
+      .map(_ => ())
 
-      // Import all configured code lists
-      _ <- Source(appConfig.codeListConfigs)
-        .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
-        .run()
-      _ = logger.info("Importing codelists completed successfully")
+    importCodeLists.foreach(_ => logger.info("Importing codelists completed successfully"))
 
-    } yield ()
+    importCodeLists
+  }
 
   def execute(context: JobExecutionContext): Unit =
     Await.result(importCodeLists(), Duration.Inf)
