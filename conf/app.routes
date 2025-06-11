@@ -1,3 +1,4 @@
 # microservice specific routes
 
 GET        /lists/:code        uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListEntries(code: CodeListCode, activeAt: Option[Instant])
+GET        /lists/versions     uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListVersions
