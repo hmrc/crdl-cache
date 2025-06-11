@@ -8,6 +8,8 @@ This service exists to reduce the load on the DPS reference data APIs by caching
 
 ## Usage
 
+[API Documentation (1.0)](https://redocly.github.io/redoc/?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fhmrc%2Fcrdl-cache%40main%2Fpublic%2Fapi%2F1.0%2Fopenapi.yaml)
+
 ### Fetch Codelist Entries
 
 This endpoint is used to fetch entries of a reference data codelist.
