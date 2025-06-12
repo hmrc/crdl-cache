@@ -29,7 +29,7 @@ import play.api.http.Status
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
 import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
 import uk.gov.hmrc.http.HttpReads.Implicits.*
@@ -232,9 +232,9 @@ class CodeListsControllerSpec
   it should "parse other query parameters as boolean property filters when they are valid boolean values" in {
     when(
       repository.fetchCodeListEntries(
-        equalTo(BC66),
-        equalTo(Some(Set("B"))),
-        equalTo(Some(Map("isBeer" -> JsBoolean(true)))),
+        equalTo(BC36),
+        equalTo(Some(Set("B000"))),
+        equalTo(Some(Map("alcoholicStrengthApplicabilityFlag" -> JsBoolean(true)))),
         equalTo(fixedInstant)
       )
     )
@@ -243,7 +243,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(
-          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&isBeer=true"
+          url"http://localhost:$port/crdl-cache/lists/${BC36.code}?keys=B000&alcoholicStrengthApplicabilityFlag=true"
         )
         .execute[HttpResponse]
         .futureValue
@@ -256,7 +256,7 @@ class CodeListsControllerSpec
       repository.fetchCodeListEntries(
         equalTo(BC66),
         equalTo(Some(Set("B"))),
-        equalTo(Some(Map("isBeer" -> JsNull))),
+        equalTo(Some(Map("responsibleDataManager" -> JsNull))),
         equalTo(fixedInstant)
       )
     )
@@ -265,7 +265,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(
-          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&isBeer=null"
+          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&responsibleDataManager=null"
         )
         .execute[HttpResponse]
         .futureValue
@@ -273,29 +273,7 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
-  it should "parse other query parameters as numeric property filters when they are valid numeric values" in {
-    when(
-      repository.fetchCodeListEntries(
-        equalTo(BC08),
-        equalTo(Some(Set("GB"))),
-        equalTo(Some(Map("actionIdentification" -> JsNumber(384)))),
-        equalTo(fixedInstant)
-      )
-    )
-      .thenReturn(Future.successful(List.empty))
-
-    val response =
-      httpClientV2
-        .get(
-          url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=384"
-        )
-        .execute[HttpResponse]
-        .futureValue
-
-    response.status mustBe Status.OK
-  }
-
-  it should "parse other query parameters as String property filters when they are wrapped in quotes" in {
+  it should "parse other query parameters as String property filters when they are neither boolean nor null values" in {
     when(
       repository.fetchCodeListEntries(
         equalTo(BC08),
@@ -309,29 +287,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(
-          url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=%22384%22"
-        )
-        .execute[HttpResponse]
-        .futureValue
-
-    response.status mustBe Status.OK
-  }
-
-  it should "parse other query parameters as String property filters when they cannot be any other valid JSON value" in {
-    when(
-      repository.fetchCodeListEntries(
-        equalTo(BC66),
-        equalTo(Some(Set("B"))),
-        equalTo(Some(Map("responsibleDataManager" -> JsString("ABC")))),
-        equalTo(fixedInstant)
-      )
-    )
-      .thenReturn(Future.successful(List.empty))
-
-    val response =
-      httpClientV2
-        .get(
-          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&responsibleDataManager=ABC"
+          url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=384"
         )
         .execute[HttpResponse]
         .futureValue
