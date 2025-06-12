@@ -28,13 +28,28 @@ This endpoint is used to fetch entries of a reference data codelist.
 
     * `code: String` - The codelist code, e.g. `BC08`, `BC36`.
 
-<!-- The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
 * **Query Parameters**
 
   **Optional:**
 
+    * `keys: Seq[String]`
+      
+      Used to specify the keys of entries to return in the response.
+            
+      You can provide comma-separated values for keys, or provide multiple occurrences of the `keys` parameter, or both.
+            
+      For example: `?keys=AW,BL&keys=XI&keys=GB`.
+
+    <!-- The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
     * `activeAt: Instant` - The timestamp at which to view entries. If omitted the current timestamp is used.
--->
+    -->
+
+    * Any other query parameter name can be used for filtering feed-specific and codelist-specific properties.
+    
+      You do not need to prefix the query parameter with `properties`.
+            
+      For example: `?unitOfMeasureCode=3&responsibleDataManager=null`.
+
 
 * **Success Response:**
     * **Status:** 200 <br/>
