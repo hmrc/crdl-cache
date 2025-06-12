@@ -17,15 +17,15 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, Sorts, Updates}
+import org.mongodb.scala.*
+import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.model.*
+import org.mongodb.scala.model.Filters.*
+import uk.gov.hmrc.crdlcache.models
+import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, Instruction}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import org.mongodb.scala.model.Filters.*
-import org.mongodb.scala.*
-import org.mongodb.scala.bson.BsonNull
-import uk.gov.hmrc.crdlcache.models
-import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
 
 import java.time.Instant
@@ -64,17 +64,28 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
       .toFuture
       .map(_.toSet)
 
-  def fetchCodeListEntries(code: CodeListCode, activeAt: Instant): Future[Seq[CodeListEntry]] =
+  def fetchCodeListEntries(
+    code: CodeListCode,
+    filterKeys: Option[Set[String]],
+    activeAt: Instant
+  ): Future[Seq[CodeListEntry]] = {
+    val mandatoryFilters = List(
+      equal("codeListCode", code.code),
+      lte("activeFrom", activeAt),
+      or(equal("activeTo", null), gt("activeTo", activeAt))
+    )
+
+    val optionalFilters = filterKeys
+      .map(ks => if ks.nonEmpty then List(in("key", ks.toSeq*)) else List.empty)
+      .getOrElse(List.empty)
+
+    val allFilters = mandatoryFilters ++ optionalFilters
+
     collection
-      .find(
-        and(
-          equal("codeListCode", code.code),
-          lte("activeFrom", activeAt),
-          or(equal("activeTo", null), gt("activeTo", activeAt))
-        )
-      )
+      .find(and(allFilters*))
       .sort(Sorts.ascending("key"))
       .toFuture()
+  }
 
   private def supersedePreviousEntries(
     session: ClientSession,

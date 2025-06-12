@@ -96,7 +96,7 @@ class CodeListsControllerSpec
       .build()
 
   "CodeListsController" should "return 200 OK when there are no errors" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(fixedInstant)))
+    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.successful(entries))
 
     val response =
@@ -122,7 +122,7 @@ class CodeListsControllerSpec
   }
 
   it should "return 200 OK when there are no entries to return" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(fixedInstant)))
+    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.successful(List.empty))
 
     val response =
@@ -132,6 +132,82 @@ class CodeListsControllerSpec
         .futureValue
 
     response.json mustBe Json.arr()
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys from a query parameter when there is only one key" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB"))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys from a query parameter when there are multiple keys" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB", "XI"))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys when there are multiple declarations of the query parameter" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB", "XI", "AW", "BL"))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI&keys=AW,BL")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys when there is no value declared for the query parameter" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set.empty)),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=")
+        .execute[HttpResponse]
+        .futureValue
+
     response.status mustBe Status.OK
   }
 
@@ -158,7 +234,7 @@ class CodeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(fixedInstant)))
+    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =

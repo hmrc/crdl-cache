@@ -60,16 +60,30 @@ paths:
               - BC08
               - BC36
               - CL239
-        - name: activeAt
+        - name: keys
           in: query
           description: |
-            The timestamp at which to view entries. If omitted the current timestamp is used.
-            Historical data support is best-effort only as it requires cooperation from the DPS API.
+            Used to specify the keys of entries to return in the response.
           required: false
           schema:
-            type: string
-            format: date-time
-            example: "2025-06-05T00:00:00Z"
+            type: array
+            items:
+              type: string
+              example: [ "GB", "XI" ]
+              examples:
+                - [ "GB", "XI" ]
+                - [ "B000", "E200" ]
+        # The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
+        # - name: activeAt
+        #   in: query
+        #   description: |
+        #     The timestamp at which to view entries. If omitted the current timestamp is used.
+        #     Historical data support is best-effort only as it requires cooperation from the DPS API.
+        #   required: false
+        #   schema:
+        #     type: string
+        #     format: date-time
+        #     example: "2025-06-05T00:00:00Z"
       responses:
         200:
           description: OK

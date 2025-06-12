@@ -14,12 +14,16 @@ lazy val microservice = Project("crdl-cache", file("."))
     scalacOptions ++= Seq(
       "-Wconf:src=routes/.*:s",
       "-Wconf:msg=Flag.*repeatedly:s",
-      "--coverage-exclude-classlikes:uk.gov.hmrc.crdlcache.controllers.testonly"
+      // Ignore test-only code
+      "--coverage-exclude-classlikes:uk.gov.hmrc.crdlcache.controllers.testonly",
+      // Ignore test-only API documentation view
+      "--coverage-exclude-classlikes:uk.gov.hmrc.crdlcache.views.html"
     ),
     routesImport ++= Seq(
       "java.time.Instant",
       "uk.gov.hmrc.crdlcache.models.*",
-      "uk.gov.hmrc.crdlcache.models.Binders.bindableInstant"
+      "uk.gov.hmrc.crdlcache.models.Binders.bindableInstant",
+      "uk.gov.hmrc.crdlcache.models.Binders.bindableSet"
     ),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
   )
