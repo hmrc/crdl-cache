@@ -43,6 +43,44 @@ components:
                   - "bad request, cause: REDACTED"
 
 paths:
+  /lists:
+    get:
+    summary: Fetch Codelist Versions
+    description: |
+      This endpoint is used to fetch the available codelists and their version information.
+    responses:
+      200:
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                required:
+                  - codeListCode
+                  - snapshotVersion
+                  - lastUpdated
+                additionalProperties: false
+                properties:
+                  codeListCode:
+                    type: string
+                    description: A unique code identifying the reference data codelist
+                    examples:
+                      - BC08
+                      - BC36
+                      - CL239
+                  snapshotVersion:
+                    type: integer
+                    description: An incrementing integer version of the codelist.
+                    examples:
+                      - 1
+                  lastUpdated:
+                    type: string
+                    format: date-time
+                    description: The timestamp at which the codelist was last updated.
+                    examples:
+                      - "2025-06-05T04:03:02Z"
   /lists/{code}:
     get:
       summary: Fetch Codelist Entries
