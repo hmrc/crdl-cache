@@ -53,7 +53,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   private val base64Encoder = Base64.getEncoder
   private val dateFormatter = DateTimeFormatter.ISO_INSTANT
 
-  private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath.split('/')}"
+  private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsRefDataPath.split('/')}"
 
   private lazy val basicAuthSecret = {
     val clientIdAndSecret =
@@ -111,7 +111,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     hc: HeaderCarrier
   ): Future[Either[UpstreamErrorResponse, CodeListResponse]] = {
     val queryParams = Map("code_list_code" -> code.code)
-    val dpsUrl      = url"${appConfig.dpsUrl}/${appConfig.dpsPath}?$queryParams"
+    val dpsUrl      = url"${appConfig.dpsUrl}/${appConfig.dpsRefDataPath}?$queryParams"
     httpClient
       .get(dpsUrl)
       .setHeader(

@@ -59,16 +59,18 @@ class DpsConnectorSpec
 
   private val config = AppConfig(
     Configuration(
-      "appName"                                    -> "crdl-cache",
-      "microservice.services.dps-api.host"         -> "localhost",
-      "microservice.services.dps-api.path"         -> "iv_crdl_reference_data",
-      "microservice.services.dps-api.port"         -> wireMockPort,
-      "microservice.services.dps-api.clientId"     -> clientId,
-      "microservice.services.dps-api.clientSecret" -> clientSecret,
-      "import-codelists.schedule"                  -> "* * * * * ?",
-      "import-codelists.last-updated-date.default" -> "2025-05-29",
-      "import-codelists.codelists"                 -> List.empty,
-      "http-verbs.retries.intervals"               -> List("1.millis")
+      "appName"                                            -> "crdl-cache",
+      "microservice.services.dps-api.host"                 -> "localhost",
+      "microservice.services.dps-api.ref-data-path"        -> "iv_crdl_reference_data",
+      "microservice.services.dps-api.customs-offices-path" -> "iv_crdl_customs_office",
+      "microservice.services.dps-api.port"                 -> wireMockPort,
+      "microservice.services.dps-api.clientId"             -> clientId,
+      "microservice.services.dps-api.clientSecret"         -> clientSecret,
+      "import-codelists.schedule"                          -> "* * * * * ?",
+      "import-offices.schedule"                            -> "* * * * * ?",
+      "import-codelists.last-updated-date.default"         -> "2025-05-29",
+      "import-codelists.codelists"                         -> List.empty,
+      "http-verbs.retries.intervals"                       -> List("1.millis")
     )
   )
 
