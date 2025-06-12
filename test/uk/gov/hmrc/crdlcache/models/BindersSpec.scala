@@ -105,8 +105,9 @@ class BindersSpec
     Binders.bindableJsValueMap.bind(
       "",
       Map(
-        // "keys" should be ignored in the output
+        // "keys" and "activeAt" should be ignored in the output
         "keys"                         -> Seq("GB,XI"),
+        "activeAt"                     -> Seq("2025-06-05T00:00:00Z"),
         "degreePlatoApplicabilityFlag" -> Seq("true"),
         "responsibleDataManager"       -> Seq("null"),
         "actionIdentification"         -> Seq("823"),

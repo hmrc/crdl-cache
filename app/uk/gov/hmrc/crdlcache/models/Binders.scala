@@ -23,8 +23,9 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 
 object Binders {
-  private val formatter = DateTimeFormatter.ISO_INSTANT
-  private val KeysParam = "keys"
+  private val formatter     = DateTimeFormatter.ISO_INSTANT
+  private val KeysParam     = "keys"
+  private val ActiveAtParam = "activeAt"
 
   given bindableInstant: QueryStringBindable[Instant] = new QueryStringBindable.Parsing[Instant](
     Instant.parse,
@@ -65,8 +66,10 @@ object Binders {
         params: Map[String, Seq[String]]
       ): Option[Either[String, Map[String, JsValue]]] = {
         val parsedProps = for {
-          (propName, propValues) <- params.removed(KeysParam) // Ignore the "keys" query parameter
-          propValue              <- propValues.headOption
+          (propName, propValues) <- params
+            .removed(KeysParam)
+            .removed(ActiveAtParam) // Ignore the "keys" and "activeAt" query parameters
+          propValue <- propValues.headOption
           if propValue.nonEmpty
         } yield propName -> parsePropValue(propValue)
 
