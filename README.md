@@ -29,7 +29,7 @@ This endpoint is used to fetch the available codelists and their version informa
           "snapshotVersion": 21,
           "lastUpdated": "2025-06-11T13:47:18.238Z"
         }, {
-          "key": "BC36",
+          "codeListCode": "BC36",
           "snapshotVersion": 9,
           "lastUpdated": "2025-06-11T13:47:10.836Z"
         }]
