@@ -8,6 +8,39 @@ This service exists to reduce the load on the DPS reference data APIs by caching
 
 ## Usage
 
+### Fetch Codelist Versions
+
+This endpoint is used to fetch the available codelists and their version information.
+
+* **URL**
+
+  `/crdl-cache/lists`
+
+* **Method:**
+
+  `GET`
+
+* **Success Response:**
+    * **Status:** 200 <br/>
+    * **Content:**
+        ```json
+        [{
+          "codeListCode": "BC08",
+          "snapshotVersion": 21,
+          "lastUpdated": "2025-06-11T13:47:18.238Z"
+        }, {
+          "key": "BC36",
+          "snapshotVersion": 9,
+          "lastUpdated": "2025-06-11T13:47:10.836Z"
+        }]
+        ```
+
+* **Sample Request:**
+
+  ```shell
+  curl --fail-with-body http://localhost:7252/crdl-cache/lists
+  ```
+
 ### Fetch Codelist Entries
 
 This endpoint is used to fetch entries of a reference data codelist.
