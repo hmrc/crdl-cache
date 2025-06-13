@@ -1,0 +1,10 @@
+{
+  "name": "iv_crdl_customs_office",
+  "elements": [],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office?%24start_index=4480"
+    }
+  ]
+}

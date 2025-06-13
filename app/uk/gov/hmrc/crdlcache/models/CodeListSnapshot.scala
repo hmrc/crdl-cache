@@ -17,6 +17,7 @@
 package uk.gov.hmrc.crdlcache.models
 
 import uk.gov.hmrc.crdlcache.config.CodeListConfig
+import uk.gov.hmrc.crdlcache.models.dps.codeList
 
 case class CodeListSnapshot(
   code: CodeListCode,
@@ -28,7 +29,7 @@ case class CodeListSnapshot(
 object CodeListSnapshot {
   def fromDpsSnapshot(
     config: CodeListConfig,
-    dpsSnapshot: dps.CodeListSnapshot
+    dpsSnapshot: codeList.CodeListSnapshot
   ): CodeListSnapshot = {
     CodeListSnapshot(
       dpsSnapshot.code_list_code,

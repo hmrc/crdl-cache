@@ -29,7 +29,24 @@ import play.api.http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.dps.*
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
+import RelationType.{Next, Prev, Self}
+import uk.gov.hmrc.crdlcache.models.dps.codeList.{
+  CodeListEntry,
+  CodeListResponse,
+  CodeListSnapshot,
+  DataItem,
+  LanguageDescription
+}
+import uk.gov.hmrc.crdlcache.models.dps.col.{
+  CustomsOfficeDetail,
+  CustomsOfficeList,
+  CustomsOfficeListResponse,
+  CustomsOfficeTimetable,
+  RDEntryStatus,
+  RoleTrafficCompetence,
+  SpecificNotes,
+  TimetableLine
+}
 import uk.gov.hmrc.http.test.{HttpClientV2Support, WireMockSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
@@ -219,6 +236,308 @@ class DpsConnectorSpec
     )
   )
 
+  private val customsOfficeListPage1 = CustomsOfficeListResponse(
+    List(
+      CustomsOfficeList(
+        RDEntryStatus("valid", "01-05-2025"),
+        "IT223100",
+        None,
+        Some("ITP00002"),
+        None,
+        None,
+        None,
+        "IT",
+        Some("test@test.it"),
+        None,
+        Some("20250501"),
+        None,
+        "40121",
+        "0039 435345",
+        Some("0039 435345"),
+        None,
+        Some("Q"),
+        None,
+        "0",
+        Some("IT"),
+        Some("TIN"),
+        List.empty,
+        List(
+          CustomsOfficeDetail(
+            "EMILIA 1 BOLOGNA",
+            "IT",
+            "BOLOGNA",
+            "0",
+            Some("A"),
+            "1",
+            "VIALE PIETRAMELLARA, 1/2"
+          )
+        ),
+        CustomsOfficeTimetable(
+          "1",
+          Some("ALL YEAR"),
+          "20180101",
+          "20991231",
+          List(
+            TimetableLine(
+              "1",
+              "0800",
+              "1800",
+              "6",
+              None,
+              None,
+              List(
+                RoleTrafficCompetence("EXC", "R"),
+                RoleTrafficCompetence("REG", "N/A"),
+                RoleTrafficCompetence("SCO", "N/A"),
+                RoleTrafficCompetence("PLA", "N/A"),
+                RoleTrafficCompetence("DIS", "N/A"),
+                RoleTrafficCompetence("RFC", "N/A"),
+                RoleTrafficCompetence("EXT", "N/A"),
+                RoleTrafficCompetence("EXP", "N/A"),
+                RoleTrafficCompetence("IPR", "N/A")
+              )
+            )
+          )
+        )
+      ),
+      CustomsOfficeList(
+        RDEntryStatus("valid", "01-05-2025"),
+        "IT223101",
+        None,
+        Some("ITP00002"),
+        Some("IT223101"),
+        Some("IT223101"),
+        None,
+        "IT",
+        Some("test@it"),
+        None,
+        Some("20250501"),
+        None,
+        "40131",
+        "1234 045483382",
+        Some("2343 34543"),
+        None,
+        Some("Q"),
+        None,
+        "0",
+        Some("IT"),
+        Some("TIN"),
+        List.empty,
+        List(
+          CustomsOfficeDetail(
+            "AEROPORTO DI BOLOGNA",
+            "IT",
+            "BOLOGNA",
+            "0",
+            Some("A"),
+            "1",
+            "VIA DELL'AEROPORTO, 1"
+          )
+        ),
+        CustomsOfficeTimetable(
+          "1",
+          Some("ALL YEAR"),
+          "20180101",
+          "20991231",
+          List(
+            TimetableLine(
+              "1",
+              "0000",
+              "2359",
+              "6",
+              None,
+              None,
+              List(
+                RoleTrafficCompetence("DEP", "AIR"),
+                RoleTrafficCompetence("INC", "AIR"),
+                RoleTrafficCompetence("TXT", "AIR"),
+                RoleTrafficCompetence("DES", "AIR"),
+                RoleTrafficCompetence("ENQ", "N/A"),
+                RoleTrafficCompetence("ENT", "AIR"),
+                RoleTrafficCompetence("EXC", "N/A"),
+                RoleTrafficCompetence("EXP", "AIR"),
+                RoleTrafficCompetence("EXT", "AIR"),
+                RoleTrafficCompetence("REC", "N/A"),
+                RoleTrafficCompetence("REG", "N/A"),
+                RoleTrafficCompetence("TRA", "AIR"),
+                RoleTrafficCompetence("EIN", "AIR"),
+                RoleTrafficCompetence("PLA", "N/A"),
+                RoleTrafficCompetence("DIS", "N/A"),
+                RoleTrafficCompetence("RFC", "N/A"),
+                RoleTrafficCompetence("IPR", "N/A")
+              )
+            )
+          )
+        )
+      )
+    ),
+    List(
+      Relation(
+        Self,
+        "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office"
+      ),
+      Relation(
+        Next,
+        "?%24start_index=10&%24count=10"
+      )
+    )
+  )
+
+  private val customsOfficeListPage2 = CustomsOfficeListResponse(
+    List(
+      CustomsOfficeList(
+        RDEntryStatus("valid", "22-03-2025"),
+        "DK003102",
+        None,
+        None,
+        Some("DK003102"),
+        Some("DK003102"),
+        None,
+        "DK",
+        Some("test@dk"),
+        None,
+        None,
+        None,
+        "9850",
+        "+45 342234 34543",
+        None,
+        None,
+        None,
+        None,
+        "0",
+        None,
+        None,
+        List(SpecificNotes("SN0009")),
+        List(
+          CustomsOfficeDetail(
+            "Hirtshals Toldekspedition",
+            "DA",
+            "Hirtshals",
+            "0",
+            None,
+            "0",
+            "Dalsagervej 7"
+          )
+        ),
+        CustomsOfficeTimetable(
+          "1",
+          None,
+          "20180101",
+          "20991231",
+          List(
+            TimetableLine(
+              "1",
+              "0800",
+              "1600",
+              "5",
+              None,
+              None,
+              List(
+                RoleTrafficCompetence("EXL", "P"),
+                RoleTrafficCompetence("EXL", "R"),
+                RoleTrafficCompetence("EXP", "P"),
+                RoleTrafficCompetence("EXP", "R"),
+                RoleTrafficCompetence("EXT", "P"),
+                RoleTrafficCompetence("EXT", "R"),
+                RoleTrafficCompetence("PLA", "R"),
+                RoleTrafficCompetence("RFC", "R"),
+                RoleTrafficCompetence("DIS", "N/A"),
+                RoleTrafficCompetence("IPR", "N/A"),
+                RoleTrafficCompetence("ENQ", "P"),
+                RoleTrafficCompetence("ENQ", "R"),
+                RoleTrafficCompetence("ENQ", "N/A"),
+                RoleTrafficCompetence("REC", "P"),
+                RoleTrafficCompetence("REC", "R"),
+                RoleTrafficCompetence("REC", "N/A")
+              )
+            )
+          )
+        )
+      ),
+      CustomsOfficeList(
+        RDEntryStatus("valid", "22-03-2025"),
+        "IT314102",
+        None,
+        Some("ITP00023"),
+        Some("IT314102"),
+        Some("IT314102"),
+        None,
+        "IT",
+        Some("testo@it"),
+        None,
+        None,
+        None,
+        "10043",
+        "345 34234",
+        None,
+        None,
+        None,
+        None,
+        "0",
+        Some("IT"),
+        Some("TIN"),
+        List.empty,
+        List(
+          CustomsOfficeDetail(
+            "ORBASSANO",
+            "IT",
+            "ORBASSANO (TO)",
+            "0",
+            Some("A"),
+            "1",
+            "Prima Strada, 5"
+          )
+        ),
+        CustomsOfficeTimetable(
+          "1",
+          Some("ALL YEAR"),
+          "20240101",
+          "99991231",
+          List(
+            TimetableLine(
+              "1",
+              "0800",
+              "1800",
+              "5",
+              None,
+              None,
+              List(
+                RoleTrafficCompetence("DEP", "R"),
+                RoleTrafficCompetence("INC", "R"),
+                RoleTrafficCompetence("TRA", "R"),
+                RoleTrafficCompetence("EXP", "R"),
+                RoleTrafficCompetence("EIN", "R"),
+                RoleTrafficCompetence("ENT", "R"),
+                RoleTrafficCompetence("EXC", "R"),
+                RoleTrafficCompetence("DES", "R"),
+                RoleTrafficCompetence("GUA", "R"),
+                RoleTrafficCompetence("EXT", "R"),
+                RoleTrafficCompetence("REG", "R"),
+                RoleTrafficCompetence("REC", "R"),
+                RoleTrafficCompetence("IPR", "N/A"),
+                RoleTrafficCompetence("ENQ", "N/A")
+              )
+            )
+          )
+        )
+      )
+    ),
+    List(
+      Relation(
+        Self,
+        "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office?%24start_index=40"
+      ),
+      Relation(
+        Prev,
+        "?%24start_index=30&%24count=10"
+      ),
+      Relation(
+        Next,
+        "?%24start_index=50&%24count=10"
+      )
+    )
+  )
+
   override lazy val wireMockRootDirectory = "it/test/resources"
   private val uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
@@ -229,7 +548,7 @@ class DpsConnectorSpec
         .withHeader(HeaderNames.AUTHORIZATION, equalTo(expectedEncodedAuthHeader))
         .withQueryParam("code_list_code", equalTo("BC08"))
         .willReturn(
-          ok().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON).withBodyFile("BC08.json")
+          ok().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON).withBodyFile("codelist/BC08.json")
         )
     )
     connector.fetchCodeList(BC08).map { result =>
@@ -278,7 +597,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page1.json")
+            .withBodyFile("codelist/BC08_snapshots_page1.json")
         )
     )
 
@@ -294,7 +613,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page2.json")
+            .withBodyFile("codelist/BC08_snapshots_page2.json")
         )
     )
 
@@ -310,7 +629,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page3.json")
+            .withBodyFile("codelist/BC08_snapshots_page3.json")
         )
     )
 
@@ -378,7 +697,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page1.json")
+            .withBodyFile("codelist/BC08_snapshots_page1.json")
         )
     )
 
@@ -416,7 +735,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page1.json")
+            .withBodyFile("codelist/BC08_snapshots_page1.json")
         )
     )
 
@@ -474,7 +793,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page1.json")
+            .withBodyFile("codelist/BC08_snapshots_page1.json")
         )
     )
 
@@ -519,7 +838,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page1.json")
+            .withBodyFile("codelist/BC08_snapshots_page1.json")
         )
     )
 
@@ -535,7 +854,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page2.json")
+            .withBodyFile("codelist/BC08_snapshots_page2.json")
         )
     )
 
@@ -551,7 +870,7 @@ class DpsConnectorSpec
         .willReturn(
           ok()
             .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
-            .withBodyFile("BC08_snapshots_page3.json")
+            .withBodyFile("codelist/BC08_snapshots_page3.json")
         )
     )
 
@@ -559,5 +878,69 @@ class DpsConnectorSpec
       .fetchCodeListSnapshots(BC08, lastUpdatedDate)
       .runWith(Sink.collection[CodeListResponse, List[CodeListResponse]])
       .map(_ mustBe List(snapshotsPage1, snapshotsPage2))
+  }
+
+  "DPSConnector.fetchCustomsOfficeLists" should "produce a CustomOfficeListResponse for each page of custom office list" in {
+
+    // Page 1
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_customs_office"))
+        .withHeader("correlationId", matching(uuidRegex))
+        .withQueryParam("$start_index", equalTo("0"))
+        .withQueryParam("$count", equalTo("10"))
+        .willReturn(
+          ok()
+            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+            .withBodyFile("col/COL_page1.json")
+        )
+    )
+
+    // Page 2
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_customs_office"))
+        .withHeader("correlationId", matching(uuidRegex))
+        .withQueryParam("$start_index", equalTo("10"))
+        .withQueryParam("$count", equalTo("10"))
+        .willReturn(
+          ok()
+            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+            .withBodyFile("col/COL_page2.json")
+        )
+    )
+
+    // Page 3 (empty)
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_customs_office"))
+        .withHeader("correlationId", matching(uuidRegex))
+        .withQueryParam("$start_index", equalTo("20"))
+        .withQueryParam("$count", equalTo("10"))
+        .willReturn(
+          ok()
+            .withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+            .withBodyFile("col/COL_page3.json")
+        )
+    )
+
+    connector.fetchCustomsOfficeLists
+      .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
+      .map(_ mustBe List(customsOfficeListPage1, customsOfficeListPage2))
+  }
+
+  it should "throw UpstreamErrorResponse when there is a client error in the first page" in {
+
+    stubFor(
+      get(urlPathEqualTo("/iv_crdl_customs_office"))
+        .withQueryParam("$start_index", equalTo("0"))
+        .withQueryParam("$count", equalTo("10"))
+        .willReturn(
+          badRequest().withHeader(HeaderNames.CONTENT_TYPE, MimeTypes.JSON)
+        )
+    )
+
+    recoverToSucceededIf[UpstreamErrorResponse] {
+      connector.
+        fetchCustomsOfficeLists
+        .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
+    }
   }
 }

@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.codeList
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.Relation
+import uk.gov.hmrc.crdlcache.models.dps.codeList.DataItem
+import DataItem.uncapitalize
 
-case class Relation(rel: RelationType, href: String)
+case class DataItem(dataitem_name: String, dataitem_value: Option[String]) {
+  lazy val propertyName: String = uncapitalize(dataitem_name.split('_').last)
+}
 
-object Relation {
-  given Reads[Relation] = Json.reads[Relation]
+object DataItem {
+  given Reads[DataItem] = Json.reads[DataItem]
+
+  private def uncapitalize(s: String) =
+    if (s == null || s.isEmpty || !s.charAt(0).isUpper) s
+    else s.updated(0, s.charAt(0).toLower)
 }

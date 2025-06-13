@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.Relation
+case class CustomsOfficeTimetable(
+  seasoncode: String, // saw 1 value
+  seasonname: Option[String],
+  seasonstartdate: String,
+  seasonenddate: String,
+  customsofficetimetableline: List[TimetableLine]
+)
 
-case class Relation(rel: RelationType, href: String)
-
-object Relation {
-  given Reads[Relation] = Json.reads[Relation]
+object CustomsOfficeTimetable {
+  given Reads[CustomsOfficeTimetable] = Json.reads[CustomsOfficeTimetable]
 }

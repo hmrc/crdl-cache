@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
 
-case class LanguageDescription(lang_code: String, lang_desc: String)
+case class SpecificNotes(specificnotescode: String)
 
-object LanguageDescription {
-  given Reads[LanguageDescription] = Json.reads[LanguageDescription]
+object SpecificNotes {
+  given Reads[SpecificNotes] = Json.reads[SpecificNotes]
 }

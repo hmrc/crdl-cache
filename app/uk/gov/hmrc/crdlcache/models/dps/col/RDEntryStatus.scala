@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.CodeListCode
 
-case class CodeListSnapshot(
-  code_list_code: CodeListCode,
-  code_list_name: String,
-  snapshotversion: Int,
-  rdentry: List[CodeListEntry]
+case class RDEntryStatus(
+  state: String,
+  activefrom: String//change to localdate on the internal model
 )
 
-object CodeListSnapshot {
-  given Reads[CodeListSnapshot] = Json.reads[CodeListSnapshot]
+object RDEntryStatus {
+  given Reads[RDEntryStatus] = Json.reads[RDEntryStatus]
 }

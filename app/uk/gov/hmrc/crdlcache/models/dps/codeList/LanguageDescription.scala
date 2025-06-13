@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.codeList
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.Relation
 
-case class Relation(rel: RelationType, href: String)
+case class LanguageDescription(lang_code: String, lang_desc: String)
 
-object Relation {
-  given Reads[Relation] = Json.reads[Relation]
+object LanguageDescription {
+  given Reads[LanguageDescription] = Json.reads[LanguageDescription]
 }

@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.codeList
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.Relation
+import uk.gov.hmrc.crdlcache.models.CodeListCode
+import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListEntry, CodeListSnapshot}
 
-case class Relation(rel: RelationType, href: String)
+case class CodeListSnapshot(
+  code_list_code: CodeListCode,
+  code_list_name: String,
+  snapshotversion: Int,
+  rdentry: List[CodeListEntry]
+)
 
-object Relation {
-  given Reads[Relation] = Json.reads[Relation]
+object CodeListSnapshot {
+  given Reads[CodeListSnapshot] = Json.reads[CodeListSnapshot]
 }

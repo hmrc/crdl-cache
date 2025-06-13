@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
 
-case class CodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
-  def getProperty(itemName: String): Option[DataItem] =
-    dataitem.find(item => item.dataitem_name == itemName)
-}
+case class CustomsOfficeDetail(
+  customsofficeusualname: String,
+  languagecode: String,
+  city: String,             // Some city names having .
+  prefixsuffixflag: String, // 0 or 1 values
+  prefixsuffixlevel: Option[String],
+  spacetoadd: String, // 0 or 1 values
+  streetandnumber: String
+)
 
-object CodeListEntry {
-  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
+object CustomsOfficeDetail {
+  given Reads[CustomsOfficeDetail] = Json.reads[CustomsOfficeDetail]
 }
