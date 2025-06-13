@@ -19,10 +19,10 @@ package uk.gov.hmrc.crdlcache.repositories
 import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters.*
 import org.mongodb.scala.model.{Filters, Sorts}
-import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatest.{Assertion, OptionValues}
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
 import uk.gov.hmrc.crdlcache.models.CodeListEntry
@@ -32,10 +32,11 @@ import uk.gov.hmrc.mongo.test.{
   IndexedMongoQueriesSupport,
   PlayMongoRepositorySupport
 }
+import uk.gov.hmrc.mongo.transaction.TransactionConfiguration
 
 import java.time.Instant
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.*
+import scala.concurrent.{ExecutionContext, Future}
 
 class CodeListsRepositorySpec
   extends AnyFlatSpec
@@ -46,7 +47,8 @@ class CodeListsRepositorySpec
   with OptionValues
   with ScalaFutures {
 
-  given ec: ExecutionContext = ExecutionContext.global
+  given TransactionConfiguration = TransactionConfiguration.strict
+  given ec: ExecutionContext     = ExecutionContext.global
 
   override protected val repository: CodeListsRepository = new CodeListsRepository(
     mongoComponent
@@ -55,7 +57,7 @@ class CodeListsRepositorySpec
   override given patienceConfig: PatienceConfig =
     PatienceConfig(timeout = 30.seconds, interval = 100.millis)
 
-  val existingCzechEntry = CodeListEntry(
+  private val existingCzechEntry = CodeListEntry(
     BC08,
     "CZ",
     "Czech Republic",
@@ -67,7 +69,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val activeCodelistEntries = Seq(
+  private val activeCodelistEntries = Seq(
     CodeListEntry(
       BC08,
       "AW",
@@ -103,7 +105,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val differentCodeListEntries = Seq(
+  private val differentCodeListEntries = Seq(
     CodeListEntry(
       BC66,
       "B",
@@ -117,7 +119,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val supersededCodeListEntries = Seq(
+  private val supersededCodeListEntries = Seq(
     CodeListEntry(
       BC08,
       "BL",
@@ -131,20 +133,21 @@ class CodeListsRepositorySpec
     )
   )
 
-  val invalidatedIoEntry =
+  private val invalidatedIoEntry =
     CodeListEntry(
       BC08,
       "IO",
       "British Indian Ocean Territory",
       Instant.parse("2024-01-31T00:00:00Z"),
-      Some(Instant.parse("2025-05-22T00:00:00Z")),
+      // We don't know exactly when / if IO will cease to be used
+      Some(Instant.parse("2026-05-22T00:00:00Z")),
       Some(Instant.parse("2025-05-21T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "1024"
       )
     )
 
-  val activeIoEntry = CodeListEntry(
+  private val activeIoEntry = CodeListEntry(
     BC08,
     "IO",
     "British Indian Ocean Territory",
@@ -156,7 +159,19 @@ class CodeListsRepositorySpec
     )
   )
 
-  val updatedCzechEntry = CodeListEntry(
+  private val postDatedEntry = CodeListEntry(
+    BC08,
+    "QZ",
+    "Disputed Western Territories",
+    Instant.parse("2026-06-05T00:00:00Z"),
+    None,
+    None,
+    Json.obj(
+      "actionIdentification" -> "9999"
+    )
+  )
+
+  private val updatedCzechEntry = CodeListEntry(
     BC08,
     "CZ",
     "Czechia",
@@ -168,7 +183,7 @@ class CodeListsRepositorySpec
     )
   )
 
-  val newCountryEntry = CodeListEntry(
+  private val newCountryEntry = CodeListEntry(
     BC08,
     "SS",
     "South Sudan",
@@ -180,151 +195,214 @@ class CodeListsRepositorySpec
     )
   )
 
-  def withCodeListEntries(entries: Seq[CodeListEntry])(test: => Unit): Unit = {
+  def withCodeListEntries(
+    entries: Seq[CodeListEntry]
+  )(test: ClientSession => Future[Assertion]): Unit = {
     repository.collection.insertMany(entries).toFuture.futureValue
-    test
+    repository.withSessionAndTransaction(test).futureValue
   }
 
-  val codelistEntries =
-    activeCodelistEntries ++ differentCodeListEntries ++ supersededCodeListEntries :+ invalidatedIoEntry
+  private val entriesWithNoEndDate = activeCodelistEntries :+ postDatedEntry
+
+  private val codelistEntries =
+    activeCodelistEntries ++ differentCodeListEntries ++ supersededCodeListEntries :+ invalidatedIoEntry :+ postDatedEntry
 
   "CodeListsRepository.fetchCodeListEntryKeys" should "return entries that have been superseded" in withCodeListEntries(
     codelistEntries
-  ) {
-    repository.fetchCodeListEntryKeys(BC08).futureValue must contain("BL")
+  ) { session =>
+    repository.fetchCodeListEntryKeys(session, BC08).map(_ must contain("BL"))
   }
 
   it should "not return entries that are invalidated" in withCodeListEntries(codelistEntries) {
-    repository.fetchCodeListEntryKeys(BC08).futureValue mustNot contain("IO")
+    session =>
+      repository.fetchCodeListEntryKeys(session, BC08).map(_ mustNot contain("IO"))
   }
 
   it should "not return entries from other code lists" in withCodeListEntries(codelistEntries) {
-    repository.fetchCodeListEntryKeys(BC08).futureValue mustNot contain("B")
+    session =>
+      repository.fetchCodeListEntryKeys(session, BC08).map(_ mustNot contain("B"))
   }
 
   it should "contain the active code list entry keys" in withCodeListEntries(codelistEntries) {
-    repository.fetchCodeListEntryKeys(BC08).futureValue mustBe activeCodelistEntries
-      .map(_.key)
-      .toSet
+    session =>
+      repository
+        .fetchCodeListEntryKeys(session, BC08)
+        .map {
+          _ mustBe entriesWithNoEndDate
+            .map(_.key)
+            .toSet
+        }
+  }
+
+  "CodeListsRepository.fetchCodeListEntries" should "return the codelist entries whose activeFrom date is before the requested date" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ must contain allElementsOf activeCodelistEntries)
+  }
+
+  it should "not return entries from other lists" in withCodeListEntries(codelistEntries) { _ =>
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ must contain noElementsOf differentCodeListEntries)
+  }
+
+  it should "not return entries that have been superseded" in withCodeListEntries(codelistEntries) {
+    _ =>
+      repository
+        .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+        .map(_ must contain noElementsOf supersededCodeListEntries)
+  }
+
+  it should "not return entries that are not yet active" in withCodeListEntries(codelistEntries) {
+    _ =>
+      repository
+        .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+        .map(_ mustNot contain(postDatedEntry))
+  }
+
+  it should "return entries that have been invalidated if the invalidation date is in the future" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ must contain(invalidatedIoEntry))
   }
 
   "CodeListsRepository.executeInstructions" should "invalidate existing entries" in withCodeListEntries(
     activeCodelistEntries :+ activeIoEntry
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          InvalidateEntry(
-            activeIoEntry.copy(activeFrom = Instant.parse("2025-05-22T00:00:00Z"))
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            InvalidateEntry(
+              activeIoEntry.copy(activeFrom = Instant.parse("2025-05-22T00:00:00Z"))
+            )
           )
         )
-      )
-      .futureValue
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "IO")
+
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "IO")
+          )
         )
-      )
-      .toFuture()
-      .futureValue mustBe Seq(
+        .toFuture()
+
+    } yield entries mustBe Seq(
       activeIoEntry.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z")))
     )
-
   }
 
   it should "invalidate existing entries when the activation date is the same as the existing record" in withCodeListEntries(
     activeCodelistEntries :+ activeIoEntry
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          InvalidateEntry(
-            activeIoEntry
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            InvalidateEntry(
+              activeIoEntry
+            )
           )
         )
-      )
-      .futureValue
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "IO")
-        )
-      )
-      .toFuture()
-      .futureValue mustBe Seq(activeIoEntry.copy(activeTo = Some(activeIoEntry.activeFrom)))
 
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "IO")
+          )
+        )
+        .toFuture()
+
+    } yield entries mustBe Seq(activeIoEntry.copy(activeTo = Some(activeIoEntry.activeFrom)))
   }
 
   it should "invalidate missing entries" in withCodeListEntries(
     activeCodelistEntries :+ activeIoEntry
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          RecordMissingEntry(BC08, "IO", Instant.parse("2025-05-22T00:00:00Z"))
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            RecordMissingEntry(BC08, "IO", Instant.parse("2025-05-22T00:00:00Z"))
+          )
         )
-      )
-      .futureValue
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "IO")
+
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "IO")
+          )
         )
-      )
-      .toFuture()
-      .futureValue mustBe Seq(
+        .toFuture()
+
+    } yield entries mustBe Seq(
       activeIoEntry.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z")))
     )
-
   }
 
   it should "invalidate missing entries when the activation date is the same as the existing one" in withCodeListEntries(
     activeCodelistEntries :+ activeIoEntry
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          RecordMissingEntry(BC08, "IO", activeIoEntry.activeFrom)
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            RecordMissingEntry(BC08, "IO", activeIoEntry.activeFrom)
+          )
         )
-      )
-      .futureValue
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "IO")
+
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "IO")
+          )
         )
-      )
-      .toFuture()
-      .futureValue mustBe Seq(activeIoEntry.copy(activeTo = Some(activeIoEntry.activeFrom)))
+        .toFuture()
+
+    } yield entries mustBe Seq(activeIoEntry.copy(activeTo = Some(activeIoEntry.activeFrom)))
 
   }
 
   it should "supersede and invalidate existing entries" in withCodeListEntries(
     activeCodelistEntries :+ existingCzechEntry
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          UpsertEntry(updatedCzechEntry)
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            UpsertEntry(updatedCzechEntry)
+          )
         )
-      )
-      .futureValue
 
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "CZ")
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "CZ")
+          )
         )
-      )
-      .sort(Sorts.ascending("activeFrom"))
-      .toFuture()
-      .futureValue mustBe Seq(
+        .sort(Sorts.ascending("activeFrom"))
+        .toFuture()
+
+    } yield entries mustBe Seq(
       existingCzechEntry.copy(activeTo = Some(updatedCzechEntry.activeFrom)),
       updatedCzechEntry
     )
@@ -332,75 +410,88 @@ class CodeListsRepositorySpec
 
   it should "create a new entry when a new country code is encountered" in withCodeListEntries(
     activeCodelistEntries
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          UpsertEntry(newCountryEntry)
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            UpsertEntry(newCountryEntry)
+          )
         )
-      )
-      .futureValue
 
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "SS")
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "SS")
+          )
         )
-      )
-      .toFuture()
-      .futureValue mustBe Seq(newCountryEntry)
+        .toFuture()
+
+    } yield entries mustBe Seq(newCountryEntry)
   }
 
   it should "replace existing entries with same active from date" in withCodeListEntries(
     activeCodelistEntries :+ existingCzechEntry
-  ) {
-    repository
-      .executeInstructions(
-        List(
-          UpsertEntry(updatedCzechEntry.copy(activeFrom = existingCzechEntry.activeFrom))
+  ) { session =>
+    for {
+      _ <- repository
+        .executeInstructions(
+          session,
+          List(
+            UpsertEntry(updatedCzechEntry.copy(activeFrom = existingCzechEntry.activeFrom))
+          )
         )
-      )
-      .futureValue
 
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code),
-          Filters.eq("key", "CZ")
+      entries <- repository.collection
+        .find(
+          session,
+          and(
+            Filters.eq("codeListCode", BC08.code),
+            Filters.eq("key", "CZ")
+          )
         )
-      )
-      .sort(Sorts.ascending("activeFrom"))
-      .toFuture()
-      .futureValue mustBe Seq(updatedCzechEntry.copy(activeFrom = existingCzechEntry.activeFrom))
+        .sort(Sorts.ascending("activeFrom"))
+        .toFuture()
+
+    } yield entries mustBe Seq(updatedCzechEntry.copy(activeFrom = existingCzechEntry.activeFrom))
   }
 
   it should "upsert entries in the order of their active from date" in {
-    repository
-      .executeInstructions(
-        List(
-          InvalidateEntry(activeIoEntry.copy(activeFrom = Instant.parse("2025-05-22T00:00:00Z"))),
-          UpsertEntry(updatedCzechEntry),
-          RecordMissingEntry(BC08, "CZ", Instant.parse("2025-01-17T00:00:00Z")),
-          UpsertEntry(existingCzechEntry),
-          UpsertEntry(activeIoEntry)
-        )
-      )
-      .futureValue
+    repository.withSessionAndTransaction { session =>
+      for {
+        _ <- repository
+          .executeInstructions(
+            session,
+            List(
+              InvalidateEntry(
+                activeIoEntry.copy(activeFrom = Instant.parse("2025-05-22T00:00:00Z"))
+              ),
+              UpsertEntry(updatedCzechEntry),
+              RecordMissingEntry(BC08, "CZ", Instant.parse("2025-01-17T00:00:00Z")),
+              UpsertEntry(existingCzechEntry),
+              UpsertEntry(activeIoEntry)
+            )
+          )
 
-    repository.collection
-      .find(
-        and(
-          Filters.eq("codeListCode", BC08.code)
-        )
+        entries <- repository.collection
+          .find(
+            session,
+            and(
+              Filters.eq("codeListCode", BC08.code)
+            )
+          )
+          .sort(Sorts.ascending("key", "activeFrom"))
+          .toFuture()
+
+      } yield entries mustBe Seq(
+        existingCzechEntry.copy(activeTo = Some(updatedCzechEntry.activeFrom)),
+        updatedCzechEntry.copy(activeTo = Some(Instant.parse("2025-01-17T00:00:00Z"))),
+        activeIoEntry.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z")))
       )
-      .sort(Sorts.ascending("key", "activeFrom"))
-      .toFuture()
-      .futureValue mustBe Seq(
-      existingCzechEntry.copy(activeTo = Some(updatedCzechEntry.activeFrom)),
-      updatedCzechEntry.copy(activeTo = Some(Instant.parse("2025-01-17T00:00:00Z"))),
-      activeIoEntry.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z")))
-    )
+    }.futureValue
   }
 
 }

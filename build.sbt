@@ -16,6 +16,11 @@ lazy val microservice = Project("crdl-cache", file("."))
       "-Wconf:msg=Flag.*repeatedly:s",
       "--coverage-exclude-classlikes:uk.gov.hmrc.crdlcache.controllers.testonly"
     ),
+    routesImport ++= Seq(
+      "java.time.Instant",
+      "uk.gov.hmrc.crdlcache.models.*",
+      "uk.gov.hmrc.crdlcache.models.Binders.bindableInstant"
+    ),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
   )
 

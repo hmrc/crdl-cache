@@ -1,0 +1,2 @@
+GET        /api/:version        uk.gov.hmrc.crdlcache.controllers.documentation.DocumentationController.docs(version)
+GET        /api/*file           controllers.Assets.at(path="/public/api", file)
