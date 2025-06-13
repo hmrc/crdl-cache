@@ -97,7 +97,7 @@ paths:
             examples:
               - unitOfMeasureCode: "3"
               - alcoholicStrengthApplicabilityFlag: true
-              - responsibleDataManager: null
+              - responsibleDataManager: "null"
         # The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
         # - name: activeAt
         #   in: query
