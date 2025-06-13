@@ -20,7 +20,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.Configuration
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, Unknown}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, Unknown}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 
 import java.time.LocalDate
@@ -39,7 +39,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-codelists.last-updated-date.default" -> "2025-05-29",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
-          Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode")
+          Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode"),
+          Map("code" -> "BC17", "origin" -> "SEED", "keyProperty" -> "KindOfPackages")
         )
       )
     )
@@ -55,7 +56,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 5, 29)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
-      CodeListConfig(Unknown("BC36"), SEED, "ExciseProductCode")
+      CodeListConfig(BC36, SEED, "ExciseProductCode"),
+      CodeListConfig(Unknown("BC17"), SEED, "KindOfPackages")
     )
   }
 

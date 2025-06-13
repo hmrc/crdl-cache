@@ -64,6 +64,10 @@ paths:
           in: query
           description: |
             Used to specify the keys of entries to return in the response.
+            
+            You can provide comma-separated values for keys, or provide multiple occurrences of the `keys` parameter, or both.
+            
+            For example: `?keys=AW,BL&keys=XI&keys=GB`.
           required: false
           schema:
             type: array
@@ -73,6 +77,22 @@ paths:
               examples:
                 - [ "GB", "XI" ]
                 - [ "B000", "E200" ]
+        - name: properties
+          in: query
+          description: |
+            Used to specify property values used to filter entries in the response.
+            
+            **Note:** This API allows any query parameter name to be used for filtering feed-specific and codelist-specific properties. You do not need to prefix the query parameter with `properties`.
+            
+            For example: `?unitOfMeasureCode=3&responsibleDataManager=null`.
+          required: false
+          explode: true
+          schema:
+            type: object
+            examples:
+              - unitOfMeasureCode: "3"
+              - alcoholicStrengthApplicabilityFlag: true
+              - responsibleDataManager: "null"
         # The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
         # - name: activeAt
         #   in: query

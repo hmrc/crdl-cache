@@ -20,6 +20,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.{EitherValues, OptionValues}
+import play.api.libs.json.{JsNull, JsNumber, JsString, JsTrue}
 
 import java.time.Instant
 
@@ -97,6 +98,61 @@ class BindersSpec
     whenever(isValid) {
       val result = Binders.bindableSet.unbind("key", setValue)
       setValue.foreach { value => result must include(s"key=$value") }
+    }
+  }
+
+  "Binders.bindableJsValueMap" should "bind query parameters into a Map from String to JsValue, ignoring the keys parameter" in {
+    Binders.bindableJsValueMap.bind(
+      "",
+      Map(
+        // "keys" should be ignored in the output
+        "keys"                         -> Seq("GB,XI"),
+        "degreePlatoApplicabilityFlag" -> Seq("true"),
+        "responsibleDataManager"       -> Seq("null"),
+        "actionIdentification"         -> Seq("823"),
+        "unitOfMeasureCode"            -> Seq("3"),
+        "exciseProductCategoryCode"    -> Seq("W")
+      )
+    ) mustBe Some(
+      Right(
+        Map(
+          // Boolean values should be parsed to JsBoolean
+          "degreePlatoApplicabilityFlag" -> JsTrue,
+          // Null values should be parsed to JsNull
+          "responsibleDataManager" -> JsNull,
+          // Everything else should be parsed as strings
+          "actionIdentification"      -> JsString("823"),
+          "unitOfMeasureCode"         -> JsString("3"),
+          "exciseProductCategoryCode" -> JsString("W")
+        )
+      )
+    )
+  }
+
+  it should "pick the first value for a query parameter when it is specified multiple times" in {
+    Binders.bindableJsValueMap.bind(
+      "",
+      Map("exciseProductCategoryCode" -> Seq("W", "B"))
+    ) mustBe Some(Right(Map("exciseProductCategoryCode" -> JsString("W"))))
+  }
+
+  it should "not support unbinding" in {
+    assertThrows[UnsupportedOperationException] {
+      Binders.bindableJsValueMap.unbind(
+        "",
+        Map(
+          // Boolean values should be parsed to JsBoolean
+          "degreePlatoApplicabilityFlag" -> JsTrue,
+          // Null values should be parsed to JsNull
+          "responsibleDataManager" -> JsNull,
+          // Double-quoted numeric values should be parsed as strings
+          "actionIdentification" -> JsString("823"),
+          // Unquoted numeric values should be parsed as numbers
+          "unitOfMeasureCode" -> JsNumber(BigDecimal(3)),
+          // Non-numeric values should be parsed as strings
+          "exciseProductCategoryCode" -> JsString("W")
+        )
+      )
     }
   }
 }

@@ -28,8 +28,8 @@ import play.api.Application
 import play.api.http.Status
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
+import play.api.libs.json.*
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
 import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
 import uk.gov.hmrc.http.HttpReads.Implicits.*
@@ -96,7 +96,14 @@ class CodeListsControllerSpec
       .build()
 
   "CodeListsController" should "return 200 OK when there are no errors" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(None), equalTo(fixedInstant)))
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
       .thenReturn(Future.successful(entries))
 
     val response =
@@ -122,7 +129,14 @@ class CodeListsControllerSpec
   }
 
   it should "return 200 OK when there are no entries to return" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(None), equalTo(fixedInstant)))
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
       .thenReturn(Future.successful(List.empty))
 
     val response =
@@ -135,11 +149,12 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
-  it should "parse comma-separated keys from a query parameter when there is only one key" in {
+  it should "parse comma-separated keys from the keys parameter when there is only one key" in {
     when(
       repository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -154,11 +169,12 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
-  it should "parse comma-separated keys from a query parameter when there are multiple keys" in {
+  it should "parse comma-separated keys from the keys parameter when there are multiple keys" in {
     when(
       repository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI"))),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -173,11 +189,12 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
-  it should "parse comma-separated keys when there are multiple declarations of the query parameter" in {
+  it should "parse comma-separated keys when there are multiple declarations of the keys parameter" in {
     when(
       repository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -192,11 +209,12 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
-  it should "parse comma-separated keys when there is no value declared for the query parameter" in {
+  it should "parse comma-separated keys when there is no value declared for the keys parameter" in {
     when(
       repository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set.empty)),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -205,6 +223,116 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as boolean property filters when they are valid boolean values" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC66),
+        equalTo(Some(Set("B"))),
+        equalTo(Some(Map("isBeer" -> JsBoolean(true)))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&isBeer=true"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as null property filters when the query parameter value is null" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC66),
+        equalTo(Some(Set("B"))),
+        equalTo(Some(Map("isBeer" -> JsNull))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&isBeer=null"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as numeric property filters when they are valid numeric values" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB"))),
+        equalTo(Some(Map("actionIdentification" -> JsNumber(384)))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=384"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as String property filters when they are wrapped in quotes" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB"))),
+        equalTo(Some(Map("actionIdentification" -> JsString("384")))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=%22384%22"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as String property filters when they cannot be any other valid JSON value" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC66),
+        equalTo(Some(Set("B"))),
+        equalTo(Some(Map("responsibleDataManager" -> JsString("ABC")))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&responsibleDataManager=ABC"
+        )
         .execute[HttpResponse]
         .futureValue
 
@@ -234,7 +362,14 @@ class CodeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(None), equalTo(fixedInstant)))
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
