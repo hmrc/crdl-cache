@@ -89,10 +89,15 @@ paths:
           explode: true
           schema:
             type: object
+            patternProperties:
+              "Flag$":
+                type: boolean
+            additionalProperties:
+              type: [ "string", "null" ]
             examples:
               - unitOfMeasureCode: "3"
               - alcoholicStrengthApplicabilityFlag: true
-              - responsibleDataManager: "null"
+              - responsibleDataManager: null
         # The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
         # - name: activeAt
         #   in: query
@@ -132,8 +137,15 @@ paths:
                     properties:
                       type: object
                       description: Feed-specific and codelist-specific properties.
+                      patternProperties:
+                        "Flag$":
+                          type: boolean
+                      additionalProperties:
+                        type: [ "string", "null" ]
                       examples:
                         - actionIdentification: "823"
+                          responsibleDataManager: null
+                          memberStateFlag: false
 
         400:
           $ref: "#/components/responses/badRequest"
