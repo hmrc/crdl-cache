@@ -26,7 +26,7 @@ import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, Instruction}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
+import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -50,11 +50,10 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
   )
   with Transactions {
 
-  given tc: TransactionConfiguration = TransactionConfiguration.strict
-
-  def fetchCodeListEntryKeys(code: CodeListCode): Future[Set[String]] =
+  def fetchCodeListEntryKeys(session: ClientSession, code: CodeListCode): Future[Set[String]] =
     collection
       .find(
+        session,
         and(
           equal("codeListCode", code.code),
           equal("activeTo", null)
@@ -132,43 +131,40 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
           throw MongoError.NoMatchingDocument
       }
 
-  def executeInstructions(instructions: List[Instruction]): Future[Unit] =
-    withSessionAndTransaction { session =>
-      instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
-        (previousInstruction, nextInstruction) =>
-          previousInstruction.flatMap { _ =>
-            nextInstruction match {
-              case models.Instruction.UpsertEntry(codeListEntry) =>
-                for {
-                  _ <- supersedePreviousEntries(
-                    session,
-                    codeListEntry.codeListCode,
-                    codeListEntry.key,
-                    codeListEntry.activeFrom,
-                    includeActiveFrom = false
-                  )
-                  _ <- upsertEntry(session, codeListEntry)
-                } yield ()
-              case models.Instruction.InvalidateEntry(codeListEntry) =>
-                supersedePreviousEntries(
+  def executeInstructions(session: ClientSession, instructions: List[Instruction]): Future[Unit] =
+    instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
+      (previousInstruction, nextInstruction) =>
+        previousInstruction.flatMap { _ =>
+          nextInstruction match {
+            case models.Instruction.UpsertEntry(codeListEntry) =>
+              for {
+                _ <- supersedePreviousEntries(
                   session,
                   codeListEntry.codeListCode,
                   codeListEntry.key,
                   codeListEntry.activeFrom,
-                  includeActiveFrom = true
+                  includeActiveFrom = false
                 )
-              case models.Instruction.RecordMissingEntry(codeListCode, key, removedAt) =>
-                supersedePreviousEntries(
-                  session,
-                  codeListCode,
-                  key,
-                  removedAt,
-                  includeActiveFrom = true
-                )
-            }
+                _ <- upsertEntry(session, codeListEntry)
+              } yield ()
+            case models.Instruction.InvalidateEntry(codeListEntry) =>
+              supersedePreviousEntries(
+                session,
+                codeListEntry.codeListCode,
+                codeListEntry.key,
+                codeListEntry.activeFrom,
+                includeActiveFrom = true
+              )
+            case models.Instruction.RecordMissingEntry(codeListCode, key, removedAt) =>
+              supersedePreviousEntries(
+                session,
+                codeListCode,
+                key,
+                removedAt,
+                includeActiveFrom = true
+              )
           }
-      }
-
+        }
     }
 
 }

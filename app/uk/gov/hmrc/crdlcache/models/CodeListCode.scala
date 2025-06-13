@@ -22,11 +22,16 @@ import play.api.mvc.PathBindable
 sealed abstract class CodeListCode(val code: String) extends Product with Serializable {}
 
 object CodeListCode {
-  case object BC08                              extends CodeListCode("BC08")
-  case object BC66                              extends CodeListCode("BC66")
+  // BC08 (Country)
+  case object BC08 extends CodeListCode("BC08")
+  // BC66 (Excise Products Category)
+  case object BC66 extends CodeListCode("BC66")
+  // CL141 (Customs Offices)
+  case object CL141 extends CodeListCode("CL141")
+  // Unknown codelist code
   case class Unknown(override val code: String) extends CodeListCode(code)
 
-  private val values: Set[CodeListCode]        = Set(BC08, BC66)
+  private val values: Set[CodeListCode]        = Set(BC08, BC66, CL141)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
   given Format[CodeListCode] = Format.of[String].bimap(codes.withDefault(Unknown.apply), _.code)
 

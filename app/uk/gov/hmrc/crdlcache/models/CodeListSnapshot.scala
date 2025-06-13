@@ -21,7 +21,7 @@ import uk.gov.hmrc.crdlcache.config.CodeListConfig
 case class CodeListSnapshot(
   code: CodeListCode,
   name: String,
-  version: Int,
+  version: Long,
   entries: Set[CodeListSnapshotEntry]
 )
 
