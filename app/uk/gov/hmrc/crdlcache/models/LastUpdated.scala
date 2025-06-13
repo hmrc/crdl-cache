@@ -21,7 +21,7 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.Instant
 
-case class LastUpdated(date: Instant)
+case class LastUpdated(codeListCode: CodeListCode, snapshotVersion: Long, lastUpdated: Instant)
 
 object LastUpdated extends MongoJavatimeFormats.Implicits {
   given format: Format[LastUpdated] = Json.format[LastUpdated]

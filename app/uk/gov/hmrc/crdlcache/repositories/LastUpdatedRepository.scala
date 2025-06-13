@@ -16,14 +16,17 @@
 
 package uk.gov.hmrc.crdlcache.repositories
 
-import com.mongodb.client.model.{IndexModel, UpdateOptions}
+import com.mongodb.client.model.{IndexModel, IndexOptions, UpdateOptions}
+import org.mongodb.scala.*
 import org.mongodb.scala.bson.BsonNull
-import org.mongodb.scala.model.{Filters, Updates}
-import uk.gov.hmrc.crdlcache.models.LastUpdated
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.{Filters, Indexes, Updates}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import org.mongodb.scala.*
+import uk.gov.hmrc.mongo.transaction.Transactions
+
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,21 +38,31 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     mongoComponent,
     collectionName = "last-updated",
     domainFormat = LastUpdated.format,
-    indexes = Seq.empty[IndexModel]
-  ) {
+    indexes = Seq(IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(true)))
+  )
+  with Transactions {
 
-  // This is a single-document collection
+  // This collection contains only one document per codelist
   override lazy val requiresTtlIndex: Boolean = false
 
-  def fetchLastUpdated(): Future[Option[Instant]] = {
-    collection.find().headOption().map(_.map(_.date))
+  def fetchLastUpdated(codeListCode: CodeListCode): Future[Option[LastUpdated]] = {
+    collection.find(equal("codeListCode", codeListCode.code)).headOption()
   }
 
-  def setLastUpdated(instant: Instant): Future[Unit] = {
+  def setLastUpdated(
+    session: ClientSession,
+    codeListCode: CodeListCode,
+    snapshotVersion: Long,
+    lastUpdated: Instant
+  ): Future[Unit] = {
     collection
       .updateOne(
-        Filters.empty(),
-        Updates.set("date", instant),
+        session,
+        equal("codeListCode", codeListCode.code),
+        Updates.combine(
+          Updates.set("lastUpdated", lastUpdated),
+          Updates.set("snapshotVersion", snapshotVersion)
+        ),
         UpdateOptions().upsert(true)
       )
       .toFuture()
