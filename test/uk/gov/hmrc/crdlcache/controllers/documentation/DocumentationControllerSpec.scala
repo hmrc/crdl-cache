@@ -45,6 +45,7 @@ class DocumentationControllerSpec extends AnyFlatSpec with Matchers with Mockito
         |    <meta charset="UTF-8">
         |    <meta name="viewport" content="width=device-width, initial-scale=1">
         |    <title>CRDL Reference Data API 1.0</title>
+        |    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
         |  </head>
         |  <body>
         |    <redoc spec-url="/api/1.0/openapi.yaml" disable-search="true"></redoc>

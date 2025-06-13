@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.crdlcache.controllers
 
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
 import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
@@ -37,10 +37,16 @@ class CodeListsController @Inject() (
   def fetchCodeListEntries(
     codeListCode: CodeListCode,
     filterKeys: Option[Set[String]],
+    filterProperties: Option[Map[String, JsValue]],
     activeAt: Option[Instant]
   ): Action[AnyContent] = Action.async { _ =>
     codeListsRepository
-      .fetchCodeListEntries(codeListCode, filterKeys, activeAt.getOrElse(clock.instant()))
+      .fetchCodeListEntries(
+        codeListCode,
+        filterKeys,
+        filterProperties,
+        activeAt.getOrElse(clock.instant())
+      )
       .map { entries =>
         Ok(Json.toJson(entries))
       }

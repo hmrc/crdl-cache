@@ -19,23 +19,26 @@ package uk.gov.hmrc.crdlcache.models
 import play.api.libs.json.Format
 import play.api.mvc.PathBindable
 
-sealed abstract class CodeListCode(val code: String) extends Product with Serializable {}
+enum CodeListCode(val code: String) {
+  // BC08 (Country)
+  case BC08                               extends CodeListCode("BC08")
+  // BC36 (Excise Products)
+  case BC36                               extends CodeListCode("BC36")
+  // BC66 (Excise Products Category)
+  case BC66                               extends CodeListCode("BC66")
+  // CL141 (Customs Offices)
+  case CL141                              extends CodeListCode("CL141")
+  // Unknown codelist code
+  case Unknown(override val code: String) extends CodeListCode(code)
+}
 
 object CodeListCode {
-  // BC08 (Country)
-  case object BC08 extends CodeListCode("BC08")
-  // BC66 (Excise Products Category)
-  case object BC66 extends CodeListCode("BC66")
-  // CL141 (Customs Offices)
-  case object CL141 extends CodeListCode("CL141")
-  // Unknown codelist code
-  case class Unknown(override val code: String) extends CodeListCode(code)
-
-  private val values: Set[CodeListCode]        = Set(BC08, BC66, CL141)
+  private val values: Set[CodeListCode]        = Set(BC08, BC36, BC66, CL141)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
-  given Format[CodeListCode] = Format.of[String].bimap(codes.withDefault(Unknown.apply), _.code)
 
   def fromString(code: String): CodeListCode = codes.getOrElse(code, Unknown(code))
+
+  given Format[CodeListCode] = Format.of[String].bimap(codes.withDefault(Unknown.apply), _.code)
 
   given PathBindable[CodeListCode] = new PathBindable.Parsing[CodeListCode](
     value => codes.getOrElse(value, throw new IllegalArgumentException("Unknown code list code")),
