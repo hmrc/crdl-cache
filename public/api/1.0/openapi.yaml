@@ -16,11 +16,57 @@ servers:
   - url: https://crdl-cache.protected.mdtp/crdl-cache
     description: MDTP
 
+tags:
+  - name: Codelists
+    description: |
+      These endpoints provide operations for working with reference data codelists.
+      
+      Reference data codelists usually have a key-value structure, but in some cases they may have additional useful properties.
+      
+      For example, entries in the excise products codelist (BC36) contain properties describing the excise product category
+      they belong to, and applicability flags describing which kinds of excise information apply to that particular product.
+
 components:
+  schemas:
+    CodeListEntry:
+      type: object
+      x-tags:
+        - Codelists
+      required:
+        - key
+        - value
+        - properties
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+          description: The unique key of the codelist entry.
+        value:
+          type: string
+          description: The description of the codelist entry.
+        properties:
+          type: object
+          description: Feed-specific and codelist-specific properties.
+          patternProperties:
+            "Flag$":
+              type: boolean
+          additionalProperties:
+            type: [ "string", "null" ]
+      examples:
+        - key: BM
+          value: Bermuda
+          properties:
+            actionIdentification: "824"
+  
   responses:
     badRequest:
-      description: Bad Request
-      summary: |
+      x-summary: Bad Request
+      description: |
+        This error is returned when invalid path parameter or query parameter values are used.
+
+        Unfortunately the [JsonErrorHandler](https://github.com/hmrc/bootstrap-play/blob/466657a13dec046a94ace9d3138dde33bead82e3/bootstrap-backend-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/backend/http/JsonErrorHandler.scala) of [bootstrap-play](https://github.com/hmrc/bootstrap-play) unconditionally redacts anything which looks like a parameter parsing error.
+
+        We can implement our own error handler if this proves excessively unhelpful to consuming services.
       content:
         application/json:
           schema:
@@ -38,7 +84,7 @@ components:
                   - 400
               message:
                 type: string
-                description: The message indicating the cause of the bad request status.
+                description: A message indicating the cause of the bad request status.
                 examples:
                   - "bad request, cause: REDACTED"
 
@@ -48,6 +94,8 @@ paths:
       summary: Fetch Codelist Entries
       description: |
         This endpoint is used to fetch entries of a reference data codelist.
+      tags:
+        - Codelists
       parameters:
         - name: code
           in: path
@@ -80,7 +128,7 @@ paths:
         - name: properties
           in: query
           description: |
-            Used to specify property values used to filter entries in the response.
+            Used to filter entries by the feed-specific and codelist-specific properties in the `properties` object.
             
             **Note:** This API allows any query parameter name to be used for filtering feed-specific and codelist-specific properties. You do not need to prefix the query parameter with `properties`.
             
@@ -117,35 +165,35 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - key
-                    - value
-                    - properties
-                  additionalProperties: false
-                  properties:
-                    key:
-                      type: string
-                      description: The unique key of the codelist entry.
-                      examples:
-                        - BM
-                    value:
-                      type: string
-                      description: The description of the codelist entry.
-                      examples:
-                        - Bermuda
-                    properties:
-                      type: object
-                      description: Feed-specific and codelist-specific properties.
-                      patternProperties:
-                        "Flag$":
-                          type: boolean
-                      additionalProperties:
-                        type: [ "string", "null" ]
-                      examples:
-                        - actionIdentification: "823"
-                          responsibleDataManager: null
-                          memberStateFlag: false
+                  $ref: "#/components/schemas/CodeListEntry"
+                examples:
+                  - - key: B000
+                      value: Beer
+                      properties:
+                        actionIdentification: "1087"
+                        exciseProductsCategoryCode: "B"
+                        unitOfMeasureCode: "3"
+                        alcoholicStrengthApplicabilityFlag: true
+                        degreePlatoApplicabilityFlag: true
+                        densityApplicabilityFlag: false
+                    - key: E200
+                      value: Vegetable and animal oils Products falling within CN codes 1507 to 1518, if these are intended for use as heating fuel or motor fuel (Article 20(1)(a))
+                      properties:
+                        actionIdentification: "1088"
+                        exciseProductsCategoryCode: "E"
+                        unitOfMeasureCode: "2"
+                        alcoholicStrengthApplicabilityFlag: false
+                        degreePlatoApplicabilityFlag: false
+                        densityApplicabilityFlag: true
+                    - key: W200
+                      value: Still wine and still fermented beverages other than wine and beer
+                      properties:
+                        actionIdentification: "1116"
+                        exciseProductsCategoryCode: "W"
+                        unitOfMeasureCode: "3"
+                        alcoholicStrengthApplicabilityFlag: true
+                        degreePlatoApplicabilityFlag: false
+                        densityApplicabilityFlag: false
 
         400:
           $ref: "#/components/responses/badRequest"
