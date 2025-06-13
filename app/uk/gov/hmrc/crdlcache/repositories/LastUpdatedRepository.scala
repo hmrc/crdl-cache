@@ -50,7 +50,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
   }
 
   def fetchAllLastUpdated: Future[Seq[LastUpdated]] = {
-    collection.find().toFuture().map(_.toSeq)
+    collection.find().toFuture()
   }
 
   def setLastUpdated(
