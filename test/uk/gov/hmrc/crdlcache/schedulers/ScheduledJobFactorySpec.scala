@@ -26,18 +26,18 @@ import play.api.inject.Injector
 
 class ScheduledJobFactorySpec extends AnyFlatSpec with Matchers with MockitoSugar {
   "ScheduledJobFactory" should "instantiate jobs using Play Framework's Guice injector" in {
-    val bundle = mock[TriggerFiredBundle]
+    val bundle    = mock[TriggerFiredBundle]
     val jobDetail = mock[JobDetail]
     when(bundle.getJobDetail).thenReturn(jobDetail)
     when(jobDetail.getJobClass).thenReturn(classOf[ImportCodeListsJob])
 
     val injector = mock[Injector]
-    val job = mock[ImportCodeListsJob]
+    val job      = mock[ImportCodeListsJob]
     when(injector.instanceOf(classOf[ImportCodeListsJob])).thenReturn(job)
 
     val scheduler = mock[Scheduler]
-    val factory = new ScheduledJobFactory(injector)
-    val result = factory.newJob(bundle, scheduler)
+    val factory   = new ScheduledJobFactory(injector)
+    val result    = factory.newJob(bundle, scheduler)
 
     result mustBe job
   }
