@@ -238,35 +238,88 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain allElementsOf activeCodelistEntries)
+  }
+  
+  it should "apply filtering of entries according to the supplied keys" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = Some(Set("AW", "BL")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain allElementsOf activeCodelistEntries.take(2))
+  }
+
+  it should "not apply filtering of entries when the set of supplied keys is empty" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = Some(Set.empty),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain allElementsOf activeCodelistEntries)
   }
 
   it should "not return entries from other lists" in withCodeListEntries(codelistEntries) { _ =>
     repository
-      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain noElementsOf differentCodeListEntries)
   }
 
-  it should "not return entries that have been superseded" in withCodeListEntries(codelistEntries) {
-    _ =>
-      repository
-        .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
-        .map(_ must contain noElementsOf supersededCodeListEntries)
+  it should "not return entries from other lists even when matching keys are specified" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = Some(Set("B")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain noElementsOf differentCodeListEntries)
   }
 
-  it should "not return entries that are not yet active" in withCodeListEntries(codelistEntries) {
-    _ =>
-      repository
-        .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
-        .map(_ mustNot contain(postDatedEntry))
+  it should "not return entries that have been superseded" in withCodeListEntries(codelistEntries) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ must contain noElementsOf supersededCodeListEntries)
+  }
+
+  it should "not return entries that are not yet active" in withCodeListEntries(codelistEntries) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustNot contain(postDatedEntry))
   }
 
   it should "return entries that have been invalidated if the invalidation date is in the future" in withCodeListEntries(
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain(invalidatedIoEntry))
   }
 

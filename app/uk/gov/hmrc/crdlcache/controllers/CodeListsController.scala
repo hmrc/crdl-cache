@@ -36,10 +36,11 @@ class CodeListsController @Inject() (
 
   def fetchCodeListEntries(
     codeListCode: CodeListCode,
+    filterKeys: Option[Set[String]],
     activeAt: Option[Instant]
   ): Action[AnyContent] = Action.async { _ =>
     codeListsRepository
-      .fetchCodeListEntries(codeListCode, activeAt.getOrElse(clock.instant()))
+      .fetchCodeListEntries(codeListCode, filterKeys, activeAt.getOrElse(clock.instant()))
       .map { entries =>
         Ok(Json.toJson(entries))
       }
