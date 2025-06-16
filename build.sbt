@@ -5,6 +5,7 @@ ThisBuild / scalaVersion := "3.3.6"
 
 lazy val microservice = Project("crdl-cache", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .disablePlugins(JUnitXmlReportPlugin)
   .settings(CodeCoverageSettings.settings *)
   .settings(
     PlayKeys.playDefaultPort := 7252,
@@ -16,11 +17,17 @@ lazy val microservice = Project("crdl-cache", file("."))
       "-Wconf:msg=Flag.*repeatedly:s",
       "--coverage-exclude-classlikes:uk.gov.hmrc.crdlcache.controllers.testonly"
     ),
+    routesImport ++= Seq(
+      "java.time.Instant",
+      "uk.gov.hmrc.crdlcache.models.*",
+      "uk.gov.hmrc.crdlcache.models.Binders.bindableInstant"
+    ),
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
   )
 
 lazy val it = project
   .enablePlugins(PlayScala)
+  .disablePlugins(JUnitXmlReportPlugin)
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
   .settings(

@@ -62,9 +62,9 @@ class DpsConnectorSpec
 
   given actorSystem: ActorSystem = ActorSystem("test")
 
-  given mat: Materializer = Materializer(actorSystem)
+  given Materializer = Materializer(actorSystem)
 
-  given hc: HeaderCarrier = HeaderCarrier()
+  given HeaderCarrier = HeaderCarrier()
 
   private val clientId     = "a0ce80bc-14b6-48eb-a8c0-96f1a927a573"
   private val clientSecret = "5a8e64bc855c4e6445cab63cee753bc1"

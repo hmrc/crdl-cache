@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models
+package uk.gov.hmrc.crdlcache.controllers.documentation
 
-import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.crdlcache.views
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.time.Instant
+import javax.inject.{Inject, Singleton}
 
-case class LastUpdated(codeListCode: CodeListCode, snapshotVersion: Long, lastUpdated: Instant)
-
-object LastUpdated extends MongoJavatimeFormats.Implicits {
-  given format: Format[LastUpdated] = Json.format[LastUpdated]
+@Singleton
+class DocumentationController @Inject() (
+  cc: ControllerComponents,
+  view: views.html.OpenApi
+) extends BackendController(cc) {
+  def docs(version: String): Action[AnyContent] = Action {
+    Ok(view(version))
+  }
 }

@@ -37,7 +37,7 @@ import java.time.Instant
 class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData {
   private val BC08Config = CodeListConfig(BC08, SEED, "CountryCode")
 
-  val convertedEntry = CodeListSnapshotEntry(
+  private val convertedEntry = CodeListSnapshotEntry(
     "AW",
     "Aruba",
     Instant.parse("2024-01-17T00:00:00Z"),

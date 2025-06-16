@@ -17,17 +17,29 @@
 package uk.gov.hmrc.crdlcache.models
 
 import play.api.libs.json.Format
+import play.api.mvc.PathBindable
 
 sealed abstract class CodeListCode(val code: String) extends Product with Serializable {}
 
 object CodeListCode {
-  case object BC08                              extends CodeListCode("BC08")
-  case object BC66                              extends CodeListCode("BC66")
+  // BC08 (Country)
+  case object BC08 extends CodeListCode("BC08")
+  // BC66 (Excise Products Category)
+  case object BC66 extends CodeListCode("BC66")
+  // CL141 (Customs Offices)
+  case object CL141 extends CodeListCode("CL141")
+  // Unknown codelist code
   case class Unknown(override val code: String) extends CodeListCode(code)
 
-  private val values: Set[CodeListCode]        = Set(BC08)
+  private val values: Set[CodeListCode]        = Set(BC08, BC66, CL141)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
   given Format[CodeListCode] = Format.of[String].bimap(codes.withDefault(Unknown.apply), _.code)
 
-  def fromString(code: String) = codes.getOrElse(code, Unknown(code))
+  def fromString(code: String): CodeListCode = codes.getOrElse(code, Unknown(code))
+
+  given PathBindable[CodeListCode] = new PathBindable.Parsing[CodeListCode](
+    value => codes.getOrElse(value, throw new IllegalArgumentException("Unknown code list code")),
+    _.code,
+    (code, e) => s"Cannot parse parameter $code as CodeListCode: ${e.getMessage}"
+  )
 }

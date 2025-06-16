@@ -17,9 +17,11 @@
 package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.scaladsl.Source
-import org.mockito.ArgumentMatchers.{any, eq as equalTo}
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.mockito.ArgumentMatchers.{any, anyLong, eq as equalTo}
+import org.mockito.Mockito
+import org.mockito.Mockito.*
+import org.mongodb.scala.{ClientSession, MongoClient, MongoDatabase, SingleObservable}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
@@ -28,14 +30,17 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
+import uk.gov.hmrc.crdlcache.models.*
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
+import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.dps.{Relation, codeList}
 import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListResponse, DataItem, LanguageDescription}
 import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListSnapshot, Instruction, dps}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
+import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 
 import java.time.{Clock, Instant, LocalDate, ZoneOffset}
@@ -48,6 +53,10 @@ class ImportCodeListsJobSpec
   with ScalaFutures
   with IntegrationPatience
   with BeforeAndAfterEach {
+  private val mongoComponent        = mock[MongoComponent]
+  private val mongoClient           = mock[MongoClient]
+  private val mongoDatabase         = mock[MongoDatabase]
+  private val clientSession         = mock[ClientSession]
   private val lockRepository        = mock[MongoLockRepository]
   private val lastUpdatedRepository = mock[LastUpdatedRepository]
   private val codeListsRepository   = mock[CodeListsRepository]
@@ -60,6 +69,7 @@ class ImportCodeListsJobSpec
   given ExecutionContext = ExecutionContext.global
 
   private val codeListsJob = new ImportCodeListsJob(
+    mongoComponent,
     lockRepository,
     lastUpdatedRepository,
     codeListsRepository,
@@ -179,15 +189,32 @@ class ImportCodeListsJobSpec
   )
 
   override def beforeEach(): Unit = {
-    reset(lockRepository, lastUpdatedRepository, codeListsRepository, dpsConnector, appConfig)
+    reset(
+      mongoComponent,
+      mongoClient,
+      mongoDatabase,
+      clientSession,
+      lockRepository,
+      lastUpdatedRepository,
+      codeListsRepository,
+      dpsConnector,
+      appConfig
+    )
 
     // Job lock
     val mockLock = mock[Lock]
     when(lockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(mockLock)))
     when(lockRepository.releaseLock(any(), any())).thenReturn(Future.unit)
 
-    // Instruction execution
-    when(codeListsRepository.executeInstructions(any[List[Instruction]])).thenReturn(Future.unit)
+    // Transactions
+    when(mongoComponent.client).thenReturn(mongoClient)
+    when(mongoComponent.database).thenReturn(mongoDatabase)
+    when(mongoClient.startSession(any())).thenReturn(SingleObservable(clientSession))
+    when(clientSession.commitTransaction())
+      .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
+    when(clientSession.abortTransaction())
+      .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
+
   }
 
   "ImportCodeListsJob.importCodeLists" should "import the configured codelists when there is no last updated date stored" in {
@@ -196,11 +223,21 @@ class ImportCodeListsJobSpec
 
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
-    when(lastUpdatedRepository.fetchLastUpdated()).thenReturn(Future.successful(None))
-    when(lastUpdatedRepository.setLastUpdated(equalTo(fixedInstant))).thenReturn(Future.unit)
+
+    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+
+    when(
+      lastUpdatedRepository.setLastUpdated(
+        equalTo(clientSession),
+        any(),
+        anyLong(),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(BC08)))
+    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
@@ -223,9 +260,14 @@ class ImportCodeListsJobSpec
     )
       .thenReturn(Source.empty)
 
+    // Instruction execution
+    when(codeListsRepository.executeInstructions(equalTo(clientSession), any[List[Instruction]]))
+      .thenReturn(Future.unit)
+
     codeListsJob.importCodeLists().futureValue
 
     verify(codeListsRepository, times(1)).executeInstructions(
+      equalTo(clientSession),
       equalTo(
         List(
           UpsertEntry(
@@ -258,18 +300,52 @@ class ImportCodeListsJobSpec
       )
     )
 
-    verify(codeListsRepository, times(2)).executeInstructions(any())
-    verify(lastUpdatedRepository, times(1)).setLastUpdated(fixedInstant)
+    verify(codeListsRepository, times(2)).executeInstructions(equalTo(clientSession), any())
+
+    // There are two snapshots for BC08
+    verify(lastUpdatedRepository, times(2)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(BC08),
+      anyLong(),
+      equalTo(fixedInstant)
+    )
+
+    // There are no snapshots for BC66
+    verify(lastUpdatedRepository, never()).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(BC66),
+      anyLong(),
+      equalTo(fixedInstant)
+    )
+
+    // Two snapshots should have been committed
+    verify(clientSession, times(2)).commitTransaction()
   }
 
-  it should "import the configured codelists when there is a last updated date stored" in {
+  it should "import the configured codelists when there is a last updated record stored" in {
     // Last updated date
+    val storedInstant = Instant.parse("2025-03-13T00:00:00Z")
+
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
-    when(lastUpdatedRepository.fetchLastUpdated()).thenReturn(Future.successful(Some(fixedInstant)))
-    when(lastUpdatedRepository.setLastUpdated(equalTo(fixedInstant))).thenReturn(Future.unit)
+
+    when(lastUpdatedRepository.fetchLastUpdated(BC08))
+      .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, storedInstant))))
+
+    when(lastUpdatedRepository.fetchLastUpdated(BC66))
+      .thenReturn(Future.successful(Some(LastUpdated(BC66, 1, storedInstant))))
+
+    when(
+      lastUpdatedRepository.setLastUpdated(
+        equalTo(clientSession),
+        any(),
+        anyLong(),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(BC08)))
+    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
@@ -283,29 +359,160 @@ class ImportCodeListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC08), equalTo(fixedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(equalTo(BC08), equalTo(storedInstant))(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC66), equalTo(fixedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(equalTo(BC66), equalTo(storedInstant))(using any())
     )
       .thenReturn(Source.empty)
 
+    // Instruction execution
+    when(codeListsRepository.executeInstructions(equalTo(clientSession), any[List[Instruction]]))
+      .thenReturn(Future.unit)
+
     codeListsJob.importCodeLists().futureValue
 
-    verify(codeListsRepository, times(2)).executeInstructions(any())
-    verify(lastUpdatedRepository, times(1)).setLastUpdated(fixedInstant)
+    // There are two snapshots for BC08, but we already have snapshot 1
+    verify(codeListsRepository, times(1)).executeInstructions(equalTo(clientSession), any())
+
+    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(BC08),
+      equalTo(2L),
+      equalTo(fixedInstant)
+    )
+
+    // There are no snapshots for BC66
+    verify(lastUpdatedRepository, never()).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(BC66),
+      anyLong(),
+      equalTo(fixedInstant)
+    )
+
+    // Only one snapshot should have been committed
+    verify(clientSession, times(1)).commitTransaction()
+  }
+
+  it should "roll back when there is an issue importing one of the codelist snapshots" in {
+    val lastUpdated        = LocalDate.of(2025, 3, 12)
+    val lastUpdatedInstant = lastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
+
+    // Last updated date
+    when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
+
+    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+
+    when(
+      lastUpdatedRepository.setLastUpdated(
+        equalTo(clientSession),
+        any(),
+        anyLong(),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.unit)
+
+    // Codelist manipulation
+    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
+      .thenReturn(Future.successful(Set.empty[String]))
+      .thenReturn(Future.successful(Set("BL", "BM")))
+
+    // Codelist configuration
+    when(appConfig.codeListConfigs).thenReturn(
+      List(
+        CodeListConfig(BC08, SEED, "CountryCode"),
+        CodeListConfig(BC66, SEED, "ExciseProductsCategoryCode")
+      )
+    )
+
+    // DPS connector responses
+    when(
+      dpsConnector.fetchCodeListSnapshots(equalTo(BC08), equalTo(lastUpdatedInstant))(using any())
+    )
+      .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
+
+    when(
+      dpsConnector.fetchCodeListSnapshots(equalTo(BC66), equalTo(lastUpdatedInstant))(using any())
+    )
+      .thenReturn(Source.empty)
+
+    // Instruction execution
+    when(codeListsRepository.executeInstructions(equalTo(clientSession), any[List[Instruction]]))
+      .thenReturn(Future.unit)
+      .thenReturn(Future.failed(MongoError.NotAcknowledged))
+
+    codeListsJob.importCodeLists().failed.futureValue mustBe MongoError.NotAcknowledged
+
+    verify(codeListsRepository, times(1)).executeInstructions(
+      equalTo(clientSession),
+      equalTo(
+        List(
+          UpsertEntry(
+            CodeListEntry(
+              BC08,
+              "BL",
+              "Saint Barthélemy",
+              Instant.parse("2024-01-17T00:00:00Z"),
+              None,
+              Some(Instant.parse("2024-01-17T00:00:00Z")),
+              Json.obj(
+                "actionIdentification" -> "823"
+              )
+            )
+          ),
+          UpsertEntry(
+            CodeListEntry(
+              BC08,
+              "BM",
+              "Bermuda",
+              Instant.parse("2024-01-17T00:00:00Z"),
+              None,
+              Some(Instant.parse("2024-01-17T00:00:00Z")),
+              Json.obj(
+                "actionIdentification" -> "824"
+              )
+            )
+          )
+        )
+      )
+    )
+
+    verify(codeListsRepository, times(2)).executeInstructions(equalTo(clientSession), any())
+
+    // There are two snapshots for BC08, but the second snapshot import failed
+    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(BC08),
+      equalTo(1L),
+      equalTo(fixedInstant)
+    )
+
+    // There are no snapshots for BC66
+    verify(lastUpdatedRepository, never()).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(BC66),
+      anyLong(),
+      equalTo(fixedInstant)
+    )
+
+    // The first snapshot should have been committed, but the second should be rolled back
+    val inOrder = Mockito.inOrder(clientSession)
+    inOrder.verify(clientSession, times(1)).commitTransaction()
+    inOrder.verify(clientSession, times(1)).abortTransaction()
   }
 
   "ImportCodeListsJob.processSnapshot" should "produce a list of instructions for a snapshot that contains only new entries" in {
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(BC08)))
+    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
 
     val codeListConfig = CodeListConfig(BC08, SEED, "CountryCode")
 
     val instructions = codeListsJob
       .processSnapshot(
+        clientSession,
         codeListConfig,
         CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage1.elements.head)
       )
@@ -343,13 +550,14 @@ class ImportCodeListsJobSpec
   }
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(BC08)))
+    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
     val codeListConfig = CodeListConfig(BC08, SEED, "CountryCode")
 
     val instructions = codeListsJob
       .processSnapshot(
+        clientSession,
         codeListConfig,
         CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage2.elements.head)
       )

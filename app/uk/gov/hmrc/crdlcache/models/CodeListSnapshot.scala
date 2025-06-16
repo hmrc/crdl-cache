@@ -22,7 +22,7 @@ import uk.gov.hmrc.crdlcache.models.dps.codeList
 case class CodeListSnapshot(
   code: CodeListCode,
   name: String,
-  version: Int,
+  version: Long,
   entries: Set[CodeListSnapshotEntry]
 )
 

@@ -17,16 +17,16 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions, Indexes, Updates}
+import org.mongodb.scala.*
+import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.model.*
+import org.mongodb.scala.model.Filters.*
+import uk.gov.hmrc.crdlcache.models
+import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, Instruction}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import org.mongodb.scala.model.Filters.*
-import org.mongodb.scala.*
-import org.mongodb.scala.bson.BsonNull
-import uk.gov.hmrc.crdlcache.models
-import uk.gov.hmrc.crdlcache.models.errors.MongoError
-import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
+import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -50,19 +50,30 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
   )
   with Transactions {
 
-  given tc: TransactionConfiguration = TransactionConfiguration.strict
-
-  def fetchCodeListEntryKeys(code: CodeListCode): Future[Set[String]] =
+  def fetchCodeListEntryKeys(session: ClientSession, code: CodeListCode): Future[Set[String]] =
     collection
       .find(
+        session,
         and(
           equal("codeListCode", code.code),
-          or(equal("activeTo", null), exists("activeTo", false))
+          equal("activeTo", null)
         )
       )
       .map(_.key)
       .toFuture
       .map(_.toSet)
+
+  def fetchCodeListEntries(code: CodeListCode, activeAt: Instant): Future[Seq[CodeListEntry]] =
+    collection
+      .find(
+        and(
+          equal("codeListCode", code.code),
+          lte("activeFrom", activeAt),
+          or(equal("activeTo", null), gt("activeTo", activeAt))
+        )
+      )
+      .sort(Sorts.ascending("key"))
+      .toFuture()
 
   private def supersedePreviousEntries(
     session: ClientSession,
@@ -109,43 +120,40 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
           throw MongoError.NoMatchingDocument
       }
 
-  def executeInstructions(instructions: List[Instruction]): Future[Unit] =
-    withSessionAndTransaction { session =>
-      instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
-        (previousInstruction, nextInstruction) =>
-          previousInstruction.flatMap { _ =>
-            nextInstruction match {
-              case models.Instruction.UpsertEntry(codeListEntry) =>
-                for {
-                  _ <- supersedePreviousEntries(
-                    session,
-                    codeListEntry.codeListCode,
-                    codeListEntry.key,
-                    codeListEntry.activeFrom,
-                    includeActiveFrom = false
-                  )
-                  _ <- upsertEntry(session, codeListEntry)
-                } yield ()
-              case models.Instruction.InvalidateEntry(codeListEntry) =>
-                supersedePreviousEntries(
+  def executeInstructions(session: ClientSession, instructions: List[Instruction]): Future[Unit] =
+    instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
+      (previousInstruction, nextInstruction) =>
+        previousInstruction.flatMap { _ =>
+          nextInstruction match {
+            case models.Instruction.UpsertEntry(codeListEntry) =>
+              for {
+                _ <- supersedePreviousEntries(
                   session,
                   codeListEntry.codeListCode,
                   codeListEntry.key,
                   codeListEntry.activeFrom,
-                  includeActiveFrom = true
+                  includeActiveFrom = false
                 )
-              case models.Instruction.RecordMissingEntry(codeListCode, key, removedAt) =>
-                supersedePreviousEntries(
-                  session,
-                  codeListCode,
-                  key,
-                  removedAt,
-                  includeActiveFrom = true
-                )
-            }
+                _ <- upsertEntry(session, codeListEntry)
+              } yield ()
+            case models.Instruction.InvalidateEntry(codeListEntry) =>
+              supersedePreviousEntries(
+                session,
+                codeListEntry.codeListCode,
+                codeListEntry.key,
+                codeListEntry.activeFrom,
+                includeActiveFrom = true
+              )
+            case models.Instruction.RecordMissingEntry(codeListCode, key, removedAt) =>
+              supersedePreviousEntries(
+                session,
+                codeListCode,
+                key,
+                removedAt,
+                includeActiveFrom = true
+              )
           }
-      }
-
+        }
     }
 
 }
