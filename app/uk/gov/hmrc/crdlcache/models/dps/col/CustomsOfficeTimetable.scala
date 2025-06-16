@@ -18,7 +18,7 @@ package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
 case class CustomsOfficeTimetable(
-  seasoncode: String, // saw 1 value
+  seasoncode: String,
   seasonname: Option[String],
   seasonstartdate: String,
   seasonenddate: String,

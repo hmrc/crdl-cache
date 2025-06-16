@@ -20,7 +20,7 @@ import play.api.libs.json.{Json, Reads}
 
 case class RDEntryStatus(
   state: String,
-  activefrom: String//change to localdate on the internal model
+  activefrom: String
 )
 
 object RDEntryStatus {

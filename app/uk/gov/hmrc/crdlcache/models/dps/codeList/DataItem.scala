@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models.dps.codeList
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.DataItem
 import DataItem.uncapitalize
 
 case class DataItem(dataitem_name: String, dataitem_value: Option[String]) {

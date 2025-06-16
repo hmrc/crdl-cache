@@ -21,10 +21,10 @@ import play.api.libs.json.{Json, Reads}
 case class CustomsOfficeDetail(
   customsofficeusualname: String,
   languagecode: String,
-  city: String,             // Some city names having .
-  prefixsuffixflag: String, // 0 or 1 values
+  city: String,
+  prefixsuffixflag: String,
   prefixsuffixlevel: Option[String],
-  spacetoadd: String, // 0 or 1 values
+  spacetoadd: String,
   streetandnumber: String
 )
 

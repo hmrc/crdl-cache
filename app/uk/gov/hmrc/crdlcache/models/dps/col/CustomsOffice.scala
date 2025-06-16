@@ -37,7 +37,7 @@ case class CustomsOffice(
   telexnumber: Option[String],
   geoinfocode: Option[String],
   regioncode: Option[String],
-  traderdedicated: String, // zero or 1 values?
+  traderdedicated: String,
   dedicatedtraderlanguagecode: Option[String],
   dedicatedtradername: Option[String],
   customsofficespecificnotes: List[SpecificNotes],
@@ -45,7 +45,6 @@ case class CustomsOffice(
   customsofficetimetable: CustomsOfficeTimetable
 )
 
-//data type need to verified
 object CustomsOffice {
   given Reads[CustomsOffice] = Json.reads[CustomsOffice]
 }

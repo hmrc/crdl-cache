@@ -18,7 +18,6 @@ package uk.gov.hmrc.crdlcache.models.dps.codeList
 
 import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.crdlcache.models.CodeListCode
-import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListEntry, CodeListSnapshot}
 
 case class CodeListSnapshot(
   code_list_code: CodeListCode,

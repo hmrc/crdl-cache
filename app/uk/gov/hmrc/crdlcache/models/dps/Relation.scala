@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models.dps
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.Relation
 
 case class Relation(rel: RelationType, href: String)
 
