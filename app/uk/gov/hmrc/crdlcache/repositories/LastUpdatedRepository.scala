@@ -37,7 +37,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 ) extends PlayMongoRepository[LastUpdated](
     mongoComponent,
     collectionName = "last-updated",
-    domainFormat = LastUpdated.format,
+    domainFormat = LastUpdated.mongoFormat,
     indexes = Seq(IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(true)))
   )
   with Transactions {
@@ -47,6 +47,10 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 
   def fetchLastUpdated(codeListCode: CodeListCode): Future[Option[LastUpdated]] = {
     collection.find(equal("codeListCode", codeListCode.code)).headOption()
+  }
+
+  def fetchAllLastUpdated: Future[Seq[LastUpdated]] = {
+    collection.find().toFuture()
   }
 
   def setLastUpdated(
