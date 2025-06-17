@@ -30,8 +30,8 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
-import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
+import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
@@ -53,7 +53,8 @@ class CodeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
-  private val repository = mock[CodeListsRepository]
+  private val repository            = mock[CodeListsRepository]
+  private val lastUpdatedRepository = mock[LastUpdatedRepository]
 
   private val fixedInstant = Instant.parse("2025-06-05T00:00:00Z")
 
@@ -82,14 +83,20 @@ class CodeListsControllerSpec
     )
   )
 
+  private val lastUpdatedEntries = List(LastUpdated(BC08, 1, Instant.parse("2025-06-29T00:00:00Z")),
+    LastUpdated(BC66, 1, Instant.parse("2025-06-28T00:00:00Z"))
+  )
+
   override def beforeEach(): Unit = {
     reset(repository)
+    reset(lastUpdatedRepository)
   }
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .overrides(
         bind[CodeListsRepository].toInstance(repository),
+        bind[LastUpdatedRepository].toInstance(lastUpdatedRepository),
         bind[HttpClientV2].toInstance(httpClientV2),
         bind[Clock].toInstance(Clock.fixed(fixedInstant, ZoneOffset.UTC))
       )
@@ -331,6 +338,45 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  "CodeListsController.fetchCodeListVersions" should "return 200 OK when there are no errors" in {
+    when(lastUpdatedRepository.fetchAllLastUpdated)
+      .thenReturn(Future.successful(lastUpdatedEntries))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.arr(
+      Json.obj(
+        "codeListCode"        -> "BC08",
+        "snapshotVersion"      -> 1,
+        "lastUpdated" -> "2025-06-29T00:00:00Z"
+      ),
+      Json.obj(
+        "codeListCode"        -> "BC66",
+        "snapshotVersion"      -> 1,
+        "lastUpdated" -> "2025-06-28T00:00:00Z"
+      )
+    )
+
+    response.status mustBe Status.OK
+  }
+
+  it should "return 500 Internal Server Error when there is an error fetching from the last updated repository" in {
+    when(lastUpdatedRepository.fetchAllLastUpdated)
+      .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/")
         .execute[HttpResponse]
         .futureValue
 
