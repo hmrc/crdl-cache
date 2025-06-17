@@ -98,4 +98,18 @@ class LastUpdatedRepositorySpec
       lastUpdated2 mustBe Some(LastUpdated(BC66, 1, instant2))
     }
   }
+
+  it should "return the latest last updated value only for all the codelists" in withSession {
+    session =>
+      val instant1 = clock.instant()
+      val instant2 = instant1.plusSeconds(20)
+      for {
+        _           <- repository.setLastUpdated(session, BC08, 1, instant1)
+        _           <- repository.setLastUpdated(session, BC08, 2, instant2)
+        _           <- repository.setLastUpdated(session, BC66, 1, instant2)
+        lastUpdated <- repository.fetchAllLastUpdated
+      } yield {
+        lastUpdated mustBe List(LastUpdated(BC08, 2, instant2), LastUpdated(BC66, 1, instant2))
+      }
+  }
 }

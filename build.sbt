@@ -5,6 +5,7 @@ ThisBuild / scalaVersion := "3.3.6"
 
 lazy val microservice = Project("crdl-cache", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+  .disablePlugins(JUnitXmlReportPlugin)
   .settings(CodeCoverageSettings.settings *)
   .settings(
     PlayKeys.playDefaultPort := 7252,
@@ -30,6 +31,7 @@ lazy val microservice = Project("crdl-cache", file("."))
 
 lazy val it = project
   .enablePlugins(PlayScala)
+  .disablePlugins(JUnitXmlReportPlugin)
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
   .settings(
