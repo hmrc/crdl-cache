@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.controllers
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
-import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
+import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.{Clock, Instant}
@@ -30,6 +30,7 @@ import scala.concurrent.ExecutionContext
 class CodeListsController @Inject() (
   cc: ControllerComponents,
   codeListsRepository: CodeListsRepository,
+  lastUpdatedRepository: LastUpdatedRepository,
   clock: Clock
 )(using ec: ExecutionContext)
   extends BackendController(cc) {
@@ -49,6 +50,13 @@ class CodeListsController @Inject() (
       )
       .map { entries =>
         Ok(Json.toJson(entries))
+      }
+  }
+
+  def fetchCodeListVersions: Action[AnyContent] = Action.async { _ =>
+    lastUpdatedRepository.fetchAllLastUpdated
+      .map { lastUpdatedEntries =>
+        Ok(Json.toJson(lastUpdatedEntries))
       }
   }
 }
