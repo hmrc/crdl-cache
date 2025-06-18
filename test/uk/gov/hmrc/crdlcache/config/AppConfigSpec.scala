@@ -74,6 +74,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
+      CodeListConfig(BC36, SEED, "ExciseProductCode"),
       CodeListConfig(BC66, SEED, "ExciseProductsCategoryCode")
     )
   }
