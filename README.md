@@ -61,11 +61,13 @@ This endpoint is used to fetch entries of a reference data codelist.
 
     * `code: String` - The codelist code, e.g. `BC08`, `BC36`.
 
+<!-- The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
 * **Query Parameters**
 
   **Optional:**
 
     * `activeAt: Instant` - The timestamp at which to view entries. If omitted the current timestamp is used.
+-->
 
 * **Success Response:**
     * **Status:** 200 <br/>

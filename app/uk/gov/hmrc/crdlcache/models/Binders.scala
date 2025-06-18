@@ -29,4 +29,21 @@ object Binders {
     formatter.format,
     (key, e) => s"Cannot parse parameter $key as Instant: ${e.getMessage}"
   )
+
+  given bindableSet[A: QueryStringBindable]: QueryStringBindable[Set[A]] =
+    new QueryStringBindable[Set[A]] {
+      private val bindableSeq = summon[QueryStringBindable[Seq[A]]]
+
+      override def unbind(key: String, value: Set[A]): String =
+        bindableSeq.unbind(key, value.toSeq)
+
+      override def bind(
+        key: String,
+        params: Map[String, Seq[String]]
+      ): Option[Either[String, Set[A]]] =
+        params.get(key).flatMap { paramValues =>
+          val values = paramValues.flatMap(_.split(",")).filterNot(_.isEmpty)
+          bindableSeq.bind(key, Map(key -> values)).map(_.map(_.toSet))
+        }
+    }
 }
