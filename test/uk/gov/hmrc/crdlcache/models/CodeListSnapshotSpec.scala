@@ -30,7 +30,7 @@ class CodeListSnapshotSpec extends AnyFlatSpec with Matchers with TestData {
   private val BC08Config = CodeListConfig(BC08, SEED, "CountryCode")
 
   "CodeListSnapshot.fromDpsSnapshot" should "convert a DPS codelist snapshot to the crdl-cache model" in {
-    val inputSnapshot = dps.CodeListSnapshot(BC08, "Country", 1, List(BC08Aruba))
+    val inputSnapshot = dps.codeList.CodeListSnapshot(BC08, "Country", 1, List(BC08Aruba))
 
     val expectedSnapshot = CodeListSnapshot(
       BC08,

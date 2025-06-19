@@ -23,7 +23,8 @@ import org.apache.pekko.stream.scaladsl
 import org.apache.pekko.stream.scaladsl.Source
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode
-import uk.gov.hmrc.crdlcache.models.dps.CodeListResponse
+import uk.gov.hmrc.crdlcache.models.dps.codeList.CodeListResponse
+import uk.gov.hmrc.crdlcache.models.dps.col.CustomsOfficeListResponse
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -53,7 +54,9 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   private val base64Encoder = Base64.getEncoder
   private val dateFormatter = DateTimeFormatter.ISO_INSTANT
 
-  private val baseUrl = url"${appConfig.dpsUrl}/${appConfig.dpsPath.split('/')}"
+  private val baseRefDataUrl = url"${appConfig.dpsUrl}/${appConfig.dpsRefDataPath.split('/')}"
+  private val baseCustomsOfficeUrl =
+    url"${appConfig.dpsUrl}/${appConfig.dpsCustomsOfficesPath.split('/')}"
 
   private lazy val basicAuthSecret = {
     val clientIdAndSecret =
@@ -76,7 +79,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       "$orderby"          -> "snapshotversion ASC"
     )
 
-    val dpsUrl = url"$baseUrl?$queryParams"
+    val dpsUrl = url"$baseRefDataUrl?$queryParams"
 
     retryFor(s"fetch of $code snapshots at index $startIndex as of $lastUpdatedDate") {
       // No point in retrying if our request is wrong
@@ -106,18 +109,44 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       }
     }
 
-  def fetchCodeList(code: CodeListCode)(using
-    ec: ExecutionContext,
-    hc: HeaderCarrier
-  ): Future[Either[UpstreamErrorResponse, CodeListResponse]] = {
-    val queryParams = Map("code_list_code" -> code.code)
-    val dpsUrl      = url"${appConfig.dpsUrl}/${appConfig.dpsPath}?$queryParams"
-    httpClient
-      .get(dpsUrl)
-      .setHeader(
-        "correlationId"           -> UUID.randomUUID().toString,
-        HeaderNames.authorisation -> basicAuthSecret
-      )
-      .execute[Either[UpstreamErrorResponse, CodeListResponse]]
+  def fetchCustomsOfficeLists(using
+    ec: ExecutionContext
+  ): Source[CustomsOfficeListResponse, NotUsed] = Source
+    .unfoldAsync[Int, CustomsOfficeListResponse](0) { startIndex =>
+      fetchCustomsOfficeList(startIndex).map { response =>
+        if (response.elements.isEmpty)
+          None
+        else
+          Some((startIndex + 10, response))
+      }
+    }
+
+  private def fetchCustomsOfficeList(
+    startIndex: Int
+  )(using ec: ExecutionContext): Future[CustomsOfficeListResponse] = {
+    val queryParams = Map(
+      "$start_index" -> startIndex,
+      "$count"       -> 10
+    )
+
+    val dpsUrl = url"$baseCustomsOfficeUrl?$queryParams"
+
+    retryFor(s"fetch of customs office list at index $startIndex") {
+      // No point in retrying if our request is wrong
+      case Upstream4xxResponse(_) => false
+      // Attempt to recover from intermittent connectivity issues
+      case Upstream5xxResponse(_) => true
+    } {
+      httpClient
+        .get(dpsUrl)(HeaderCarrier())
+        .setHeader(
+          "correlationId"           -> UUID.randomUUID().toString,
+          HeaderNames.authorisation -> basicAuthSecret
+        )
+        .execute[CustomsOfficeListResponse](using
+          throwOnFailure(readEitherOf[CustomsOfficeListResponse]),
+          ec
+        )
+    }
   }
 }

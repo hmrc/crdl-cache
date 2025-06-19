@@ -1,0 +1,232 @@
+{
+  "name": "iv_crdl_customs_office",
+  "elements": [
+    {
+      "rdentrystatus": {
+        "state": "valid",
+        "activefrom": "01-05-2025"
+      },
+      "referencenumber": "IT223100",
+      "referencenumbermainoffice": null,
+      "referencenumberhigherauthority": "ITP00002",
+      "referencenumbercompetentauthorityofenquiry": null,
+      "referencenumbercompetentauthorityofrecovery": null,
+      "referencenumbertakeover": null,
+      "countrycode": "IT",
+      "emailaddress": "test@test.it",
+      "unlocodeid": null,
+      "nctsentrydate": "20250501",
+      "nearestoffice": null,
+      "postalcode": "40121",
+      "phonenumber": "0039 435345",
+      "faxnumber": "0039 435345",
+      "telexnumber": null,
+      "geoinfocode": "Q",
+      "regioncode": null,
+      "traderdedicated": "0",
+      "dedicatedtraderlanguagecode": "IT",
+      "dedicatedtradername": "TIN",
+      "customsofficespecificnotes": [],
+      "customsofficelsd": [
+        {
+          "customsofficeusualname": "EMILIA 1 BOLOGNA",
+          "languagecode": "IT",
+          "city": "BOLOGNA",
+          "prefixsuffixflag": "0",
+          "prefixsuffixlevel": "A",
+          "spacetoadd": "1",
+          "streetandnumber": "VIALE PIETRAMELLARA, 1/2"
+        }
+      ],
+      "customsofficetimetable": {
+        "seasoncode": "1",
+        "seasonname": "ALL YEAR",
+        "seasonstartdate": "20180101",
+        "seasonenddate": "20991231",
+        "customsofficetimetableline": [
+          {
+            "dayintheweekbeginday": "1",
+            "openinghourstimefirstperiodfrom": "0800",
+            "openinghourstimefirstperiodto": "1800",
+            "dayintheweekendday": "6",
+            "openinghourstimesecondperiodfrom": null,
+            "openinghourstimesecondperiodto": null,
+            "customsofficeroletrafficcompetence": [
+              {
+                "rolename": "EXC",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "REG",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "SCO",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "PLA",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "DIS",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "RFC",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "EXT",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "EXP",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "IPR",
+                "traffictype": "N/A"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "rdentrystatus": {
+        "state": "valid",
+        "activefrom": "01-05-2025"
+      },
+      "referencenumber": "IT223101",
+      "referencenumbermainoffice": null,
+      "referencenumberhigherauthority": "ITP00002",
+      "referencenumbercompetentauthorityofenquiry": "IT223101",
+      "referencenumbercompetentauthorityofrecovery": "IT223101",
+      "referencenumbertakeover": null,
+      "countrycode": "IT",
+      "emailaddress": "test@it",
+      "unlocodeid": null,
+      "nctsentrydate": "20250501",
+      "nearestoffice": null,
+      "postalcode": "40131",
+      "phonenumber": "1234 045483382",
+      "faxnumber": "2343 34543",
+      "telexnumber": null,
+      "geoinfocode": "Q",
+      "regioncode": null,
+      "traderdedicated": "0",
+      "dedicatedtraderlanguagecode": "IT",
+      "dedicatedtradername": "TIN",
+      "customsofficespecificnotes": [],
+      "customsofficelsd": [
+        {
+          "customsofficeusualname": "AEROPORTO DI BOLOGNA",
+          "languagecode": "IT",
+          "city": "BOLOGNA",
+          "prefixsuffixflag": "0",
+          "prefixsuffixlevel": "A",
+          "spacetoadd": "1",
+          "streetandnumber": "VIA DELL'AEROPORTO, 1"
+        }
+      ],
+      "customsofficetimetable": {
+        "seasoncode": "1",
+        "seasonname": "ALL YEAR",
+        "seasonstartdate": "20180101",
+        "seasonenddate": "20991231",
+        "customsofficetimetableline": [
+          {
+            "dayintheweekbeginday": "1",
+            "openinghourstimefirstperiodfrom": "0000",
+            "openinghourstimefirstperiodto": "2359",
+            "dayintheweekendday": "6",
+            "openinghourstimesecondperiodfrom": null,
+            "openinghourstimesecondperiodto": null,
+            "customsofficeroletrafficcompetence": [
+              {
+                "rolename": "DEP",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "INC",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "TXT",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "DES",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "ENQ",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "ENT",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "EXC",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "EXP",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "EXT",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "REC",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "REG",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "TRA",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "EIN",
+                "traffictype": "AIR"
+              },
+              {
+                "rolename": "PLA",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "DIS",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "RFC",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "IPR",
+                "traffictype": "N/A"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office"
+    },
+    {
+      "rel": "next",
+      "title": "Next interval",
+      "href": "?%24start_index=10&%24count=10"
+    }
+  ]
+}

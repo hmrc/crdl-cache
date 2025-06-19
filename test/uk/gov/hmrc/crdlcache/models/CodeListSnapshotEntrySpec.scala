@@ -23,6 +23,8 @@ import uk.gov.hmrc.crdlcache.config.CodeListConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Update}
+import uk.gov.hmrc.crdlcache.models.dps.codeList
+import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListEntry, DataItem, LanguageDescription}
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   LanguageDescriptionMissing,
   RequiredDataItemMissing,
@@ -53,7 +55,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   it should "fail when the key property is missing" in {
     val dataItemMissing = the[RequiredDataItemMissing] thrownBy CodeListSnapshotEntry.fromDpsEntry(
       BC08Config,
-      dps.CodeListEntry(List.empty, List.empty)
+      CodeListEntry(List.empty, List.empty)
     )
 
     dataItemMissing.itemName mustBe BC08Config.keyProperty
@@ -63,7 +65,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     assertThrows[LanguageDescriptionMissing.type] {
       CodeListSnapshotEntry.fromDpsEntry(
         BC08Config,
-        dps.CodeListEntry(List(dps.DataItem(BC08Config.keyProperty, Some("AW"))), List.empty)
+        codeList.CodeListEntry(List(DataItem(BC08Config.keyProperty, Some("AW"))), List.empty)
       )
     }
   }
@@ -72,9 +74,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     val dataItemsMissing =
       the[RequiredDataItemsMissing] thrownBy CodeListSnapshotEntry.fromDpsEntry(
         BC08Config,
-        dps.CodeListEntry(
-          List(dps.DataItem(BC08Config.keyProperty, Some("AW"))),
-          List(dps.LanguageDescription("en", "Aruba"))
+        codeList.CodeListEntry(
+          List(codeList.DataItem(BC08Config.keyProperty, Some("AW"))),
+          List(LanguageDescription("en", "Aruba"))
         )
       )
 
@@ -82,12 +84,12 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   }
 
   it should "succeed when the operation property is missing" in {
-    val inputEntry = dps.CodeListEntry(
+    val inputEntry = codeList.CodeListEntry(
       List(
-        dps.DataItem(BC08Config.keyProperty, Some("AW")),
-        dps.DataItem("Action_ActivationDate", Some("17-01-2024"))
+        codeList.DataItem(BC08Config.keyProperty, Some("AW")),
+        codeList.DataItem("Action_ActivationDate", Some("17-01-2024"))
       ),
-      List(dps.LanguageDescription("en", "Aruba"))
+      List(codeList.LanguageDescription("en", "Aruba"))
     )
 
     val expectedEntry = CodeListSnapshotEntry(
@@ -103,12 +105,12 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   }
 
   it should "succeed when the modification date property is missing" in {
-    val inputEntry = dps.CodeListEntry(
+    val inputEntry = codeList.CodeListEntry(
       List(
-        dps.DataItem(BC08Config.keyProperty, Some("AW")),
-        dps.DataItem("Action_ActivationDate", Some("17-01-2024"))
+        codeList.DataItem(BC08Config.keyProperty, Some("AW")),
+        codeList.DataItem("Action_ActivationDate", Some("17-01-2024"))
       ),
-      List(dps.LanguageDescription("en", "Aruba"))
+      List(codeList.LanguageDescription("en", "Aruba"))
     )
 
     val expectedEntry = CodeListSnapshotEntry(
@@ -127,13 +129,13 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     val unknownOperation =
       the[UnknownOperation] thrownBy CodeListSnapshotEntry.fromDpsEntry(
         BC08Config,
-        dps.CodeListEntry(
+        codeList.CodeListEntry(
           List(
-            dps.DataItem(BC08Config.keyProperty, Some("AW")),
-            dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-            dps.DataItem("Action_Operation", Some("X"))
+            codeList.DataItem(BC08Config.keyProperty, Some("AW")),
+            codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+            codeList.DataItem("Action_Operation", Some("X"))
           ),
-          List(dps.LanguageDescription("en", "Aruba"))
+          List(codeList.LanguageDescription("en", "Aruba"))
         )
       )
 
@@ -141,13 +143,13 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   }
 
   it should "succeed when the operation property is recognised" in {
-    val inputEntry = dps.CodeListEntry(
+    val inputEntry = codeList.CodeListEntry(
       List(
-        dps.DataItem(BC08Config.keyProperty, Some("AW")),
-        dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-        dps.DataItem("Action_Operation", Some("C"))
+        codeList.DataItem(BC08Config.keyProperty, Some("AW")),
+        codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+        codeList.DataItem("Action_Operation", Some("C"))
       ),
-      List(dps.LanguageDescription("en", "Aruba"))
+      List(codeList.LanguageDescription("en", "Aruba"))
     )
 
     val expectedEntry = CodeListSnapshotEntry(
@@ -163,13 +165,13 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   }
 
   it should "convert '*Flag' properties that equal String '1' to Boolean 'true'" in {
-    val inputEntry = dps.CodeListEntry(
+    val inputEntry = codeList.CodeListEntry(
       List(
-        dps.DataItem(BC08Config.keyProperty, Some("AW")),
-        dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-        dps.DataItem("DensityApplicabilityFlag", Some("1"))
+        codeList.DataItem(BC08Config.keyProperty, Some("AW")),
+        codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+        codeList.DataItem("DensityApplicabilityFlag", Some("1"))
       ),
-      List(dps.LanguageDescription("en", "Aruba"))
+      List(codeList.LanguageDescription("en", "Aruba"))
     )
 
     val expectedEntry = CodeListSnapshotEntry(
@@ -185,13 +187,13 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   }
 
   it should "convert '*Flag' properties that equal anything else to Boolean 'false'" in {
-    val inputEntry = dps.CodeListEntry(
+    val inputEntry = codeList.CodeListEntry(
       List(
-        dps.DataItem(BC08Config.keyProperty, Some("AW")),
-        dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-        dps.DataItem("DensityApplicabilityFlag", Some("0"))
+        codeList.DataItem(BC08Config.keyProperty, Some("AW")),
+        codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+        codeList.DataItem("DensityApplicabilityFlag", Some("0"))
       ),
-      List(dps.LanguageDescription("en", "Aruba"))
+      List(codeList.LanguageDescription("en", "Aruba"))
     )
 
     val expectedEntry = CodeListSnapshotEntry(
