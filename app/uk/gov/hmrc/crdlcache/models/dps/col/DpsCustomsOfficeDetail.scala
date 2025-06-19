@@ -18,16 +18,16 @@ package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
 
-case class TimetableLine(
-  dayintheweekbeginday: String,
-  openinghourstimefirstperiodfrom: String,
-  openinghourstimefirstperiodto: String,
-  dayintheweekendday: String,
-  openinghourstimesecondperiodfrom: Option[String],
-  openinghourstimesecondperiodto: Option[String],
-  customsofficeroletrafficcompetence: List[RoleTrafficCompetence]
+case class DpsCustomsOfficeDetail(
+  customsofficeusualname: String,
+  languagecode: String,
+  city: String,
+  prefixsuffixflag: String,
+  prefixsuffixlevel: Option[String],
+  spacetoadd: String,
+  streetandnumber: String
 )
 
-object TimetableLine {
-  given Reads[TimetableLine] = Json.reads[TimetableLine]
+object DpsCustomsOfficeDetail {
+  given Reads[DpsCustomsOfficeDetail] = Json.reads[DpsCustomsOfficeDetail]
 }

@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.Relation
 
-case class CodeListResponse(elements: List[CodeListSnapshot], links: List[Relation])
+case class DpsTimetableLine(
+  dayintheweekbeginday: String,
+  openinghourstimefirstperiodfrom: String,
+  openinghourstimefirstperiodto: String,
+  dayintheweekendday: String,
+  openinghourstimesecondperiodfrom: Option[String],
+  openinghourstimesecondperiodto: Option[String],
+  customsofficeroletrafficcompetence: List[DpsRoleTrafficCompetence]
+)
 
-object CodeListResponse {
-  given Reads[CodeListResponse] = Json.reads[CodeListResponse]
+object DpsTimetableLine {
+  given Reads[DpsTimetableLine] = Json.reads[DpsTimetableLine]
 }

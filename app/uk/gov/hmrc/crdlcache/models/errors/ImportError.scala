@@ -36,6 +36,11 @@ enum ImportError(val message: String, val cause: Throwable = null)
 
   case LanguageDescriptionMissing
     extends ImportError(
-      s"Language description for language code 'en' was missing from a reference data entry"
+      "Language description for language code 'en' was missing from a reference data entry"
+    )
+
+  case CustomsOfficeDetailMissing(referenceNumber: String)
+    extends ImportError(
+      s"CustomsOfficeDetail was missing from customs office data from referenceNumber: '$referenceNumber'"
     )
 }

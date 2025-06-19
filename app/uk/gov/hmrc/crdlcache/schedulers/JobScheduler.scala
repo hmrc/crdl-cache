@@ -41,19 +41,23 @@ class JobScheduler @Inject() (
   quartz.setJobFactory(jobFactory)
   lifecycle.addStopHook(() => Future(quartz.shutdown()))
 
-  val detail = newJob(classOf[ImportCodeListsJob])
+  val codeListJobDetail = newJob(classOf[ImportCodeListsJob])
     .withIdentity("import-code-lists")
+    .build()
+
+  val customsOfficeListJobDetail = newJob(classOf[ImportCustomsOfficesListJob])
+    .withIdentity("import-offices")
     .build()
 
   val schedule = CronScheduleBuilder.cronSchedule(config.importCodeListsSchedule)
 
   val trigger =
     newTrigger()
-      .forJob(detail)
+      .forJob(codeListJobDetail)
       .withSchedule(schedule)
       .build()
 
-  quartz.scheduleJob(detail, trigger)
+  quartz.scheduleJob(codeListJobDetail, trigger)
 
   quartz.start()
 }

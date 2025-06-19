@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
-import DataItem.uncapitalize
 
-case class DataItem(dataitem_name: String, dataitem_value: Option[String]) {
-  lazy val propertyName: String = uncapitalize(dataitem_name.split('_').last)
-}
+case class DpsRoleTrafficCompetence(rolename: String, traffictype: String)
 
-object DataItem {
-  given Reads[DataItem] = Json.reads[DataItem]
-
-  private def uncapitalize(s: String) =
-    if (s == null || s.isEmpty || !s.charAt(0).isUpper) s
-    else s.updated(0, s.charAt(0).toLower)
+object DpsRoleTrafficCompetence {
+  given Reads[DpsRoleTrafficCompetence] = Json.reads[DpsRoleTrafficCompetence]
 }

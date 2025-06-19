@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.dps.codelist
 
 import play.api.libs.json.{Json, Reads}
+import DataItem.uncapitalize
 
-case class CodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
-  def getProperty(itemName: String): Option[DataItem] =
-    dataitem.find(item => item.dataitem_name == itemName)
+case class DataItem(dataitem_name: String, dataitem_value: Option[String]) {
+  lazy val propertyName: String = uncapitalize(dataitem_name.split('_').last)
 }
 
-object CodeListEntry {
-  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
+object DataItem {
+  given Reads[DataItem] = Json.reads[DataItem]
+
+  private def uncapitalize(s: String) =
+    if (s == null || s.isEmpty || !s.charAt(0).isUpper) s
+    else s.updated(0, s.charAt(0).toLower)
 }

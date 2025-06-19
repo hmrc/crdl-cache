@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.col
+package uk.gov.hmrc.crdlcache.models.dps.codelist
 
 import play.api.libs.json.{Json, Reads}
-case class CustomsOfficeTimetable(
-  seasoncode: String,
-  seasonname: Option[String],
-  seasonstartdate: String,
-  seasonenddate: String,
-  customsofficetimetableline: List[TimetableLine]
-)
 
-object CustomsOfficeTimetable {
-  given Reads[CustomsOfficeTimetable] = Json.reads[CustomsOfficeTimetable]
+case class LanguageDescription(lang_code: String, lang_desc: String)
+
+object LanguageDescription {
+  given Reads[LanguageDescription] = Json.reads[LanguageDescription]
 }

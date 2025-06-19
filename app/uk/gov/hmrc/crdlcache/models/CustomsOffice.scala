@@ -1,0 +1,100 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.crdlcache.models
+
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeDetail.fromDpsCustomsOfficeDetail
+import uk.gov.hmrc.crdlcache.models.TimetableLine.fromDpsTimetableLine
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeTimetable.fromDpsCustomsOfficeTimetable
+import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOffice
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
+
+import java.time.format.DateTimeFormatter
+import java.time.{Instant, LocalDate, ZoneOffset}
+
+case class CustomsOffice(
+  referenceNumber: String,
+  activeFrom: Instant,
+  activeTo: Option[Instant],
+  referenceNumberMainOffice: Option[String],
+  referenceNumberHigherAuthority: Option[String],
+  referenceNumberCompetentAuthorityOfEnquiry: Option[String],
+  referenceNumberCompetentAuthorityOfRecovery: Option[String],
+  referenceNumberTakeover: Option[String],
+  countryCode: String,
+  emailAddress: Option[String],
+  unLocodeId: Option[String],
+  nctsEntryDate: Option[LocalDate],
+  nearestOffice: Option[String],
+  postalCode: String,
+  phoneNumber: String,
+  faxNumber: Option[String],
+  telexNumber: Option[String],
+  geoInfoCode: Option[String],
+  regionCode: Option[String],
+  traderDedicated: Boolean, // 0 or 1 vals?
+  dedicatedTraderLanguageCode: Option[String],
+  dedicatedTraderName: Option[String],
+  customsOfficeSpecificNotesCodes: List[String],
+  customsOfficeLsd: CustomsOfficeDetail, // don't make it a list
+  customsOfficeTimetable: CustomsOfficeTimetable
+)
+
+object CustomsOffice {
+  given format: Format[CustomsOffice] = Json.format[CustomsOffice]
+
+  private val dateFormat1 = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+  private val dateFormat2 = DateTimeFormatter.ofPattern("yyyyMMdd")
+
+  private def parseDate(value: String, dateFormat: DateTimeFormatter) =
+    LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
+
+  def fromDpsCustomOfficeList(dpsCustomOfficeList: DpsCustomsOffice): CustomsOffice = {
+    CustomsOffice(
+      dpsCustomOfficeList.referencenumber,
+      parseDate(dpsCustomOfficeList.rdentrystatus.activefrom, dateFormat1),
+      None,
+      dpsCustomOfficeList.referencenumbermainoffice,
+      dpsCustomOfficeList.referencenumberhigherauthority,
+      dpsCustomOfficeList.referencenumbercompetentauthorityofenquiry,
+      dpsCustomOfficeList.referencenumbercompetentauthorityofrecovery,
+      dpsCustomOfficeList.referencenumbertakeover,
+      dpsCustomOfficeList.countrycode,
+      dpsCustomOfficeList.emailaddress,
+      dpsCustomOfficeList.unlocodeid,
+      dpsCustomOfficeList.nctsentrydate.map(LocalDate.parse(_, dateFormat2)),
+      dpsCustomOfficeList.nearestoffice,
+      dpsCustomOfficeList.postalcode,
+      dpsCustomOfficeList.phonenumber,
+      dpsCustomOfficeList.faxnumber,
+      dpsCustomOfficeList.telexnumber,
+      dpsCustomOfficeList.geoinfocode,
+      dpsCustomOfficeList.regioncode,
+      dpsCustomOfficeList.traderdedicated == "1",
+      dpsCustomOfficeList.dedicatedtraderlanguagecode,
+      dpsCustomOfficeList.dedicatedtradername,
+      dpsCustomOfficeList.customsofficespecificnotes.map(
+        _.specificnotescode
+      ), // Check if list of strings mapped correctly and empty list created if list empty
+      fromDpsCustomsOfficeDetail(
+        dpsCustomOfficeList.customsofficelsd.head
+      ), // .headOption.getOrElse(CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))),
+      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, dateFormat2)
+    )
+
+  }
+}

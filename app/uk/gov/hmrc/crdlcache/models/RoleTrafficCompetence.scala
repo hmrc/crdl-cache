@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.col
+package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.crdlcache.models.dps.col.DpsRoleTrafficCompetence
+case class RoleTrafficCompetence(roleName: String, trafficType: String)
 
-case class CustomsOfficeDetail(
-  customsofficeusualname: String,
-  languagecode: String,
-  city: String,
-  prefixsuffixflag: String,
-  prefixsuffixlevel: Option[String],
-  spacetoadd: String,
-  streetandnumber: String
-)
-
-object CustomsOfficeDetail {
-  given Reads[CustomsOfficeDetail] = Json.reads[CustomsOfficeDetail]
+object RoleTrafficCompetence {
+  given format: Format[RoleTrafficCompetence] = Json.format[RoleTrafficCompetence]
+  def fromDpsRoleTrafficCompetence(
+    roleTrafficCompetence: DpsRoleTrafficCompetence
+  ): RoleTrafficCompetence = {
+    RoleTrafficCompetence(
+      roleTrafficCompetence.rolename,
+      roleTrafficCompetence.traffictype
+    )
+  }
 }
