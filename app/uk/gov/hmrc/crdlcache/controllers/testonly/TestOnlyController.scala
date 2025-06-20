@@ -36,7 +36,7 @@ class TestOnlyController @Inject() (
   extends BackendController(cc) {
 
   def importCodeLists(): Action[AnyContent] = Action {
-    jobScheduler.quartz.triggerJob(jobScheduler.detail.getKey)
+    jobScheduler.startCodeListImport()
     Accepted
   }
 

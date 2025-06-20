@@ -35,25 +35,36 @@ class JobScheduler @Inject() (
 )(using
   ec: ExecutionContext
 ) extends Logging {
+  private val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
 
-  val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
-
-  quartz.setJobFactory(jobFactory)
-  lifecycle.addStopHook(() => Future(quartz.shutdown()))
-
-  val detail = newJob(classOf[ImportCodeListsJob])
+  // Import code lists
+  private val codeListsJobDetail = newJob(classOf[ImportCodeListsJob])
     .withIdentity("import-code-lists")
     .build()
 
-  val schedule = CronScheduleBuilder.cronSchedule(config.importCodeListsSchedule)
+  private val codeListsJobSchedule = CronScheduleBuilder
+    .cronSchedule(config.importCodeListsSchedule)
 
-  val trigger =
-    newTrigger()
-      .forJob(detail)
-      .withSchedule(schedule)
-      .build()
+  private val codeListsJobTrigger = newTrigger()
+    .forJob(codeListsJobDetail)
+    .withSchedule(codeListsJobSchedule)
+    .build()
 
-  quartz.scheduleJob(detail, trigger)
+  def startCodeListImport(): Unit = {
+    quartz.triggerJob(codeListsJobDetail.getKey)
+  }
 
-  quartz.start()
+  private def startScheduler(): Unit = {
+    val quartz = StdSchedulerFactory.getDefaultScheduler
+
+    quartz.setJobFactory(jobFactory)
+
+    lifecycle.addStopHook(() => Future(quartz.shutdown()))
+
+    quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
+
+    quartz.start()
+  }
+
+  startScheduler()
 }

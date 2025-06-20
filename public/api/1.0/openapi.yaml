@@ -94,6 +94,8 @@ paths:
       summary: Fetch Codelist Versions
       description: |
         This endpoint is used to fetch the available codelists and their version information.
+      tags:
+        - Codelists
       responses:
         200:
           description: OK

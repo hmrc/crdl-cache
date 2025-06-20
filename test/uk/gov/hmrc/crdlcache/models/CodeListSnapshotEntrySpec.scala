@@ -80,7 +80,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
         )
       )
 
-    dataItemsMissing.itemNames mustBe Seq("Action_ActivationDate", "RDEntry_activeFrom")
+    dataItemsMissing.itemNames mustBe Seq("Action_ActivationDate", "RDEntryStatus_activeFrom")
   }
 
   it should "succeed when the operation property is missing" in {
