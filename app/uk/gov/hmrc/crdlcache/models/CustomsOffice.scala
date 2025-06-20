@@ -50,7 +50,7 @@ case class CustomsOffice(
   dedicatedTraderLanguageCode: Option[String],
   dedicatedTraderName: Option[String],
   customsOfficeSpecificNotesCodes: List[String],
-  customsOfficeLsd: CustomsOfficeDetail, // don't make it a list
+  customsOfficeLsd: CustomsOfficeDetail,
   customsOfficeTimetable: CustomsOfficeTimetable
 )
 
@@ -89,10 +89,9 @@ object CustomsOffice {
       dpsCustomOfficeList.dedicatedtradername,
       dpsCustomOfficeList.customsofficespecificnotes.map(
         _.specificnotescode
-      ), // Check if list of strings mapped correctly and empty list created if list empty
+      ),
       fromDpsCustomsOfficeDetail(
-        dpsCustomOfficeList.customsofficelsd.head
-      ), // .headOption.getOrElse(CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))),
+        dpsCustomOfficeList.customsofficelsd.headOption.getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))),
       fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, dateFormat2)
     )
 

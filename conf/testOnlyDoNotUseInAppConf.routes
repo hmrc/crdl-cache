@@ -18,3 +18,4 @@ DELETE        /crdl-cache/test-only/codelists           uk.gov.hmrc.crdlcache.co
 DELETE        /crdl-cache/test-only/last-updated        uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteLastUpdated()
 
 DELETE        /crdl-cache/test-only/customs-office-lists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCustomsOfficeLists()
+POST          /crdl-cache/test-only/customs-office-lists             uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCustomsOfficeLists()

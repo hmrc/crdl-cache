@@ -25,7 +25,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 case class CustomsOfficeTimetable(
-  seasonCode: Int, // Is this okay to be taken out of the nested customsofficetimetable, also is this always the number 1// group into customsofficetimetable
+  seasonCode: Int,
   seasonName: Option[String],
   seasonStartDate: LocalDate,
   seasonEndDate: LocalDate,

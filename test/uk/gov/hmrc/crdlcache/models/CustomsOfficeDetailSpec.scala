@@ -12,6 +12,7 @@ class CustomsOfficeDetailSpec extends AnyFlatSpec with Matchers with TestData {
       "Hirtshals",
       false,
       None,
+      None,
       false,
       "Dalsagervej 7"
     )

@@ -44,7 +44,6 @@ import uk.gov.hmrc.crdlcache.models.dps.codelist.{
   DpsCodeListSnapshot,
   LanguageDescription
 }
-import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListSnapshot, Instruction, dps}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}

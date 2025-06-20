@@ -49,15 +49,25 @@ class JobScheduler @Inject() (
     .withIdentity("import-offices")
     .build()
 
-  val schedule = CronScheduleBuilder.cronSchedule(config.importCodeListsSchedule)
+  val codeListSchedule = CronScheduleBuilder.cronSchedule(config.importCodeListsSchedule)
 
-  val trigger =
+  val customsOfficeListSchedule = CronScheduleBuilder.cronSchedule(config.importOfficesSchedule)
+
+  val codeListTrigger =
     newTrigger()
       .forJob(codeListJobDetail)
-      .withSchedule(schedule)
+      .withSchedule(codeListSchedule)
       .build()
 
-  quartz.scheduleJob(codeListJobDetail, trigger)
+  val customsOfficesListJob =
+      newTrigger()
+        .forJob(customsOfficeListJobDetail)
+        .withSchedule(customsOfficeListSchedule)
+        .build()
+
+
+  quartz.scheduleJob(codeListJobDetail, codeListTrigger)//confirm with david
+  quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesListJob)
 
   quartz.start()
 }

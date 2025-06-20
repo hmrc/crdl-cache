@@ -22,7 +22,7 @@ import uk.gov.hmrc.crdlcache.models.dps.col.DpsTimetableLine
 
 case class TimetableLine(
   dayInTheWeekBeginDay: Int,
-  openingHoursTimeFirstPeriodFrom: Int,
+  openingHoursTimeFirstPeriodFrom: Int,//what abut 0800 will it be stored as 800 in mongo?
   openingHoursTimeFirstPeriodTo: Int,
   dayInTheWeekEndDay: Int,
   openingHoursTimeSecondPeriodFrom: Option[Int],

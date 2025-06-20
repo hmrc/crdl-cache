@@ -23,9 +23,10 @@ case class CustomsOfficeDetail(
   customsOfficeUsualName: String,
   languageCode: String,
   city: String,
-  prefixSuffixFlag: Boolean,         // should this be boolean?
-  prefixSuffixLevel: Option[String], // should this be Char?
-  spaceToAdd: Boolean,               // should this be boolean?
+  prefixSuffixFlag: Boolean,         
+  prefixSuffixLevel: Option[String],
+  prefixSuffixName: Option[String],
+  spaceToAdd: Boolean,               // should this be boolean? or Int
   streetAndNumber: String
 )
 
@@ -40,6 +41,7 @@ object CustomsOfficeDetail {
       customsOfficeDetail.city,
       customsOfficeDetail.prefixsuffixflag == "1",
       customsOfficeDetail.prefixsuffixlevel,
+      customsOfficeDetail.prefixsuffixname,
       customsOfficeDetail.spacetoadd == "1",
       customsOfficeDetail.streetandnumber
     )

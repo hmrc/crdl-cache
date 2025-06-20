@@ -24,6 +24,7 @@ case class DpsCustomsOfficeDetail(
   city: String,
   prefixsuffixflag: String,
   prefixsuffixlevel: Option[String],
+  prefixsuffixname: Option[String],
   spacetoadd: String,
   streetandnumber: String
 )

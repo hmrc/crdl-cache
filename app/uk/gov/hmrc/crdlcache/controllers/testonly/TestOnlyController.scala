@@ -19,11 +19,7 @@ package uk.gov.hmrc.crdlcache.controllers.testonly
 import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.crdlcache.repositories.{
-  CodeListsRepository,
-  CustomsOfficeListsRepository,
-  LastUpdatedRepository
-}
+import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, CustomsOfficeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -41,28 +37,34 @@ class TestOnlyController @Inject() (
   extends BackendController(cc) {
 
   def importCodeLists(): Action[AnyContent] = Action {
-    jobScheduler.quartz.triggerJob(jobScheduler.detail.getKey)
+    jobScheduler.quartz.triggerJob(jobScheduler.codeListJobDetail.getKey)
     Accepted
   }
 
   def deleteCodeLists(): Action[AnyContent] = Action.async {
     codeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
-      case _                                  => InternalServerError
+      case _ => InternalServerError
     }
   }
 
   def deleteLastUpdated(): Action[AnyContent] = Action.async {
     lastUpdatedRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
-      case _                                  => InternalServerError
+      case _ => InternalServerError
     }
   }
 
   def deleteCustomsOfficeLists(): Action[AnyContent] = Action.async {
     customsOfficeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
-      case _                                  => InternalServerError
+      case _ => InternalServerError
     }
   }
+
+  def importCustomsOfficeLists(): Action[AnyContent] = Action {
+    jobScheduler.quartz.triggerJob(jobScheduler.customsOfficeListJobDetail.getKey)
+    Accepted
+  }
+
 }

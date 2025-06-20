@@ -202,6 +202,7 @@ class DpsConnectorSpec
             "BOLOGNA",
             "0",
             Some("A"),
+            None,
             "1",
             "VIALE PIETRAMELLARA, 1/2"
           )
@@ -264,6 +265,7 @@ class DpsConnectorSpec
             "BOLOGNA",
             "0",
             Some("A"),
+            None,
             "1",
             "VIA DELL'AEROPORTO, 1"
           )
@@ -349,6 +351,7 @@ class DpsConnectorSpec
             "Hirtshals",
             "0",
             None,
+            None,
             "0",
             "Dalsagervej 7"
           )
@@ -418,6 +421,7 @@ class DpsConnectorSpec
             "ORBASSANO (TO)",
             "0",
             Some("A"),
+            None,
             "1",
             "Prima Strada, 5"
           )

@@ -21,7 +21,9 @@ import org.mongodb.scala.*
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
-import uk.gov.hmrc.crdlcache.models.CustomsOffice
+import play.api.Logging
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{InvalidateCustomsOffice, RecordMissingCustomsOffice, UpsertCustomsOffice}
+import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -55,7 +57,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       // IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS)) Need this too?
     )
   )
-  with Transactions {
+  with Transactions with Logging  {
 
   def fetchCustomsOfficeReferenceNumbers(session: ClientSession): Future[Set[String]] =
     collection.find(session, equal("activeTo", null)).map(_.referenceNumber).toFuture.map(_.toSet)
@@ -101,4 +103,34 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
           throw MongoError.NotAcknowledged
       }
   }
+
+  def executeInstructions(
+    session: ClientSession,
+    instructions: List[CustomsOfficeListsInstruction]
+  ): Future[Unit] =
+    instructions.foldLeft(Future.unit) { (previousInstruction, nextInstruction) =>
+      previousInstruction.flatMap { _ =>
+        nextInstruction match {
+          case UpsertCustomsOffice(customsOffice) =>     logger.info(s"UpsertingCustomsOffice ${customsOffice.referenceNumber}")
+            for {
+              _ <- supersedeOffice(
+                session,
+                customsOffice.referenceNumber,
+                customsOffice.activeFrom,
+                includeActiveFrom = false
+              )
+              _ <- upsertOffice(session, customsOffice)
+            } yield ()
+          case InvalidateCustomsOffice(customsOffice) =>  logger.info(s"InvalidatingCustomsOffice ${customsOffice.referenceNumber}")
+            supersedeOffice(
+              session,
+              customsOffice.referenceNumber,
+              customsOffice.activeFrom,
+              includeActiveFrom = true
+            )
+          case RecordMissingCustomsOffice(referenceNumber, removedAt) =>  logger.info(s"RecordMissingCustomsOffice $referenceNumber")
+            supersedeOffice(session, referenceNumber, removedAt, true)
+        }
+      }
+    }
 }
