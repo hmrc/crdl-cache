@@ -29,14 +29,16 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
   "AppConfig" should "load mandatory app configuration from Configuration" in {
     val appConfig = new AppConfig(
       Configuration(
-        "appName"                                    -> "crdl-cache",
-        "microservice.services.dps-api.host"         -> "localhost",
-        "microservice.services.dps-api.port"         -> 7255,
-        "microservice.services.dps-api.path"         -> "views/iv_crdl_reference_data",
-        "microservice.services.dps-api.clientId"     -> "abc123",
-        "microservice.services.dps-api.clientSecret" -> "def456",
-        "import-codelists.schedule"                  -> "*/10 * * * * ?",
-        "import-codelists.last-updated-date.default" -> "2025-05-29",
+        "appName"                                            -> "crdl-cache",
+        "microservice.services.dps-api.host"                 -> "localhost",
+        "microservice.services.dps-api.port"                 -> 7255,
+        "microservice.services.dps-api.ref-data-path"        -> "views/iv_crdl_reference_data",
+        "microservice.services.dps-api.customs-offices-path" -> "views/iv_crdl_customs_office",
+        "microservice.services.dps-api.clientId"             -> "abc123",
+        "microservice.services.dps-api.clientSecret"         -> "def456",
+        "import-codelists.schedule"                          -> "*/10 * * * * ?",
+        "import-offices.schedule"                            -> "*/10 * * * * ?",
+        "import-codelists.last-updated-date.default"         -> "2025-05-29",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin"  -> "SEED", "keyProperty"  -> "CountryCode"),
           Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode"),
@@ -48,11 +50,13 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.appName mustBe "crdl-cache"
 
     appConfig.dpsUrl mustBe "http://localhost:7255"
-    appConfig.dpsPath mustBe "views/iv_crdl_reference_data"
+    appConfig.dpsRefDataPath mustBe "views/iv_crdl_reference_data"
+    appConfig.dpsCustomsOfficesPath mustBe "views/iv_crdl_customs_office"
     appConfig.dpsClientId mustBe "abc123"
     appConfig.dpsClientSecret mustBe "def456"
 
     appConfig.importCodeListsSchedule mustBe "*/10 * * * * ?"
+    appConfig.importOfficesSchedule mustBe "*/10 * * * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 5, 29)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
@@ -66,10 +70,12 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.appName mustBe "crdl-cache"
 
     appConfig.dpsUrl mustBe "http://localhost:7253"
-    appConfig.dpsPath mustBe "crdl-ref-data-dps-stub/iv_crdl_reference_data/"
+    appConfig.dpsRefDataPath mustBe "crdl-ref-data-dps-stub/iv_crdl_reference_data"
+    appConfig.dpsCustomsOfficesPath mustBe "crdl-ref-data-dps-stub/iv_crdl_customs_office"
     appConfig.dpsClientId mustBe "client_id_must_be_set_in_app-config-xxx"
     appConfig.dpsClientSecret mustBe "client_secret_must_be_set_in_app-config-xxx"
 
+    appConfig.importOfficesSchedule mustBe "0 0 4 * * ?"
     appConfig.importCodeListsSchedule mustBe "0 0 4 * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
     appConfig.codeListConfigs mustBe List(

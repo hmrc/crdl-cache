@@ -28,12 +28,15 @@ import javax.inject.{Inject, Singleton}
 class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(config) {
   val appName: String = config.get[String]("appName")
 
-  val dpsUrl: String          = baseUrl("dps-api")
-  val dpsPath: String         = config.get[String]("microservice.services.dps-api.path")
+  val dpsUrl: String         = baseUrl("dps-api")
+  val dpsRefDataPath: String = config.get[String]("microservice.services.dps-api.ref-data-path")
+  val dpsCustomsOfficesPath: String =
+    config.get[String]("microservice.services.dps-api.customs-offices-path")
   val dpsClientId: String     = config.get[String]("microservice.services.dps-api.clientId")
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
-  val importCodeListsSchedule = config.get[String]("import-codelists.schedule")
+  val importCodeListsSchedule: String = config.get[String]("import-codelists.schedule")
+  val importOfficesSchedule: String   = config.get[String]("import-offices.schedule")
 
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("import-codelists.last-updated-date.default"))

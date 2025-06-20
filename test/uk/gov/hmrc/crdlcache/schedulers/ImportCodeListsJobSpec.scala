@@ -36,6 +36,9 @@ import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
+import uk.gov.hmrc.crdlcache.models.dps.{Relation, codeList}
+import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListResponse, DataItem, LanguageDescription}
+import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListSnapshot, Instruction, dps}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
@@ -75,40 +78,40 @@ class ImportCodeListsJobSpec
     clock
   )
 
-  private val snapshotsPage1 = dps.CodeListResponse(
+  private val snapshotsPage1 = CodeListResponse(
     List(
-      dps.CodeListSnapshot(
+      codeList.CodeListSnapshot(
         BC08,
         "Country",
         1,
         List(
-          dps.CodeListEntry(
+          codeList.CodeListEntry(
             List(
-              dps.DataItem("CountryCode", Some("BL")),
-              dps.DataItem("Action_Operation", Some("U")),
-              dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              dps.DataItem("Action_ActionIdentification", Some("823")),
-              dps.DataItem("Action_ResponsibleDataManager", None),
-              dps.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              DataItem("CountryCode", Some("BL")),
+              codeList.DataItem("Action_Operation", Some("U")),
+              codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+              codeList.DataItem("Action_ActionIdentification", Some("823")),
+              codeList.DataItem("Action_ResponsibleDataManager", None),
+              codeList.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
             ),
-            List(dps.LanguageDescription("en", "Saint Barthélemy"))
+            List(LanguageDescription("en", "Saint Barthélemy"))
           ),
-          dps.CodeListEntry(
+          codeList.CodeListEntry(
             List(
-              dps.DataItem("CountryCode", Some("BM")),
-              dps.DataItem("Action_Operation", Some("C")),
-              dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              dps.DataItem("Action_ActionIdentification", Some("824")),
-              dps.DataItem("Action_ResponsibleDataManager", None),
-              dps.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codeList.DataItem("CountryCode", Some("BM")),
+              codeList.DataItem("Action_Operation", Some("C")),
+              codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+              codeList.DataItem("Action_ActionIdentification", Some("824")),
+              codeList.DataItem("Action_ResponsibleDataManager", None),
+              codeList.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
             ),
-            List(dps.LanguageDescription("en", "Bermuda"))
+            List(codeList.LanguageDescription("en", "Bermuda"))
           )
         )
       )
     ),
     List(
-      dps.Relation(
+      Relation(
         Self,
         "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
       ),
@@ -119,56 +122,56 @@ class ImportCodeListsJobSpec
     )
   )
 
-  private val snapshotsPage2 = dps.CodeListResponse(
+  private val snapshotsPage2 = codeList.CodeListResponse(
     List(
-      dps.CodeListSnapshot(
+      codeList.CodeListSnapshot(
         BC08,
         "Country",
         2,
         List(
-          dps.CodeListEntry(
+          codeList.CodeListEntry(
             List(
-              dps.DataItem("CountryCode", Some("AD")),
-              dps.DataItem("Action_Operation", Some("C")),
-              dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              dps.DataItem("Action_ActionIdentification", Some("1027")),
-              dps.DataItem("Action_ResponsibleDataManager", None),
-              dps.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codeList.DataItem("CountryCode", Some("AD")),
+              codeList.DataItem("Action_Operation", Some("C")),
+              codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+              codeList.DataItem("Action_ActionIdentification", Some("1027")),
+              codeList.DataItem("Action_ResponsibleDataManager", None),
+              codeList.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
             ),
-            List(dps.LanguageDescription("en", "Andorra"))
+            List(codeList.LanguageDescription("en", "Andorra"))
           ),
-          dps.CodeListEntry(
+          codeList.CodeListEntry(
             List(
-              dps.DataItem("CountryCode", Some("BL")),
-              dps.DataItem("Action_Operation", Some("I")),
-              dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              dps.DataItem("Action_ActionIdentification", Some("823")),
-              dps.DataItem("Action_ResponsibleDataManager", None),
-              dps.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codeList.DataItem("CountryCode", Some("BL")),
+              codeList.DataItem("Action_Operation", Some("I")),
+              codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+              codeList.DataItem("Action_ActionIdentification", Some("823")),
+              codeList.DataItem("Action_ResponsibleDataManager", None),
+              codeList.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
             ),
-            List(dps.LanguageDescription("en", "Saint Barthélemy"))
+            List(codeList.LanguageDescription("en", "Saint Barthélemy"))
           ),
-          dps.CodeListEntry(
+          codeList.CodeListEntry(
             List(
-              dps.DataItem("CountryCode", Some("CX")),
-              dps.DataItem("Action_Operation", Some("C")),
-              dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              dps.DataItem("Action_ActionIdentification", Some("848")),
-              dps.DataItem("Action_ResponsibleDataManager", None),
-              dps.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codeList.DataItem("CountryCode", Some("CX")),
+              codeList.DataItem("Action_Operation", Some("C")),
+              codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+              codeList.DataItem("Action_ActionIdentification", Some("848")),
+              codeList.DataItem("Action_ResponsibleDataManager", None),
+              codeList.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
             ),
-            List(dps.LanguageDescription("en", "Christmas Island"))
+            List(codeList.LanguageDescription("en", "Christmas Island"))
           ),
-          dps.CodeListEntry(
+          codeList.CodeListEntry(
             List(
-              dps.DataItem("CountryCode", Some("CY")),
-              dps.DataItem("Action_Operation", Some("C")),
-              dps.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              dps.DataItem("Action_ActionIdentification", Some("849")),
-              dps.DataItem("Action_ResponsibleDataManager", None),
-              dps.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codeList.DataItem("CountryCode", Some("CY")),
+              codeList.DataItem("Action_Operation", Some("C")),
+              codeList.DataItem("Action_ActivationDate", Some("17-01-2024")),
+              codeList.DataItem("Action_ActionIdentification", Some("849")),
+              codeList.DataItem("Action_ResponsibleDataManager", None),
+              codeList.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
             ),
-            List(dps.LanguageDescription("en", "Cyprus"))
+            List(codeList.LanguageDescription("en", "Cyprus"))
           )
         )
       )

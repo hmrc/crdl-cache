@@ -142,15 +142,10 @@ class BindersSpec
       Binders.bindableJsValueMap.unbind(
         "",
         Map(
-          // Boolean values should be parsed to JsBoolean
           "degreePlatoApplicabilityFlag" -> JsTrue,
-          // Null values should be parsed to JsNull
           "responsibleDataManager" -> JsNull,
-          // Double-quoted numeric values should be parsed as strings
           "actionIdentification" -> JsString("823"),
-          // Unquoted numeric values should be parsed as numbers
           "unitOfMeasureCode" -> JsNumber(BigDecimal(3)),
-          // Non-numeric values should be parsed as strings
           "exciseProductCategoryCode" -> JsString("W")
         )
       )

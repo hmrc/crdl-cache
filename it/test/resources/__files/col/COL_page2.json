@@ -1,0 +1,257 @@
+{
+  "name": "iv_crdl_customs_office",
+  "elements": [
+    {
+      "rdentrystatus": {
+        "state": "valid",
+        "activefrom": "22-03-2025"
+      },
+      "referencenumber": "DK003102",
+      "referencenumbermainoffice": null,
+      "referencenumberhigherauthority": null,
+      "referencenumbercompetentauthorityofenquiry": "DK003102",
+      "referencenumbercompetentauthorityofrecovery": "DK003102",
+      "referencenumbertakeover": null,
+      "countrycode": "DK",
+      "emailaddress": "test@dk",
+      "unlocodeid": null,
+      "nctsentrydate": null,
+      "nearestoffice": null,
+      "postalcode": "9850",
+      "phonenumber": "+45 342234 34543",
+      "faxnumber": null,
+      "telexnumber": null,
+      "geoinfocode": null,
+      "regioncode": null,
+      "traderdedicated": "0",
+      "dedicatedtraderlanguagecode": null,
+      "dedicatedtradername": null,
+      "customsofficespecificnotes": [
+        {
+          "specificnotescode": "SN0009"
+        }
+      ],
+      "customsofficelsd": [
+        {
+          "customsofficeusualname": "Hirtshals Toldekspedition",
+          "languagecode": "DA",
+          "city": "Hirtshals",
+          "prefixsuffixflag": "0",
+          "prefixsuffixlevel": null,
+          "spacetoadd": "0",
+          "streetandnumber": "Dalsagervej 7"
+        }
+      ],
+      "customsofficetimetable": {
+        "seasoncode": "1",
+        "seasonname": null,
+        "seasonstartdate": "20180101",
+        "seasonenddate": "20991231",
+        "customsofficetimetableline": [
+          {
+            "dayintheweekbeginday": "1",
+            "openinghourstimefirstperiodfrom": "0800",
+            "openinghourstimefirstperiodto": "1600",
+            "dayintheweekendday": "5",
+            "openinghourstimesecondperiodfrom": null,
+            "openinghourstimesecondperiodto": null,
+            "customsofficeroletrafficcompetence": [
+              {
+                "rolename": "EXL",
+                "traffictype": "P"
+              },
+              {
+                "rolename": "EXL",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "EXP",
+                "traffictype": "P"
+              },
+              {
+                "rolename": "EXP",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "EXT",
+                "traffictype": "P"
+              },
+              {
+                "rolename": "EXT",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "PLA",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "RFC",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "DIS",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "IPR",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "ENQ",
+                "traffictype": "P"
+              },
+              {
+                "rolename": "ENQ",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "ENQ",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "REC",
+                "traffictype": "P"
+              },
+              {
+                "rolename": "REC",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "REC",
+                "traffictype": "N/A"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "rdentrystatus": {
+        "state": "valid",
+        "activefrom": "22-03-2025"
+      },
+      "referencenumber": "IT314102",
+      "referencenumbermainoffice": null,
+      "referencenumberhigherauthority": "ITP00023",
+      "referencenumbercompetentauthorityofenquiry": "IT314102",
+      "referencenumbercompetentauthorityofrecovery": "IT314102",
+      "referencenumbertakeover": null,
+      "countrycode": "IT",
+      "emailaddress": "testo@it",
+      "unlocodeid": null,
+      "nctsentrydate": null,
+      "nearestoffice": null,
+      "postalcode": "10043",
+      "phonenumber": "345 34234",
+      "faxnumber": null,
+      "telexnumber": null,
+      "geoinfocode": null,
+      "regioncode": null,
+      "traderdedicated": "0",
+      "dedicatedtraderlanguagecode": "IT",
+      "dedicatedtradername": "TIN",
+      "customsofficespecificnotes": [],
+      "customsofficelsd": [
+        {
+          "customsofficeusualname": "ORBASSANO",
+          "languagecode": "IT",
+          "city": "ORBASSANO (TO)",
+          "prefixsuffixflag": "0",
+          "prefixsuffixlevel": "A",
+          "spacetoadd": "1",
+          "streetandnumber": "Prima Strada, 5"
+        }
+      ],
+      "customsofficetimetable": {
+        "seasoncode": "1",
+        "seasonname": "ALL YEAR",
+        "seasonstartdate": "20240101",
+        "seasonenddate": "99991231",
+        "customsofficetimetableline": [
+          {
+            "dayintheweekbeginday": "1",
+            "openinghourstimefirstperiodfrom": "0800",
+            "openinghourstimefirstperiodto": "1800",
+            "dayintheweekendday": "5",
+            "openinghourstimesecondperiodfrom": null,
+            "openinghourstimesecondperiodto": null,
+            "customsofficeroletrafficcompetence": [
+              {
+                "rolename": "DEP",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "INC",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "TRA",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "EXP",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "EIN",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "ENT",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "EXC",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "DES",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "GUA",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "EXT",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "REG",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "REC",
+                "traffictype": "R"
+              },
+              {
+                "rolename": "IPR",
+                "traffictype": "N/A"
+              },
+              {
+                "rolename": "ENQ",
+                "traffictype": "N/A"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office?%24start_index=40"
+    },
+    {
+      "rel": "prev",
+      "title": "Previous interval",
+      "href": "?%24start_index=30&%24count=10"
+    },
+    {
+      "rel": "next",
+      "title": "Next interval",
+      "href": "?%24start_index=50&%24count=10"
+    }
+  ]
+}

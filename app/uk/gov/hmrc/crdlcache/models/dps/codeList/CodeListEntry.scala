@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models
+package uk.gov.hmrc.crdlcache.models.dps.codeList
 
-enum CodeListOrigin {
-  case SEED
-  case CSRD2
+import play.api.libs.json.{Json, Reads}
 
-  def activeDateProperty: String = this match {
-    case SEED  => "Action_ActivationDate"
-    case CSRD2 => "RDEntryStatus_activeFrom"
-  }
+case class CodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
+  def getProperty(itemName: String): Option[DataItem] =
+    dataitem.find(item => item.dataitem_name == itemName)
+}
 
-  def modificationDateProperty: Option[String] = this match {
-    case SEED  => Some("Action_ModificationDateAndTime")
-    case CSRD2 => None
-  }
-
-  def operationProperty: Option[String] = this match {
-    case SEED  => Some("Action_Operation")
-    case CSRD2 => None
-  }
+object CodeListEntry {
+  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
 }
