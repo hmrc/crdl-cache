@@ -22,7 +22,7 @@ enum CodeListOrigin {
 
   def activeDateProperty: String = this match {
     case SEED  => "Action_ActivationDate"
-    case CSRD2 => "RDEntry_activeFrom"
+    case CSRD2 => "RDEntryStatus_activeFrom"
   }
 
   def modificationDateProperty: Option[String] = this match {
