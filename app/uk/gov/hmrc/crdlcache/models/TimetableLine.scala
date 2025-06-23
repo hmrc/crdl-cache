@@ -19,26 +19,31 @@ package uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.RoleTrafficCompetence.fromDpsRoleTrafficCompetence
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsTimetableLine
+import uk.gov.hmrc.crdlcache.models.formats.JavaTimeFormats
+
+import java.time.{DayOfWeek, LocalTime}
 
 case class TimetableLine(
-  dayInTheWeekBeginDay: Int,
-  openingHoursTimeFirstPeriodFrom: Int,//what abut 0800 will it be stored as 800 in mongo?
-  openingHoursTimeFirstPeriodTo: Int,
-  dayInTheWeekEndDay: Int,
-  openingHoursTimeSecondPeriodFrom: Option[Int],
-  openingHoursTimeSecondPeriodTo: Option[Int],
+  dayInTheWeekBeginDay: DayOfWeek,
+  openingHoursTimeFirstPeriodFrom: LocalTime,
+  openingHoursTimeFirstPeriodTo: LocalTime,
+  dayInTheWeekEndDay: DayOfWeek,
+  openingHoursTimeSecondPeriodFrom: Option[LocalTime],
+  openingHoursTimeSecondPeriodTo: Option[LocalTime],
   customsOfficeRoleTrafficCompetence: List[RoleTrafficCompetence]
 )
-object TimetableLine {
+object TimetableLine extends JavaTimeFormats {
+
   given format: Format[TimetableLine] = Json.format[TimetableLine]
+
   def fromDpsTimetableLine(timetableLine: DpsTimetableLine): TimetableLine = {
     TimetableLine(
-      timetableLine.dayintheweekbeginday.toInt,
-      timetableLine.openinghourstimefirstperiodfrom.toInt,
-      timetableLine.openinghourstimefirstperiodto.toInt,
-      timetableLine.dayintheweekendday.toInt,
-      timetableLine.openinghourstimesecondperiodfrom.map(_.toInt),
-      timetableLine.openinghourstimesecondperiodto.map(_.toInt),
+      DayOfWeek.of(timetableLine.dayintheweekbeginday.toInt),
+      LocalTime.parse(timetableLine.openinghourstimefirstperiodfrom, timeFormat),
+      LocalTime.parse(timetableLine.openinghourstimefirstperiodto, timeFormat),
+      DayOfWeek.of(timetableLine.dayintheweekendday.toInt),
+      timetableLine.openinghourstimesecondperiodfrom.map(LocalTime.parse(_, timeFormat)),
+      timetableLine.openinghourstimesecondperiodto.map(LocalTime.parse(_, timeFormat)),
       timetableLine.customsofficeroletrafficcompetence.map(fromDpsRoleTrafficCompetence)
     )
   }

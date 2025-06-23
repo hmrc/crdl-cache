@@ -60,13 +60,12 @@ class JobScheduler @Inject() (
       .build()
 
   val customsOfficesListJob =
-      newTrigger()
-        .forJob(customsOfficeListJobDetail)
-        .withSchedule(customsOfficeListSchedule)
-        .build()
+    newTrigger()
+      .forJob(customsOfficeListJobDetail)
+      .withSchedule(customsOfficeListSchedule)
+      .build()
 
-
-  quartz.scheduleJob(codeListJobDetail, codeListTrigger)//confirm with david
+  quartz.scheduleJob(codeListJobDetail, codeListTrigger)
   quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesListJob)
 
   quartz.start()

@@ -18,12 +18,13 @@ package uk.gov.hmrc.crdlcache.models
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
+import uk.gov.hmrc.crdlcache.models.TimetableLine.timeFormat
 
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate}
+import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
 
 class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
-  "CustomsOffice.fromDpsCustomOfficeList" should "convert a DpsCustomsOffice to the crdl-cache CustomsOffice model" in {
+    "CustomsOffice.fromDpsCustomOfficeList" should "convert a DpsCustomsOffice to the crdl-cache CustomsOffice model" in {
     val inputOffice = DK003102
     val dateFormat  = DateTimeFormatter.ofPattern("yyyyMMdd")
     val expectedSnapshot = CustomsOffice(
@@ -41,7 +42,7 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       None,
       None,
       "9850",
-      "+45 342234 34543",
+      Some("+45 342234 34543"),
       None,
       None,
       None,
@@ -67,10 +68,10 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
         LocalDate.parse("20991231", dateFormat),
         List(
           TimetableLine(
-            1,
-            800, // 0800
-            1600,
-            5,
+            DayOfWeek.of(1),
+            LocalTime.parse("0800", timeFormat),
+            LocalTime.parse("1600", timeFormat),
+            DayOfWeek.of(5),
             None,
             None,
             List(

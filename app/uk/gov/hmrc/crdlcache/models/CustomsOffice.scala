@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models
 
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeDetail.fromDpsCustomsOfficeDetail
-import uk.gov.hmrc.crdlcache.models.TimetableLine.fromDpsTimetableLine
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeTimetable.fromDpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOffice
@@ -41,7 +40,7 @@ case class CustomsOffice(
   nctsEntryDate: Option[LocalDate],
   nearestOffice: Option[String],
   postalCode: String,
-  phoneNumber: String,
+  phoneNumber: Option[String],
   faxNumber: Option[String],
   telexNumber: Option[String],
   geoInfoCode: Option[String],
@@ -91,7 +90,9 @@ object CustomsOffice {
         _.specificnotescode
       ),
       fromDpsCustomsOfficeDetail(
-        dpsCustomOfficeList.customsofficelsd.headOption.getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))),
+        dpsCustomOfficeList.customsofficelsd.headOption
+          .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
+      ),
       fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, dateFormat2)
     )
 

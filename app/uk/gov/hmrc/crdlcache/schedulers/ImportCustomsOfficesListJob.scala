@@ -17,8 +17,8 @@
 package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.DelayOverflowStrategy
-import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervision}
+import org.apache.pekko.stream.scaladsl.Sink
 import org.mongodb.scala.ClientSession
 import org.quartz.{Job, JobExecutionContext}
 import play.api.Logging
@@ -27,7 +27,7 @@ import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
   UpsertCustomsOffice
 }
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction, Instruction}
+import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
@@ -64,10 +64,9 @@ class ImportCustomsOfficesListJob @Inject() (
       existingReferenceNumbers =>
         val incomingReferenceNumbers = customsOffices
           .map(_.referenceNumber)
-          .toSet // can I do this toSet here would there be duplicate customs offices?
+          .toSet
         logger.info(s"existingReferenceNumbers $existingReferenceNumbers")
         logger.info(s"incomingReferenceNumbers $incomingReferenceNumbers")
-        val removedReferenceNumbers = existingReferenceNumbers.diff(incomingReferenceNumbers)
 
         val mergedReferenceNumbers = existingReferenceNumbers.union(incomingReferenceNumbers)
         logger.info(s"mergedReferenceNumbers $mergedReferenceNumbers")
@@ -76,23 +75,36 @@ class ImportCustomsOfficesListJob @Inject() (
         val instructions = List.newBuilder[CustomsOfficeListsInstruction]
 
         for (referenceNumber <- mergedReferenceNumbers) {
-          
+
           val hasExistingOffice = existingReferenceNumbers.contains(referenceNumber)
           val maybeNewOffice = incomingGroupedReferenceNumbers.find(
             _.referenceNumber == referenceNumber
-          ) // .filter(_.referenceNumber==referenceNumber)//.get(referenceNumber)
-          logger.info(s"for referenceNumber $referenceNumber hasExistingOffice $hasExistingOffice maybeNewOffice $maybeNewOffice")
+          )
+
+          logger.info(
+            s"for referenceNumber $referenceNumber hasExistingOffice $hasExistingOffice maybeNewOffice $maybeNewOffice"
+          )
+
           (hasExistingOffice, maybeNewOffice) match {
             case (_, Some(newOffice)) => instructions += UpsertCustomsOffice(newOffice)
-            // case 1
+            case (true, None) =>
+              val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
+              instructions += RecordMissingCustomsOffice(referenceNumber, startOfToday.toInstant)
+            case (false, None) =>
+              throw IllegalStateException(
+                "Impossible case - we have neither a new nor existing entry for a key"
+              )
+          }
+        }
+        logger.info(s"list of instructions $instructions")
+        Future.successful(instructions.result())
+    }
+    // case 1
 //              customsOfficeListsRepository.upsertOffice(//UpsertEntry
 //                session,
 //                newOffice
 //              ) // there's no existing office with that reference number and new office details are available CREATE
-            case (false, None) =>
-              throw IllegalStateException(
-                "Impossible case - we have neither a new nor existing entry for a key"
-              ) // there's no existing office with that reference number and new office details are NOT available
+    // there's no existing office with that reference number and new office details are NOT available
 //            case (true, Some(newOffice)) => //case 2 & 1 can be combined with instructions
 //              instructions += UpsertCustomsOffice(newOffice)
 ////              customsOfficeListsRepository.supersedeOffice(
@@ -107,9 +119,8 @@ class ImportCustomsOfficesListJob @Inject() (
 ////                session,
 ////                newOffice
 ////              ) // add the new office details to the db
-            case (true, None) =>
-              val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
-              instructions += RecordMissingCustomsOffice(referenceNumber, startOfToday.toInstant)
+
+    // case 3
 //              customsOfficeListsRepository.supersedeOffice(
 //                session,
 //                referenceNumber,
@@ -117,15 +128,7 @@ class ImportCustomsOfficesListJob @Inject() (
 //                false//this was wrong to be false
 //              ) // there's an existing office with that reference number and new office details are NOT available this means the old office value needs to be deleted/invalidated EXPIRE
 
-          }
-          // logger.info("Importing customs office list completed successfully")
-
-        }
-        logger.info(s"list of instructions $instructions")
-        Future.successful(instructions.result())
-
-    }
-
+    // logger.info("Importing customs office list completed successfully")
   }
 
   private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
@@ -134,13 +137,18 @@ class ImportCustomsOfficesListJob @Inject() (
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
         .map(CustomsOffice.fromDpsCustomOfficeList)
+        .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
+          logger.error(
+            s"Stopping customs office list import job due to exception",
+            err
+          )
+          Supervision.stop
+        })
         .runWith(Sink.seq)
       _ <- withSessionAndTransaction { session =>
         for {
           instructions <- processCustomsOffices(session, customOfficeLists.toList)
-          _ <- Future.successful(
-            customsOfficeListsRepository.executeInstructions(session, instructions)
-          )
+          _            <- customsOfficeListsRepository.executeInstructions(session, instructions)
         } yield ()
       }
     } yield ()

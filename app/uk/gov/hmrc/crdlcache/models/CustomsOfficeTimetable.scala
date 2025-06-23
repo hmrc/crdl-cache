@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.crdlcache.models.CustomsOffice.dateFormat2
 import uk.gov.hmrc.crdlcache.models.TimetableLine.fromDpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOfficeTimetable
 

@@ -23,10 +23,10 @@ case class CustomsOfficeDetail(
   customsOfficeUsualName: String,
   languageCode: String,
   city: String,
-  prefixSuffixFlag: Boolean,         
+  prefixSuffixFlag: Boolean,
   prefixSuffixLevel: Option[String],
   prefixSuffixName: Option[String],
-  spaceToAdd: Boolean,               // should this be boolean? or Int
+  spaceToAdd: Boolean, // should this be boolean? or Int
   streetAndNumber: String
 )
 

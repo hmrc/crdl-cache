@@ -32,7 +32,7 @@ case class DpsCustomsOffice(
   nctsentrydate: Option[String],
   nearestoffice: Option[String],
   postalcode: String,
-  phonenumber: String,
+  phonenumber: Option[String],
   faxnumber: Option[String],
   telexnumber: Option[String],
   geoinfocode: Option[String],

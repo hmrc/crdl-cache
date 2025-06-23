@@ -1,8 +1,24 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
-import org.mockito.ArgumentMatchers.{any, anyLong, eq as equalTo}
+import org.mockito.ArgumentMatchers.{any, eq as equalTo}
 import org.mockito.Mockito.{reset, times, verify, when}
 import org.mongodb.scala.{ClientSession, MongoClient, MongoDatabase, SingleObservable}
 import org.scalatest.BeforeAndAfterEach
@@ -12,8 +28,11 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.CustomsOffice.fromDpsCustomOfficeList
-import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction
-import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.UpsertCustomsOffice
+import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
+  RecordMissingCustomsOffice,
+  UpsertCustomsOffice
+}
 import uk.gov.hmrc.crdlcache.models.dps.Relation
 import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.col.{
@@ -26,6 +45,7 @@ import uk.gov.hmrc.crdlcache.models.dps.col.{
   RDEntryStatus,
   SpecificNotes
 }
+import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
@@ -77,7 +97,7 @@ class ImportCustomsOfficesListJobSpec
         Some("20250501"),
         None,
         "40121",
-        "0039 435345",
+        Some("0039 435345"),
         Some("0039 435345"),
         None,
         Some("Q"),
@@ -140,7 +160,7 @@ class ImportCustomsOfficesListJobSpec
         Some("20250501"),
         None,
         "40131",
-        "1234 045483382",
+        Some("1234 045483382"),
         Some("2343 34543"),
         None,
         Some("Q"),
@@ -226,7 +246,7 @@ class ImportCustomsOfficesListJobSpec
         None,
         None,
         "9850",
-        "+45 342234 34543",
+        Some("+45 342234 34543"),
         None,
         None,
         None,
@@ -296,7 +316,7 @@ class ImportCustomsOfficesListJobSpec
         None,
         None,
         "10043",
-        "345 34234",
+        Some("345 34234"),
         None,
         None,
         None,
@@ -397,8 +417,10 @@ class ImportCustomsOfficesListJobSpec
   "ImportCustomsOfficeListJob.importCustomsOfficeLists" should "import the customs office lists" in {
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
+
     when(dpsConnector.fetchCustomsOfficeLists(using any()))
       .thenReturn(Source(List(customsOfficeListPage1, customsOfficeListPage2)))
+
     when(
       customsOfficeListRepository.executeInstructions(
         equalTo(clientSession),
@@ -406,7 +428,9 @@ class ImportCustomsOfficesListJobSpec
       )
     )
       .thenReturn(Future.unit)
+
     customsOfficeListsJob.importCustomsOfficeLists().futureValue
+
     verify(customsOfficeListRepository, times(1)).executeInstructions(
       equalTo(clientSession),
       equalTo(
@@ -418,7 +442,55 @@ class ImportCustomsOfficesListJobSpec
         )
       )
     )
-    verify(clientSession, times(1)).commitTransaction()//is it one time
+    verify(clientSession, times(1)).commitTransaction()
+  }
+
+  it should "produce a list of instructions for a customs office list which contains missing entries and updates to existing offices" in {
+    when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
+      .thenReturn(Future.successful(Set("IT223100", "IT223101")))
+
+    val instructions = customsOfficeListsJob
+      .processCustomsOffices(
+        clientSession,
+        List(
+          fromDpsCustomOfficeList(customsOfficeListPage1.elements.last),
+          fromDpsCustomOfficeList(customsOfficeListPage2.elements.head),
+          fromDpsCustomOfficeList(customsOfficeListPage2.elements.last)
+        )
+      )
+      .futureValue
+
+    instructions mustBe List(
+      RecordMissingCustomsOffice("IT223100", fixedInstant),
+      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last)),
+      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head)),
+      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last))
+    )
+  }
+
+  it should "roll back when there is an issue while importing" in {
+    when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
+      .thenReturn(Future.successful(Set.empty[String]))
+
+    when(dpsConnector.fetchCustomsOfficeLists(using any()))
+      .thenReturn(Source(List(customsOfficeListPage1, customsOfficeListPage2)))
+
+    when(
+      customsOfficeListRepository.executeInstructions(
+        equalTo(clientSession),
+        any[List[CustomsOfficeListsInstruction]]
+      )
+    )
+      .thenReturn(Future.failed(MongoError.NotAcknowledged))
+
+    customsOfficeListsJob
+      .importCustomsOfficeLists()
+      .failed
+      .futureValue mustBe MongoError.NotAcknowledged
+
+    verify(customsOfficeListRepository, times(1)).executeInstructions(equalTo(clientSession), any())
+
+    verify(clientSession, times(1)).abortTransaction()
   }
 
 }

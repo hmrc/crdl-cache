@@ -22,7 +22,10 @@ import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
 import play.api.Logging
-import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{InvalidateCustomsOffice, RecordMissingCustomsOffice, UpsertCustomsOffice}
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
+  RecordMissingCustomsOffice,
+  UpsertCustomsOffice
+}
 import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.mongo.MongoComponent
@@ -42,22 +45,22 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     collectionName = "customsOfficeLists",
     domainFormat = CustomsOffice.format,
     indexes = Seq(
-      IndexModel(Indexes.ascending("referenceNumber", "activeFrom")), // okay to be unique?
+      IndexModel(Indexes.ascending("referenceNumber", "activeFrom"), IndexOptions().unique(true)),
       IndexModel(
-        Indexes.ascending("countryCode", "referenceNumber", "activeFrom"),
-        IndexOptions().unique(true)
-      ), // okay to be unique?
+        Indexes.ascending("countryCode", "referenceNumber", "activeFrom")
+      ),
       IndexModel(
         Indexes.ascending(
-          "customsOfficeTimetable.customsOfficeTimetableLine.customsOfficeRoleTrafficCompetence.roleName.customsOfficeTimetableLine",
+          "customsOfficeTimetable.customsOfficeTimetableLine.customsOfficeRoleTrafficCompetence.roleName",
           "referenceNumber",
           "activeFrom"
         )
-      ) // can roleName be added as an index even if it is nested inside lot of values
-      // IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS)) Need this too?
+      ),
+      IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS))
     )
   )
-  with Transactions with Logging  {
+  with Transactions
+  with Logging {
 
   def fetchCustomsOfficeReferenceNumbers(session: ClientSession): Future[Set[String]] =
     collection.find(session, equal("activeTo", null)).map(_.referenceNumber).toFuture.map(_.toSet)
@@ -108,29 +111,25 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     session: ClientSession,
     instructions: List[CustomsOfficeListsInstruction]
   ): Future[Unit] =
-    instructions.foldLeft(Future.unit) { (previousInstruction, nextInstruction) =>
-      previousInstruction.flatMap { _ =>
-        nextInstruction match {
-          case UpsertCustomsOffice(customsOffice) =>     logger.info(s"UpsertingCustomsOffice ${customsOffice.referenceNumber}")
-            for {
-              _ <- supersedeOffice(
-                session,
-                customsOffice.referenceNumber,
-                customsOffice.activeFrom,
-                includeActiveFrom = false
-              )
-              _ <- upsertOffice(session, customsOffice)
-            } yield ()
-          case InvalidateCustomsOffice(customsOffice) =>  logger.info(s"InvalidatingCustomsOffice ${customsOffice.referenceNumber}")
-            supersedeOffice(
-              session,
-              customsOffice.referenceNumber,
-              customsOffice.activeFrom,
-              includeActiveFrom = true
-            )
-          case RecordMissingCustomsOffice(referenceNumber, removedAt) =>  logger.info(s"RecordMissingCustomsOffice $referenceNumber")
-            supersedeOffice(session, referenceNumber, removedAt, true)
+    instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
+      (previousInstruction, nextInstruction) =>
+        previousInstruction.flatMap { _ =>
+          nextInstruction match {
+            case UpsertCustomsOffice(customsOffice) =>
+              logger.info(s"UpsertingCustomsOffice ${customsOffice.referenceNumber}")
+              for {
+                _ <- supersedeOffice(
+                  session,
+                  customsOffice.referenceNumber,
+                  customsOffice.activeFrom,
+                  includeActiveFrom = false
+                )
+                _ <- upsertOffice(session, customsOffice)
+              } yield ()
+            case RecordMissingCustomsOffice(referenceNumber, removedAt) =>
+              logger.info(s"RecordMissingCustomsOffice $referenceNumber")
+              supersedeOffice(session, referenceNumber, removedAt, true)
+          }
         }
-      }
     }
 }
