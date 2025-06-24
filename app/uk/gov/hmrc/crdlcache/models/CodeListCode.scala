@@ -20,10 +20,30 @@ import play.api.libs.json.Format
 import play.api.mvc.PathBindable
 
 enum CodeListCode(val code: String) {
+  // BC01 (Evidence Types)
+  case BC01                               extends CodeListCode("BC01")
+  // BC03 (Reasons for action not possible)
+  case BC03                               extends CodeListCode("BC03")
   // BC08 (Country)
   case BC08                               extends CodeListCode("BC08")
+  // BC09 (Refusal reasons)
+  case BC09                               extends CodeListCode("BC09")
+  // BC12 (Language Codes)
+  case BC12                               extends CodeListCode("BC12")
+  // BC15 (Event Types)
+  case BC15                               extends CodeListCode("BC15")
+  // BC22 (Alert or rejection of movement reasons)
+  case BC22                               extends CodeListCode("BC22")
+  // BC26 (Reasons for interruption)
+  case BC26                               extends CodeListCode("BC26")
+  // BC34 (Event submitting persons)
+  case BC34                               extends CodeListCode("BC34")
   // BC36 (Excise Products)
   case BC36                               extends CodeListCode("BC36")
+  // BC40 (Wine growing zones)
+  case BC40                              extends CodeListCode("BC40")
+  // BC43 (Cancellation reasons)
+  case BC43                            extends CodeListCode("BC43")
   // BC66 (Excise Products Category)
   case BC66                               extends CodeListCode("BC66")
   // CL141 (Customs Offices)
@@ -33,7 +53,7 @@ enum CodeListCode(val code: String) {
 }
 
 object CodeListCode {
-  private val values: Set[CodeListCode]        = Set(BC08, BC36, BC66, CL141)
+  private val values: Set[CodeListCode]        = Set(BC01, BC03, BC08, BC09, BC12, BC15, BC22, BC26, BC34, BC36, BC40, BC43, BC66, CL141)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
 
   def fromString(code: String): CodeListCode = codes.getOrElse(code, Unknown(code))
