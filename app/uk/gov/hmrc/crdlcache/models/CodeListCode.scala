@@ -49,7 +49,7 @@ enum CodeListCode(val code: String) {
 }
 
 object CodeListCode {
-  private val values: Set[CodeListCode]        = Set(BC08, BC46, BC51, BC52, BC57, BC58, BC66, BC67, BC107, BC108, CL141)
+  private val values: Set[CodeListCode]        = Set(BC08,BC36, BC46, BC51, BC52, BC57, BC58, BC66, BC67, BC107, BC108, CL141)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
 
   def fromString(code: String): CodeListCode = codes.getOrElse(code, Unknown(code))
