@@ -24,8 +24,24 @@ enum CodeListCode(val code: String) {
   case BC08                               extends CodeListCode("BC08")
   // BC36 (Excise Products)
   case BC36                               extends CodeListCode("BC36")
+  // BC46 (Unsatisfactory Reasons)
+  case BC46                               extends CodeListCode("BC46")
+  // BC51 (Delay Explanations)
+  case BC51                               extends CodeListCode("BC51")
+  // BC52 (Units Of Measure)
+  case BC52                               extends CodeListCode("BC52")
+  // BC57 (Request Actions)
+  case BC57                               extends CodeListCode("BC57")
+  // BC58 (Reasons For Delayed Result)
+  case BC58                               extends CodeListCode("BC58")
   // BC66 (Excise Products Category)
   case BC66                               extends CodeListCode("BC66")
+  // BC67 (Transport Modes)
+  case BC67                               extends CodeListCode("BC67")
+  // BC107 (Manual Closure Request Reasons)
+  case BC107                               extends CodeListCode("BC107")
+  // BC108 (Manual Closure Rejection Reasons)
+  case BC108                               extends CodeListCode("BC108")
   // CL141 (Customs Offices)
   case CL141                              extends CodeListCode("CL141")
   // Unknown codelist code
@@ -33,7 +49,7 @@ enum CodeListCode(val code: String) {
 }
 
 object CodeListCode {
-  private val values: Set[CodeListCode]        = Set(BC08, BC36, BC66, CL141)
+  private val values: Set[CodeListCode]        = Set(BC08, BC46, BC51, BC52, BC57, BC58, BC66, BC67, BC107, BC108, CL141)
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
 
   def fromString(code: String): CodeListCode = codes.getOrElse(code, Unknown(code))
