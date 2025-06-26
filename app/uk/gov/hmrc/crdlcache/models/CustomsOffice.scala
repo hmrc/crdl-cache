@@ -17,7 +17,7 @@
 package uk.gov.hmrc.crdlcache.models
 
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeDetail.fromDpsCustomsOfficeDetail
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeTimetable.fromDpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOffice
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
@@ -54,7 +54,7 @@ case class CustomsOffice(
 )
 
 object CustomsOffice {
-  given format: Format[CustomsOffice] = Json.format[CustomsOffice]
+  given Writes[CustomsOffice] = Json.writes[CustomsOffice]
 
   val mongoFormat: Format[CustomsOffice] = { // Use the Mongo Extended JSON format for dates
     import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*

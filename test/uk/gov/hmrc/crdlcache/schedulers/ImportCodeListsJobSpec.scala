@@ -39,14 +39,7 @@ import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.{CodeListResponse, DataItem, LanguageDescription}
 import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
-import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
-import uk.gov.hmrc.crdlcache.models.dps.codelist.{
-  CodeListResponse,
-  DataItem,
-  DpsCodeListEntry,
-  DpsCodeListSnapshot,
-  LanguageDescription
-}
+import uk.gov.hmrc.crdlcache.models.dps.codelist.{DpsCodeListEntry, DpsCodeListSnapshot}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}

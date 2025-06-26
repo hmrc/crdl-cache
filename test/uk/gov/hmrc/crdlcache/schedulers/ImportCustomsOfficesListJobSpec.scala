@@ -45,8 +45,6 @@ import uk.gov.hmrc.crdlcache.models.dps.col.{
   RDEntryStatus,
   SpecificNotes
 }
-import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
-import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
