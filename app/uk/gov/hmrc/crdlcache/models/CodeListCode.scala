@@ -21,13 +21,13 @@ import play.api.mvc.PathBindable
 
 enum CodeListCode(val code: String) {
   // BC08 (Country)
-  case BC08                               extends CodeListCode("BC08")
+  case BC08 extends CodeListCode("BC08")
   // BC36 (Excise Products)
-  case BC36                               extends CodeListCode("BC36")
+  case BC36 extends CodeListCode("BC36")
   // BC66 (Excise Products Category)
-  case BC66                               extends CodeListCode("BC66")
+  case BC66 extends CodeListCode("BC66")
   // CL141 (Customs Offices)
-  case CL141                              extends CodeListCode("CL141")
+  case CL141 extends CodeListCode("CL141")
   // Unknown codelist code
   case Unknown(override val code: String) extends CodeListCode(code)
 }

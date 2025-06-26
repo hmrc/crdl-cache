@@ -20,7 +20,7 @@ import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.crdlcache.config.CodeListConfig
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.CodeListEntry
+import uk.gov.hmrc.crdlcache.models.dps.codelist.DpsCodeListEntry
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   LanguageDescriptionMissing,
   RequiredDataItemMissing,
@@ -55,7 +55,7 @@ object CodeListSnapshotEntry {
 
   def fromDpsEntry(
     config: CodeListConfig,
-    dpsEntry: CodeListEntry
+    dpsEntry: DpsCodeListEntry
   ): CodeListSnapshotEntry = {
     val key = dpsEntry
       .getProperty(config.keyProperty)
