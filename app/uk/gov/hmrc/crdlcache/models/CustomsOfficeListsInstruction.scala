@@ -20,14 +20,7 @@ import java.time.Instant
 
 enum CustomsOfficeListsInstruction {
   case UpsertCustomsOffice(customsOffice: CustomsOffice)
-  case RecordMissingCustomsOffice(override val referenceNumber: String, removedAt: Instant)
-
-  def referenceNumber: String = this match {
-    case CustomsOfficeListsInstruction.UpsertCustomsOffice(customsOffice) =>
-      customsOffice.referenceNumber
-    case CustomsOfficeListsInstruction.RecordMissingCustomsOffice(referenceNumber, _) =>
-      referenceNumber
-  }
+  case RecordMissingCustomsOffice(referenceNumber: String, removedAt: Instant)
 
   def activeFrom: Instant = this match {
     case CustomsOfficeListsInstruction.UpsertCustomsOffice(customsOffice) =>

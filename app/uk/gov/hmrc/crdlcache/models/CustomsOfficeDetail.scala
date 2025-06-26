@@ -26,7 +26,7 @@ case class CustomsOfficeDetail(
   prefixSuffixFlag: Boolean,
   prefixSuffixLevel: Option[String],
   prefixSuffixName: Option[String],
-  spaceToAdd: Boolean, // should this be boolean? or Int
+  spaceToAdd: Boolean,
   streetAndNumber: String
 )
 

@@ -19,13 +19,19 @@ package uk.gov.hmrc.crdlcache.models.dps.col
 import play.api.libs.json.{Json, Reads}
 
 case class DpsTimetableLine(
-  dayintheweekbeginday: String,
-  openinghourstimefirstperiodfrom: String,
-  openinghourstimefirstperiodto: String,
-  dayintheweekendday: String,
+  dayintheweekbeginday: Option[String], // marking these optional temporarily due to dps data issue
+  openinghourstimefirstperiodfrom: Option[
+    String
+  ], // marking these optional temporarily due to dps data issue
+  openinghourstimefirstperiodto: Option[
+    String
+  ],                                  // marking these optional temporarily due to dps data issue
+  dayintheweekendday: Option[String], // marking these optional temporarily due to dps data issue
   openinghourstimesecondperiodfrom: Option[String],
   openinghourstimesecondperiodto: Option[String],
-  customsofficeroletrafficcompetence: List[DpsRoleTrafficCompetence]
+  customsofficeroletrafficcompetence: Option[
+    List[DpsRoleTrafficCompetence]
+  ] // marking these optional temporarily due to dps data issue
 )
 
 object DpsTimetableLine {

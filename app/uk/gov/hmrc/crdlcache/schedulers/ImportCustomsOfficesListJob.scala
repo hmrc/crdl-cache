@@ -65,14 +65,9 @@ class ImportCustomsOfficesListJob @Inject() (
         val incomingReferenceNumbers = customsOffices
           .map(_.referenceNumber)
           .toSet
-        logger.info(s"existingReferenceNumbers $existingReferenceNumbers")
-        logger.info(s"incomingReferenceNumbers $incomingReferenceNumbers")
-
         val mergedReferenceNumbers = existingReferenceNumbers.union(incomingReferenceNumbers)
-        logger.info(s"mergedReferenceNumbers $mergedReferenceNumbers")
         val incomingGroupedReferenceNumbers = customsOffices.toSet
-        logger.info(s"incomingGroupedReferenceNumbers $incomingGroupedReferenceNumbers")
-        val instructions = List.newBuilder[CustomsOfficeListsInstruction]
+        val instructions                    = List.newBuilder[CustomsOfficeListsInstruction]
 
         for (referenceNumber <- mergedReferenceNumbers) {
 
@@ -81,12 +76,10 @@ class ImportCustomsOfficesListJob @Inject() (
             _.referenceNumber == referenceNumber
           )
 
-          logger.info(
-            s"for referenceNumber $referenceNumber hasExistingOffice $hasExistingOffice maybeNewOffice $maybeNewOffice"
-          )
-
           (hasExistingOffice, maybeNewOffice) match {
+            // First case is when there may or may not be an existing office with the reference number and new office details are available, we would Upsert.
             case (_, Some(newOffice)) => instructions += UpsertCustomsOffice(newOffice)
+            // Second case is when we have an existing office and don't have new office details, we would need to mark this reference number as missing and expire it.
             case (true, None) =>
               val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
               instructions += RecordMissingCustomsOffice(referenceNumber, startOfToday.toInstant)
@@ -96,39 +89,8 @@ class ImportCustomsOfficesListJob @Inject() (
               )
           }
         }
-        logger.info(s"list of instructions $instructions")
         Future.successful(instructions.result())
     }
-    // case 1
-//              customsOfficeListsRepository.upsertOffice(//UpsertEntry
-//                session,
-//                newOffice
-//              ) // there's no existing office with that reference number and new office details are available CREATE
-    // there's no existing office with that reference number and new office details are NOT available
-//            case (true, Some(newOffice)) => //case 2 & 1 can be combined with instructions
-//              instructions += UpsertCustomsOffice(newOffice)
-////              customsOfficeListsRepository.supersedeOffice(
-////                session,
-////                referenceNumber,
-////                newOffice.activeFrom,
-////                true
-////              )
-//              // there's an existing office with that reference number and new office details are available
-//              // expire older customs office active from and set active to date and upsert new office EXPIRE and ADD
-////              customsOfficeListsRepository.upsertOffice(
-////                session,
-////                newOffice
-////              ) // add the new office details to the db
-
-    // case 3
-//              customsOfficeListsRepository.supersedeOffice(
-//                session,
-//                referenceNumber,
-//                startOfToday.toInstant,
-//                false//this was wrong to be false
-//              ) // there's an existing office with that reference number and new office details are NOT available this means the old office value needs to be deleted/invalidated EXPIRE
-
-    // logger.info("Importing customs office list completed successfully")
   }
 
   private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {

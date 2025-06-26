@@ -1,23 +1,55 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.crdlcache.repositories
 
 import org.mongodb.scala.*
+import org.mongodb.scala.model.{Filters, Sorts}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, IndexedMongoQueriesSupport, PlayMongoRepositorySupport}
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeDetail,
+  CustomsOfficeTimetable,
+  RoleTrafficCompetence,
+  TimetableLine
+}
+
+import uk.gov.hmrc.mongo.test.{
+  CleanMongoCollectionSupport,
+  IndexedMongoQueriesSupport,
+  PlayMongoRepositorySupport
+}
 import uk.gov.hmrc.mongo.transaction.TransactionConfiguration
 
 import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future}
-import org.scalatest.{Assertion, OptionValues}
+import org.scalatest.Assertion
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
+  RecordMissingCustomsOffice,
+  UpsertCustomsOffice
+}
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
 
-class CustomsOfficeListsRepositorySpec  extends AnyFlatSpec
+class CustomsOfficeListsRepositorySpec
+  extends AnyFlatSpec
   with PlayMongoRepositorySupport[CustomsOffice]
   with CleanMongoCollectionSupport
   with IndexedMongoQueriesSupport
@@ -29,20 +61,21 @@ class CustomsOfficeListsRepositorySpec  extends AnyFlatSpec
 
   given ec: ExecutionContext = ExecutionContext.global
 
-  override protected val repository: CustomsOfficeListsRepository = new CustomsOfficeListsRepository(mongoComponent)
+  override protected val repository: CustomsOfficeListsRepository =
+    new CustomsOfficeListsRepository(mongoComponent)
 
   override given patienceConfig: PatienceConfig =
     PatienceConfig(timeout = 30.seconds, interval = 100.millis)
 
   def withCustomsOfficeEntries(
-                           offices: Seq[CustomsOffice]
-                         )(test: ClientSession => Future[Assertion]): Unit = {
+    offices: Seq[CustomsOffice]
+  )(test: ClientSession => Future[Assertion]): Unit = {
     repository.collection.insertMany(offices).toFuture.futureValue
     repository.withSessionAndTransaction(test).futureValue
   }
 
   protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
-  private val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
+  private val dateFormat                      = DateTimeFormatter.ofPattern("yyyyMMdd")
 
   val DK003102 = CustomsOffice(
     "DK003102",
@@ -59,7 +92,7 @@ class CustomsOfficeListsRepositorySpec  extends AnyFlatSpec
     None,
     None,
     "9850",
-    "+45 342234 34543",
+    Some("+45 342234 34543"),
     None,
     None,
     None,
@@ -85,35 +118,37 @@ class CustomsOfficeListsRepositorySpec  extends AnyFlatSpec
       LocalDate.parse("20991231", dateFormat),
       List(
         TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("0800", timeFormat),
-          LocalTime.parse("1600", timeFormat),
-          DayOfWeek.of(5),
+          Some(DayOfWeek.of(1)),
+          Some(LocalTime.parse("0800", timeFormat)),
+          Some(LocalTime.parse("1600", timeFormat)),
+          Some(DayOfWeek.of(5)),
           None,
           None,
-          List(
-            RoleTrafficCompetence("EXL", "P"),
-            RoleTrafficCompetence("EXL", "R"),
-            RoleTrafficCompetence("EXP", "P"),
-            RoleTrafficCompetence("EXP", "R"),
-            RoleTrafficCompetence("EXT", "P"),
-            RoleTrafficCompetence("EXT", "R"),
-            RoleTrafficCompetence("PLA", "R"),
-            RoleTrafficCompetence("RFC", "R"),
-            RoleTrafficCompetence("DIS", "N/A"),
-            RoleTrafficCompetence("IPR", "N/A"),
-            RoleTrafficCompetence("ENQ", "P"),
-            RoleTrafficCompetence("ENQ", "R"),
-            RoleTrafficCompetence("ENQ", "N/A"),
-            RoleTrafficCompetence("REC", "P"),
-            RoleTrafficCompetence("REC", "R"),
-            RoleTrafficCompetence("REC", "N/A")
+          Some(
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
           )
         )
       )
     )
   )
-  val invalidatedoffice =   CustomsOffice(
+  val invalidatedoffice = CustomsOffice(
     "IT314102",
     Instant.parse("2025-03-22T00:00:00Z"),
     Some(Instant.parse("2026-05-22T00:00:00Z")),
@@ -128,7 +163,7 @@ class CustomsOfficeListsRepositorySpec  extends AnyFlatSpec
     None,
     None,
     "10043",
-    "345 34234",
+    Some("345 34234"),
     None,
     None,
     None,
@@ -138,60 +173,255 @@ class CustomsOfficeListsRepositorySpec  extends AnyFlatSpec
     Some("TIN"),
     List.empty,
     CustomsOfficeDetail(
-        "ORBASSANO",
-        "IT",
-        "ORBASSANO (TO)",
+      "ORBASSANO",
+      "IT",
+      "ORBASSANO (TO)",
       false,
-        Some("A"),
-        None,
+      Some("A"),
+      None,
       true,
-        "Prima Strada, 5"
-      ),
+      "Prima Strada, 5"
+    ),
     CustomsOfficeTimetable(
       1,
       Some("ALL YEAR"),
       LocalDate.parse("20180101", dateFormat),
-      LocalDate.parse("99991231",dateFormat),
+      LocalDate.parse("99991231", dateFormat),
       List(
         TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("0800", timeFormat),
-          LocalTime.parse("1800", timeFormat),
-          DayOfWeek.of(5),
+          Some(DayOfWeek.of(1)),
+          Some(LocalTime.parse("0800", timeFormat)),
+          Some(LocalTime.parse("1800", timeFormat)),
+          Some(DayOfWeek.of(5)),
           None,
           None,
-          List(
-            RoleTrafficCompetence("DEP", "R"),
-            RoleTrafficCompetence("INC", "R"),
-            RoleTrafficCompetence("TRA", "R"),
-            RoleTrafficCompetence("EXP", "R"),
-            RoleTrafficCompetence("EIN", "R"),
-            RoleTrafficCompetence("ENT", "R"),
-            RoleTrafficCompetence("EXC", "R"),
-            RoleTrafficCompetence("DES", "R"),
-            RoleTrafficCompetence("GUA", "R"),
-            RoleTrafficCompetence("EXT", "R"),
-            RoleTrafficCompetence("REG", "R"),
-            RoleTrafficCompetence("REC", "R"),
-            RoleTrafficCompetence("IPR", "N/A"),
-            RoleTrafficCompetence("ENQ", "N/A")
+          Some(
+            List(
+              RoleTrafficCompetence("DEP", "R"),
+              RoleTrafficCompetence("INC", "R"),
+              RoleTrafficCompetence("TRA", "R"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EIN", "R"),
+              RoleTrafficCompetence("ENT", "R"),
+              RoleTrafficCompetence("EXC", "R"),
+              RoleTrafficCompetence("DES", "R"),
+              RoleTrafficCompetence("GUA", "R"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("REG", "R"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "N/A")
+            )
           )
         )
       )
     )
   )
-  
+
+  val newOffice = CustomsOffice(
+    "IT223101",
+    Instant.parse("2025-05-01T00:00:00Z"),
+    None,
+    Some("ITP00002"),
+    Some("IT223101"),
+    Some("IT223101"),
+    None,
+    None,
+    "IT",
+    Some("test@it"),
+    None,
+    Some(LocalDate.parse("20250501", dateFormat)),
+    None,
+    "40131",
+    Some("1234 045483382"),
+    Some("2343 34543"),
+    None,
+    Some("Q"),
+    None,
+    false,
+    Some("IT"),
+    Some("TIN"),
+    List.empty,
+    CustomsOfficeDetail(
+      "AEROPORTO DI BOLOGNA",
+      "IT",
+      "BOLOGNA",
+      false,
+      Some("A"),
+      None,
+      true,
+      "VIA DELL'AEROPORTO, 1"
+    ),
+    CustomsOfficeTimetable(
+      1,
+      Some("ALL YEAR"),
+      LocalDate.parse("20180101", dateFormat),
+      LocalDate.parse("20991231", dateFormat),
+      List(
+        TimetableLine(
+          Some(DayOfWeek.of(1)),
+          Some(LocalTime.parse("0000", timeFormat)),
+          Some(LocalTime.parse("2359", timeFormat)),
+          Some(DayOfWeek.of(6)),
+          None,
+          None,
+          Some(
+            List(
+              RoleTrafficCompetence("DEP", "AIR"),
+              RoleTrafficCompetence("INC", "AIR"),
+              RoleTrafficCompetence("TXT", "AIR"),
+              RoleTrafficCompetence("DES", "AIR"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("ENT", "AIR"),
+              RoleTrafficCompetence("EXC", "N/A"),
+              RoleTrafficCompetence("EXP", "AIR"),
+              RoleTrafficCompetence("EXT", "AIR"),
+              RoleTrafficCompetence("REC", "N/A"),
+              RoleTrafficCompetence("REG", "N/A"),
+              RoleTrafficCompetence("TRA", "AIR"),
+              RoleTrafficCompetence("EIN", "AIR"),
+              RoleTrafficCompetence("PLA", "N/A"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("RFC", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A")
+            )
+          )
+        )
+      )
+    )
+  )
+
   private val customsOffices = Seq(DK003102, invalidatedoffice)
 
-  "CustomsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers" should "return offices present in the database" in withCustomsOfficeEntries(customsOffices) {
-    session =>
-      repository.fetchCustomsOfficeReferenceNumbers(session).map(_ must contain("DK003102"))
+  "CustomsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers" should "return active offices present in the database" in withCustomsOfficeEntries(
+    customsOffices
+  ) { session =>
+    repository.fetchCustomsOfficeReferenceNumbers(session).map(_ must contain("DK003102"))
   }
 
-  it should "not return entries that are invalidated" in withCustomsOfficeEntries(customsOffices){
+  it should "not return entries that are invalidated" in withCustomsOfficeEntries(customsOffices) {
     session =>
       repository.fetchCustomsOfficeReferenceNumbers(session).map(_ mustNot contain("IT314102"))
   }
 
+  "CustomsOfficeListsRepository.executeInstructions" should "invalidate missing entries" in withCustomsOfficeEntries(
+    customsOffices
+  ) { session =>
+    for {
+      _ <- repository.executeInstructions(
+        session,
+        List(RecordMissingCustomsOffice("DK003102", Instant.parse("2025-05-22T00:00:00Z")))
+      )
+      office <- repository.collection
+        .find(session, Filters.equal("referenceNumber", "DK003102"))
+        .toFuture()
+    } yield office mustBe Seq(DK003102.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z"))))
+  }
 
+  it should "invalidate missing office when the activation date is the same as the existing one" in withCustomsOfficeEntries(
+    customsOffices
+  ) { session =>
+    for {
+      _ <- repository.executeInstructions(
+        session,
+        List(RecordMissingCustomsOffice("DK003102", DK003102.activeFrom))
+      )
+      office <- repository.collection
+        .find(session, Filters.equal("referenceNumber", "DK003102"))
+        .toFuture()
+    } yield office mustBe Seq(DK003102.copy(activeTo = Some(DK003102.activeFrom)))
+  }
+
+  it should "supersede and invalidate existing entries" in withCustomsOfficeEntries(
+    customsOffices
+  ) { session =>
+    for {
+      _ <- repository.executeInstructions(
+        session,
+        List(
+          UpsertCustomsOffice(
+            DK003102.copy(
+              activeFrom = Instant.parse("2025-04-22T00:00:00Z"),
+              emailAddress = Some("newEmail@test")
+            )
+          )
+        )
+      )
+      offices <- repository.collection
+        .find(session, Filters.equal("referenceNumber", "DK003102"))
+        .sort(Sorts.ascending("activeFrom"))
+        .toFuture()
+    } yield offices mustBe Seq(
+      DK003102.copy(activeTo = Some(Instant.parse("2025-04-22T00:00:00Z"))),
+      DK003102.copy(
+        activeFrom = Instant.parse("2025-04-22T00:00:00Z"),
+        emailAddress = Some("newEmail@test")
+      )
+    )
+  }
+
+  it should "create a new office when a new entry is encountered" in withCustomsOfficeEntries(
+    customsOffices
+  ) { session =>
+    for {
+      _ <- repository.executeInstructions(session, List(UpsertCustomsOffice(newOffice)))
+      office <- repository.collection
+        .find(session, Filters.equal("referenceNumber", "IT223101"))
+        .toFuture()
+    } yield office mustBe Seq(newOffice)
+  }
+
+  it should "replace existing offices with same active from date" in withCustomsOfficeEntries(
+    customsOffices
+  ) { session =>
+    for {
+      _ <- repository.executeInstructions(
+        session,
+        List(
+          UpsertCustomsOffice(
+            DK003102.copy(
+              emailAddress = Some("newEmail@test")
+            )
+          )
+        )
+      )
+      office <- repository.collection
+        .find(session, Filters.equal("referenceNumber", "DK003102"))
+        .toFuture()
+    } yield office mustBe Seq(
+      DK003102.copy(
+        emailAddress = Some("newEmail@test")
+      )
+    )
+  }
+
+  it should "upsert entries in the order of their active from date" in {
+    repository.withSessionAndTransaction { session =>
+      for {
+        _ <- repository.executeInstructions(
+          session,
+          List(
+            UpsertCustomsOffice(
+              DK003102.copy(
+                activeFrom = Instant.parse("2025-05-23T00:00:00Z"),
+                emailAddress = Some("newEmail@test")
+              )
+            ),
+            RecordMissingCustomsOffice("DK003102", Instant.parse("2025-05-22T00:00:00Z")),
+            UpsertCustomsOffice(DK003102),
+            UpsertCustomsOffice(newOffice)
+          )
+        )
+        offices <- repository.collection
+          .find(session)
+          .sort(Sorts.ascending("activeFrom"))
+          .toFuture()
+      } yield offices mustBe Seq(
+        DK003102.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z"))),
+        newOffice,
+        DK003102.copy(activeFrom = Instant.parse("2025-05-23T00:00:00Z"),emailAddress = Some("newEmail@test"))
+
+      )
+    }.futureValue
+  }
 }

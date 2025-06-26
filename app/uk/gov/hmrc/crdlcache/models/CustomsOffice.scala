@@ -45,7 +45,7 @@ case class CustomsOffice(
   telexNumber: Option[String],
   geoInfoCode: Option[String],
   regionCode: Option[String],
-  traderDedicated: Boolean, // 0 or 1 vals?
+  traderDedicated: Boolean,
   dedicatedTraderLanguageCode: Option[String],
   dedicatedTraderName: Option[String],
   customsOfficeSpecificNotesCodes: List[String],
@@ -55,6 +55,11 @@ case class CustomsOffice(
 
 object CustomsOffice {
   given format: Format[CustomsOffice] = Json.format[CustomsOffice]
+
+  val mongoFormat: Format[CustomsOffice] = { // Use the Mongo Extended JSON format for dates
+    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
+    Json.format[CustomsOffice]
+  }
 
   private val dateFormat1 = DateTimeFormatter.ofPattern("dd-MM-yyyy")
   private val dateFormat2 = DateTimeFormatter.ofPattern("yyyyMMdd")

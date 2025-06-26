@@ -18,62 +18,64 @@ package uk.gov.hmrc.crdlcache.models
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
-import uk.gov.hmrc.crdlcache.models.TimetableLine.timeFormat
+import play.api.libs.json.Json
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
 
 class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
-    "CustomsOffice.fromDpsCustomOfficeList" should "convert a DpsCustomsOffice to the crdl-cache CustomsOffice model" in {
-    val inputOffice = DK003102
-    val dateFormat  = DateTimeFormatter.ofPattern("yyyyMMdd")
-    val expectedSnapshot = CustomsOffice(
-      "DK003102",
-      Instant.parse("2025-03-22T00:00:00Z"),
-      None,
-      None,
-      None,
-      Some("DK003102"),
-      Some("DK003102"),
-      None,
-      "DK",
-      Some("test@dk"),
-      None,
-      None,
-      None,
-      "9850",
-      Some("+45 342234 34543"),
-      None,
-      None,
-      None,
-      None,
+  val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+  val inputOffice                   = DK003102
+  val dateFormat                    = DateTimeFormatter.ofPattern("yyyyMMdd")
+  val expectedSnapshot = CustomsOffice(
+    "DK003102",
+    Instant.parse("2025-03-22T00:00:00Z"),
+    None,
+    None,
+    None,
+    Some("DK003102"),
+    Some("DK003102"),
+    None,
+    "DK",
+    Some("test@dk"),
+    None,
+    None,
+    None,
+    "9850",
+    Some("+45 342234 34543"),
+    None,
+    None,
+    None,
+    None,
+    false,
+    None,
+    None,
+    List("SN0009"),
+    CustomsOfficeDetail(
+      "Hirtshals Toldekspedition",
+      "DA",
+      "Hirtshals",
       false,
       None,
       None,
-      List("SN0009"),
-      CustomsOfficeDetail(
-        "Hirtshals Toldekspedition",
-        "DA",
-        "Hirtshals",
-        false,
-        None,
-        None,
-        false,
-        "Dalsagervej 7"
-      ),
-      CustomsOfficeTimetable(
-        1,
-        None,
-        LocalDate.parse("20180101", dateFormat),
-        LocalDate.parse("20991231", dateFormat),
-        List(
-          TimetableLine(
-            DayOfWeek.of(1),
-            LocalTime.parse("0800", timeFormat),
-            LocalTime.parse("1600", timeFormat),
-            DayOfWeek.of(5),
-            None,
-            None,
+      false,
+      "Dalsagervej 7"
+    ),
+    CustomsOfficeTimetable(
+      1,
+      None,
+      LocalDate.parse("20180101", dateFormat),
+      LocalDate.parse("20991231", dateFormat),
+      List(
+        TimetableLine(
+          Some(DayOfWeek.of(1)), // temporary change
+          Some(LocalTime.parse("0800", timeFormat)),
+          Some(LocalTime.parse("1600", timeFormat)),
+          Some(DayOfWeek.of(5)),
+          None,
+          None,
+          Some(
             List(
               RoleTrafficCompetence("EXL", "P"),
               RoleTrafficCompetence("EXL", "R"),
@@ -96,8 +98,127 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
         )
       )
     )
+  )
+
+  val mongoJson = Json.obj(
+    "phoneNumber"  -> "+45 342234 34543",
+    "emailAddress" -> "test@dk",
+    "customsOfficeLsd" -> Json.obj(
+      "city"                   -> "Hirtshals",
+      "languageCode"           -> "DA",
+      "spaceToAdd"             -> false,
+      "customsOfficeUsualName" -> "Hirtshals Toldekspedition",
+      "prefixSuffixFlag"       -> false,
+      "streetAndNumber"        -> "Dalsagervej 7"
+    ),
+    "customsOfficeTimetable" -> Json.obj(
+      "seasonCode"      -> 1,
+      "seasonStartDate" -> "2018-01-01",
+      "seasonEndDate"   -> "2099-12-31",
+      "customsOfficeTimetableLine" -> Json.arr(
+        Json.obj(
+          "dayInTheWeekEndDay"              -> 5,
+          "openingHoursTimeFirstPeriodFrom" -> "0800",
+          "dayInTheWeekBeginDay"            -> 1,
+          "openingHoursTimeFirstPeriodTo"   -> "1600",
+          "customsOfficeRoleTrafficCompetence" -> Json.arr(
+            Json.obj(
+              "roleName"    -> "EXL",
+              "trafficType" -> "P"
+            ),
+            Json.obj(
+              "roleName"    -> "EXL",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "EXP",
+              "trafficType" -> "P"
+            ),
+            Json.obj(
+              "roleName"    -> "EXP",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "EXT",
+              "trafficType" -> "P"
+            ),
+            Json.obj(
+              "roleName"    -> "EXT",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "PLA",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "RFC",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "DIS",
+              "trafficType" -> "N/A"
+            ),
+            Json.obj(
+              "roleName"    -> "IPR",
+              "trafficType" -> "N/A"
+            ),
+            Json.obj(
+              "roleName"    -> "ENQ",
+              "trafficType" -> "P"
+            ),
+            Json.obj(
+              "roleName"    -> "ENQ",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "ENQ",
+              "trafficType" -> "N/A"
+            ),
+            Json.obj(
+              "roleName"    -> "REC",
+              "trafficType" -> "P"
+            ),
+            Json.obj(
+              "roleName"    -> "REC",
+              "trafficType" -> "R"
+            ),
+            Json.obj(
+              "roleName"    -> "REC",
+              "trafficType" -> "N/A"
+            )
+          )
+        )
+      )
+    ),
+    "postalCode" -> "9850",
+    "activeFrom" -> Json.obj(
+      "$date" -> Json.obj("$numberLong" -> expectedSnapshot.activeFrom.toEpochMilli.toString)
+    ),
+    "countryCode"                                 -> "DK",
+    "customsOfficeSpecificNotesCodes"             -> Json.arr("SN0009"),
+    "traderDedicated"                             -> false,
+    "referenceNumberCompetentAuthorityOfEnquiry"  -> "DK003102",
+    "referenceNumberCompetentAuthorityOfRecovery" -> "DK003102",
+    "referenceNumber"                             -> "DK003102"
+  )
+
+  "CustomsOffice.fromDpsCustomOfficeList" should "convert a DpsCustomsOffice to the crdl-cache CustomsOffice model" in {
 
     CustomsOffice.fromDpsCustomOfficeList(inputOffice) mustBe expectedSnapshot
   }
 
+  it should "throw CustomsOfficeDetailMissing error when CustomsOfficeDetail is missing in the input" in {
+    val customsOfficeDetailMissing =
+      the[CustomsOfficeDetailMissing] thrownBy
+        CustomsOffice.fromDpsCustomOfficeList(inputOffice.copy(customsofficelsd = List.empty))
+    customsOfficeDetailMissing.referenceNumber mustBe "DK003102"
+  }
+
+  "The MongoDB format for CustomsOffice" should "serialize all properties as Mongo Extended JSON" in {
+    Json.toJson(expectedSnapshot)(CustomsOffice.mongoFormat) mustBe mongoJson
+  }
+
+  it should "deserialize all properties from Mongo Extended JSON" in {
+    Json.fromJson[CustomsOffice](mongoJson)(CustomsOffice.mongoFormat).get mustBe expectedSnapshot
+  }
 }

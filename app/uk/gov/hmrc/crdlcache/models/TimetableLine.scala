@@ -24,13 +24,13 @@ import uk.gov.hmrc.crdlcache.models.formats.JavaTimeFormats
 import java.time.{DayOfWeek, LocalTime}
 
 case class TimetableLine(
-  dayInTheWeekBeginDay: DayOfWeek,
-  openingHoursTimeFirstPeriodFrom: LocalTime,
-  openingHoursTimeFirstPeriodTo: LocalTime,
-  dayInTheWeekEndDay: DayOfWeek,
+  dayInTheWeekBeginDay: Option[DayOfWeek],
+  openingHoursTimeFirstPeriodFrom: Option[LocalTime],
+  openingHoursTimeFirstPeriodTo: Option[LocalTime],
+  dayInTheWeekEndDay: Option[DayOfWeek],
   openingHoursTimeSecondPeriodFrom: Option[LocalTime],
   openingHoursTimeSecondPeriodTo: Option[LocalTime],
-  customsOfficeRoleTrafficCompetence: List[RoleTrafficCompetence]
+  customsOfficeRoleTrafficCompetence: Option[List[RoleTrafficCompetence]]
 )
 object TimetableLine extends JavaTimeFormats {
 
@@ -38,13 +38,21 @@ object TimetableLine extends JavaTimeFormats {
 
   def fromDpsTimetableLine(timetableLine: DpsTimetableLine): TimetableLine = {
     TimetableLine(
-      DayOfWeek.of(timetableLine.dayintheweekbeginday.toInt),
-      LocalTime.parse(timetableLine.openinghourstimefirstperiodfrom, timeFormat),
-      LocalTime.parse(timetableLine.openinghourstimefirstperiodto, timeFormat),
-      DayOfWeek.of(timetableLine.dayintheweekendday.toInt),
+      timetableLine.dayintheweekbeginday.map(day =>
+        DayOfWeek.of(day.toInt)
+      ), // setting default values temporarily due to dps data issue
+      timetableLine.openinghourstimefirstperiodfrom.map(
+        LocalTime.parse(_, timeFormat)
+      ), // making optional temporarily
+      timetableLine.openinghourstimefirstperiodto.map(
+        LocalTime.parse(_, timeFormat)
+      ), // making optional temporarily
+      timetableLine.dayintheweekendday.map(day =>
+        DayOfWeek.of(day.toInt)
+      ), // making optional temporarily
       timetableLine.openinghourstimesecondperiodfrom.map(LocalTime.parse(_, timeFormat)),
       timetableLine.openinghourstimesecondperiodto.map(LocalTime.parse(_, timeFormat)),
-      timetableLine.customsofficeroletrafficcompetence.map(fromDpsRoleTrafficCompetence)
+      timetableLine.customsofficeroletrafficcompetence.map(_.map(fromDpsRoleTrafficCompetence))
     )
   }
 }

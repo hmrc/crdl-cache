@@ -43,7 +43,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
 ) extends PlayMongoRepository[CustomsOffice](
     mongoComponent,
     collectionName = "customsOfficeLists",
-    domainFormat = CustomsOffice.format,
+    domainFormat = CustomsOffice.mongoFormat,
     indexes = Seq(
       IndexModel(Indexes.ascending("referenceNumber", "activeFrom"), IndexOptions().unique(true)),
       IndexModel(

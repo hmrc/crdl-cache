@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.mockito.ArgumentMatchers.{any, eq as equalTo}
-import org.mockito.Mockito.{reset, times, verify, when}
+import org.mockito.Mockito.{never, reset, times, verify, when}
 import org.mongodb.scala.{ClientSession, MongoClient, MongoDatabase, SingleObservable}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -45,6 +45,7 @@ import uk.gov.hmrc.crdlcache.models.dps.col.{
   RDEntryStatus,
   SpecificNotes
 }
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import uk.gov.hmrc.mongo.MongoComponent
@@ -125,22 +126,24 @@ class ImportCustomsOfficesListJobSpec
           "20991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0800",
-              "1800",
-              "6",
+              Some("1"),
+              Some("0800"),
+              Some("1800"),
+              Some("6"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("EXC", "R"),
-                DpsRoleTrafficCompetence("REG", "N/A"),
-                DpsRoleTrafficCompetence("SCO", "N/A"),
-                DpsRoleTrafficCompetence("PLA", "N/A"),
-                DpsRoleTrafficCompetence("DIS", "N/A"),
-                DpsRoleTrafficCompetence("RFC", "N/A"),
-                DpsRoleTrafficCompetence("EXT", "N/A"),
-                DpsRoleTrafficCompetence("EXP", "N/A"),
-                DpsRoleTrafficCompetence("IPR", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("EXC", "R"),
+                  DpsRoleTrafficCompetence("REG", "N/A"),
+                  DpsRoleTrafficCompetence("SCO", "N/A"),
+                  DpsRoleTrafficCompetence("PLA", "N/A"),
+                  DpsRoleTrafficCompetence("DIS", "N/A"),
+                  DpsRoleTrafficCompetence("RFC", "N/A"),
+                  DpsRoleTrafficCompetence("EXT", "N/A"),
+                  DpsRoleTrafficCompetence("EXP", "N/A"),
+                  DpsRoleTrafficCompetence("IPR", "N/A")
+                )
               )
             )
           )
@@ -188,30 +191,32 @@ class ImportCustomsOfficesListJobSpec
           "20991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0000",
-              "2359",
-              "6",
+              Some("1"),
+              Some("0000"),
+              Some("2359"),
+              Some("6"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("DEP", "AIR"),
-                DpsRoleTrafficCompetence("INC", "AIR"),
-                DpsRoleTrafficCompetence("TXT", "AIR"),
-                DpsRoleTrafficCompetence("DES", "AIR"),
-                DpsRoleTrafficCompetence("ENQ", "N/A"),
-                DpsRoleTrafficCompetence("ENT", "AIR"),
-                DpsRoleTrafficCompetence("EXC", "N/A"),
-                DpsRoleTrafficCompetence("EXP", "AIR"),
-                DpsRoleTrafficCompetence("EXT", "AIR"),
-                DpsRoleTrafficCompetence("REC", "N/A"),
-                DpsRoleTrafficCompetence("REG", "N/A"),
-                DpsRoleTrafficCompetence("TRA", "AIR"),
-                DpsRoleTrafficCompetence("EIN", "AIR"),
-                DpsRoleTrafficCompetence("PLA", "N/A"),
-                DpsRoleTrafficCompetence("DIS", "N/A"),
-                DpsRoleTrafficCompetence("RFC", "N/A"),
-                DpsRoleTrafficCompetence("IPR", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("DEP", "AIR"),
+                  DpsRoleTrafficCompetence("INC", "AIR"),
+                  DpsRoleTrafficCompetence("TXT", "AIR"),
+                  DpsRoleTrafficCompetence("DES", "AIR"),
+                  DpsRoleTrafficCompetence("ENQ", "N/A"),
+                  DpsRoleTrafficCompetence("ENT", "AIR"),
+                  DpsRoleTrafficCompetence("EXC", "N/A"),
+                  DpsRoleTrafficCompetence("EXP", "AIR"),
+                  DpsRoleTrafficCompetence("EXT", "AIR"),
+                  DpsRoleTrafficCompetence("REC", "N/A"),
+                  DpsRoleTrafficCompetence("REG", "N/A"),
+                  DpsRoleTrafficCompetence("TRA", "AIR"),
+                  DpsRoleTrafficCompetence("EIN", "AIR"),
+                  DpsRoleTrafficCompetence("PLA", "N/A"),
+                  DpsRoleTrafficCompetence("DIS", "N/A"),
+                  DpsRoleTrafficCompetence("RFC", "N/A"),
+                  DpsRoleTrafficCompetence("IPR", "N/A")
+                )
               )
             )
           )
@@ -274,29 +279,31 @@ class ImportCustomsOfficesListJobSpec
           "20991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0800",
-              "1600",
-              "5",
+              Some("1"),
+              Some("0800"),
+              Some("1600"),
+              Some("5"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("EXL", "P"),
-                DpsRoleTrafficCompetence("EXL", "R"),
-                DpsRoleTrafficCompetence("EXP", "P"),
-                DpsRoleTrafficCompetence("EXP", "R"),
-                DpsRoleTrafficCompetence("EXT", "P"),
-                DpsRoleTrafficCompetence("EXT", "R"),
-                DpsRoleTrafficCompetence("PLA", "R"),
-                DpsRoleTrafficCompetence("RFC", "R"),
-                DpsRoleTrafficCompetence("DIS", "N/A"),
-                DpsRoleTrafficCompetence("IPR", "N/A"),
-                DpsRoleTrafficCompetence("ENQ", "P"),
-                DpsRoleTrafficCompetence("ENQ", "R"),
-                DpsRoleTrafficCompetence("ENQ", "N/A"),
-                DpsRoleTrafficCompetence("REC", "P"),
-                DpsRoleTrafficCompetence("REC", "R"),
-                DpsRoleTrafficCompetence("REC", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("EXL", "P"),
+                  DpsRoleTrafficCompetence("EXL", "R"),
+                  DpsRoleTrafficCompetence("EXP", "P"),
+                  DpsRoleTrafficCompetence("EXP", "R"),
+                  DpsRoleTrafficCompetence("EXT", "P"),
+                  DpsRoleTrafficCompetence("EXT", "R"),
+                  DpsRoleTrafficCompetence("PLA", "R"),
+                  DpsRoleTrafficCompetence("RFC", "R"),
+                  DpsRoleTrafficCompetence("DIS", "N/A"),
+                  DpsRoleTrafficCompetence("IPR", "N/A"),
+                  DpsRoleTrafficCompetence("ENQ", "P"),
+                  DpsRoleTrafficCompetence("ENQ", "R"),
+                  DpsRoleTrafficCompetence("ENQ", "N/A"),
+                  DpsRoleTrafficCompetence("REC", "P"),
+                  DpsRoleTrafficCompetence("REC", "R"),
+                  DpsRoleTrafficCompetence("REC", "N/A")
+                )
               )
             )
           )
@@ -344,27 +351,29 @@ class ImportCustomsOfficesListJobSpec
           "99991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0800",
-              "1800",
-              "5",
+              Some("1"),
+              Some("0800"),
+              Some("1800"),
+              Some("5"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("DEP", "R"),
-                DpsRoleTrafficCompetence("INC", "R"),
-                DpsRoleTrafficCompetence("TRA", "R"),
-                DpsRoleTrafficCompetence("EXP", "R"),
-                DpsRoleTrafficCompetence("EIN", "R"),
-                DpsRoleTrafficCompetence("ENT", "R"),
-                DpsRoleTrafficCompetence("EXC", "R"),
-                DpsRoleTrafficCompetence("DES", "R"),
-                DpsRoleTrafficCompetence("GUA", "R"),
-                DpsRoleTrafficCompetence("EXT", "R"),
-                DpsRoleTrafficCompetence("REG", "R"),
-                DpsRoleTrafficCompetence("REC", "R"),
-                DpsRoleTrafficCompetence("IPR", "N/A"),
-                DpsRoleTrafficCompetence("ENQ", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("DEP", "R"),
+                  DpsRoleTrafficCompetence("INC", "R"),
+                  DpsRoleTrafficCompetence("TRA", "R"),
+                  DpsRoleTrafficCompetence("EXP", "R"),
+                  DpsRoleTrafficCompetence("EIN", "R"),
+                  DpsRoleTrafficCompetence("ENT", "R"),
+                  DpsRoleTrafficCompetence("EXC", "R"),
+                  DpsRoleTrafficCompetence("DES", "R"),
+                  DpsRoleTrafficCompetence("GUA", "R"),
+                  DpsRoleTrafficCompetence("EXT", "R"),
+                  DpsRoleTrafficCompetence("REG", "R"),
+                  DpsRoleTrafficCompetence("REC", "R"),
+                  DpsRoleTrafficCompetence("IPR", "N/A"),
+                  DpsRoleTrafficCompetence("ENQ", "N/A")
+                )
               )
             )
           )
@@ -469,28 +478,23 @@ class ImportCustomsOfficesListJobSpec
   }
 
   it should "roll back when there is an issue while importing" in {
+    val invalidCustomsOfficeResponse = CustomsOfficeListResponse(
+      elements =
+        List(customsOfficeListPage1.elements.head.copy(nctsentrydate = Some("InvalidDate"))),
+      links = customsOfficeListPage1.links
+    )
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
     when(dpsConnector.fetchCustomsOfficeLists(using any()))
-      .thenReturn(Source(List(customsOfficeListPage1, customsOfficeListPage2)))
-
-    when(
-      customsOfficeListRepository.executeInstructions(
-        equalTo(clientSession),
-        any[List[CustomsOfficeListsInstruction]]
-      )
-    )
-      .thenReturn(Future.failed(MongoError.NotAcknowledged))
+      .thenReturn(Source(List(invalidCustomsOfficeResponse)))
 
     customsOfficeListsJob
       .importCustomsOfficeLists()
       .failed
-      .futureValue mustBe MongoError.NotAcknowledged
+      .futureValue mustBe a[Exception]
 
-    verify(customsOfficeListRepository, times(1)).executeInstructions(equalTo(clientSession), any())
-
-    verify(clientSession, times(1)).abortTransaction()
+    verify(clientSession, never()).commitTransaction()
   }
 
 }

@@ -30,8 +30,23 @@ import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.dps.*
 import RelationType.{Next, Prev, Self}
-import uk.gov.hmrc.crdlcache.models.dps.codelist.{CodeListResponse, DataItem, DpsCodeListEntry, DpsCodeListSnapshot, LanguageDescription}
-import uk.gov.hmrc.crdlcache.models.dps.col.{CustomsOfficeListResponse, DpsCustomsOfficeTimetable, DpsCustomsOffice, DpsCustomsOfficeDetail, DpsRoleTrafficCompetence, DpsTimetableLine, RDEntryStatus, SpecificNotes}
+import uk.gov.hmrc.crdlcache.models.dps.codelist.{
+  CodeListResponse,
+  DataItem,
+  DpsCodeListEntry,
+  DpsCodeListSnapshot,
+  LanguageDescription
+}
+import uk.gov.hmrc.crdlcache.models.dps.col.{
+  CustomsOfficeListResponse,
+  DpsCustomsOfficeTimetable,
+  DpsCustomsOffice,
+  DpsCustomsOfficeDetail,
+  DpsRoleTrafficCompetence,
+  DpsTimetableLine,
+  RDEntryStatus,
+  SpecificNotes
+}
 import uk.gov.hmrc.http.test.{HttpClientV2Support, WireMockSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
@@ -186,7 +201,7 @@ class DpsConnectorSpec
         Some("20250501"),
         None,
         "40121",
-        "0039 435345",
+        Some("0039 435345"),
         Some("0039 435345"),
         None,
         Some("Q"),
@@ -214,22 +229,24 @@ class DpsConnectorSpec
           "20991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0800",
-              "1800",
-              "6",
+              Some("1"),
+              Some("0800"),
+              Some("1800"),
+              Some("6"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("EXC", "R"),
-                DpsRoleTrafficCompetence("REG", "N/A"),
-                DpsRoleTrafficCompetence("SCO", "N/A"),
-                DpsRoleTrafficCompetence("PLA", "N/A"),
-                DpsRoleTrafficCompetence("DIS", "N/A"),
-                DpsRoleTrafficCompetence("RFC", "N/A"),
-                DpsRoleTrafficCompetence("EXT", "N/A"),
-                DpsRoleTrafficCompetence("EXP", "N/A"),
-                DpsRoleTrafficCompetence("IPR", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("EXC", "R"),
+                  DpsRoleTrafficCompetence("REG", "N/A"),
+                  DpsRoleTrafficCompetence("SCO", "N/A"),
+                  DpsRoleTrafficCompetence("PLA", "N/A"),
+                  DpsRoleTrafficCompetence("DIS", "N/A"),
+                  DpsRoleTrafficCompetence("RFC", "N/A"),
+                  DpsRoleTrafficCompetence("EXT", "N/A"),
+                  DpsRoleTrafficCompetence("EXP", "N/A"),
+                  DpsRoleTrafficCompetence("IPR", "N/A")
+                )
               )
             )
           )
@@ -249,7 +266,7 @@ class DpsConnectorSpec
         Some("20250501"),
         None,
         "40131",
-        "1234 045483382",
+        Some("1234 045483382"),
         Some("2343 34543"),
         None,
         Some("Q"),
@@ -277,30 +294,32 @@ class DpsConnectorSpec
           "20991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0000",
-              "2359",
-              "6",
+              Some("1"),
+              Some("0000"),
+              Some("2359"),
+              Some("6"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("DEP", "AIR"),
-                DpsRoleTrafficCompetence("INC", "AIR"),
-                DpsRoleTrafficCompetence("TXT", "AIR"),
-                DpsRoleTrafficCompetence("DES", "AIR"),
-                DpsRoleTrafficCompetence("ENQ", "N/A"),
-                DpsRoleTrafficCompetence("ENT", "AIR"),
-                DpsRoleTrafficCompetence("EXC", "N/A"),
-                DpsRoleTrafficCompetence("EXP", "AIR"),
-                DpsRoleTrafficCompetence("EXT", "AIR"),
-                DpsRoleTrafficCompetence("REC", "N/A"),
-                DpsRoleTrafficCompetence("REG", "N/A"),
-                DpsRoleTrafficCompetence("TRA", "AIR"),
-                DpsRoleTrafficCompetence("EIN", "AIR"),
-                DpsRoleTrafficCompetence("PLA", "N/A"),
-                DpsRoleTrafficCompetence("DIS", "N/A"),
-                DpsRoleTrafficCompetence("RFC", "N/A"),
-                DpsRoleTrafficCompetence("IPR", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("DEP", "AIR"),
+                  DpsRoleTrafficCompetence("INC", "AIR"),
+                  DpsRoleTrafficCompetence("TXT", "AIR"),
+                  DpsRoleTrafficCompetence("DES", "AIR"),
+                  DpsRoleTrafficCompetence("ENQ", "N/A"),
+                  DpsRoleTrafficCompetence("ENT", "AIR"),
+                  DpsRoleTrafficCompetence("EXC", "N/A"),
+                  DpsRoleTrafficCompetence("EXP", "AIR"),
+                  DpsRoleTrafficCompetence("EXT", "AIR"),
+                  DpsRoleTrafficCompetence("REC", "N/A"),
+                  DpsRoleTrafficCompetence("REG", "N/A"),
+                  DpsRoleTrafficCompetence("TRA", "AIR"),
+                  DpsRoleTrafficCompetence("EIN", "AIR"),
+                  DpsRoleTrafficCompetence("PLA", "N/A"),
+                  DpsRoleTrafficCompetence("DIS", "N/A"),
+                  DpsRoleTrafficCompetence("RFC", "N/A"),
+                  DpsRoleTrafficCompetence("IPR", "N/A")
+                )
               )
             )
           )
@@ -335,7 +354,7 @@ class DpsConnectorSpec
         None,
         None,
         "9850",
-        "+45 342234 34543",
+        Some("+45 342234 34543"),
         None,
         None,
         None,
@@ -363,29 +382,31 @@ class DpsConnectorSpec
           "20991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0800",
-              "1600",
-              "5",
+              Some("1"),
+              Some("0800"),
+              Some("1600"),
+              Some("5"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("EXL", "P"),
-                DpsRoleTrafficCompetence("EXL", "R"),
-                DpsRoleTrafficCompetence("EXP", "P"),
-                DpsRoleTrafficCompetence("EXP", "R"),
-                DpsRoleTrafficCompetence("EXT", "P"),
-                DpsRoleTrafficCompetence("EXT", "R"),
-                DpsRoleTrafficCompetence("PLA", "R"),
-                DpsRoleTrafficCompetence("RFC", "R"),
-                DpsRoleTrafficCompetence("DIS", "N/A"),
-                DpsRoleTrafficCompetence("IPR", "N/A"),
-                DpsRoleTrafficCompetence("ENQ", "P"),
-                DpsRoleTrafficCompetence("ENQ", "R"),
-                DpsRoleTrafficCompetence("ENQ", "N/A"),
-                DpsRoleTrafficCompetence("REC", "P"),
-                DpsRoleTrafficCompetence("REC", "R"),
-                DpsRoleTrafficCompetence("REC", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("EXL", "P"),
+                  DpsRoleTrafficCompetence("EXL", "R"),
+                  DpsRoleTrafficCompetence("EXP", "P"),
+                  DpsRoleTrafficCompetence("EXP", "R"),
+                  DpsRoleTrafficCompetence("EXT", "P"),
+                  DpsRoleTrafficCompetence("EXT", "R"),
+                  DpsRoleTrafficCompetence("PLA", "R"),
+                  DpsRoleTrafficCompetence("RFC", "R"),
+                  DpsRoleTrafficCompetence("DIS", "N/A"),
+                  DpsRoleTrafficCompetence("IPR", "N/A"),
+                  DpsRoleTrafficCompetence("ENQ", "P"),
+                  DpsRoleTrafficCompetence("ENQ", "R"),
+                  DpsRoleTrafficCompetence("ENQ", "N/A"),
+                  DpsRoleTrafficCompetence("REC", "P"),
+                  DpsRoleTrafficCompetence("REC", "R"),
+                  DpsRoleTrafficCompetence("REC", "N/A")
+                )
               )
             )
           )
@@ -405,7 +426,7 @@ class DpsConnectorSpec
         None,
         None,
         "10043",
-        "345 34234",
+        Some("345 34234"),
         None,
         None,
         None,
@@ -433,27 +454,29 @@ class DpsConnectorSpec
           "99991231",
           List(
             DpsTimetableLine(
-              "1",
-              "0800",
-              "1800",
-              "5",
+              Some("1"),
+              Some("0800"),
+              Some("1800"),
+              Some("5"),
               None,
               None,
-              List(
-                DpsRoleTrafficCompetence("DEP", "R"),
-                DpsRoleTrafficCompetence("INC", "R"),
-                DpsRoleTrafficCompetence("TRA", "R"),
-                DpsRoleTrafficCompetence("EXP", "R"),
-                DpsRoleTrafficCompetence("EIN", "R"),
-                DpsRoleTrafficCompetence("ENT", "R"),
-                DpsRoleTrafficCompetence("EXC", "R"),
-                DpsRoleTrafficCompetence("DES", "R"),
-                DpsRoleTrafficCompetence("GUA", "R"),
-                DpsRoleTrafficCompetence("EXT", "R"),
-                DpsRoleTrafficCompetence("REG", "R"),
-                DpsRoleTrafficCompetence("REC", "R"),
-                DpsRoleTrafficCompetence("IPR", "N/A"),
-                DpsRoleTrafficCompetence("ENQ", "N/A")
+              Some(
+                List(
+                  DpsRoleTrafficCompetence("DEP", "R"),
+                  DpsRoleTrafficCompetence("INC", "R"),
+                  DpsRoleTrafficCompetence("TRA", "R"),
+                  DpsRoleTrafficCompetence("EXP", "R"),
+                  DpsRoleTrafficCompetence("EIN", "R"),
+                  DpsRoleTrafficCompetence("ENT", "R"),
+                  DpsRoleTrafficCompetence("EXC", "R"),
+                  DpsRoleTrafficCompetence("DES", "R"),
+                  DpsRoleTrafficCompetence("GUA", "R"),
+                  DpsRoleTrafficCompetence("EXT", "R"),
+                  DpsRoleTrafficCompetence("REG", "R"),
+                  DpsRoleTrafficCompetence("REC", "R"),
+                  DpsRoleTrafficCompetence("IPR", "N/A"),
+                  DpsRoleTrafficCompetence("ENQ", "N/A")
+                )
               )
             )
           )
@@ -863,8 +886,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.
-        fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -882,8 +904,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -914,8 +935,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -948,15 +968,14 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
 
   it should "not retry when there is a client error while fetching a page" in {
     val retryScenario = "Retry"
-    val failedState = "Failed"
+    val failedState   = "Failed"
 
     // Page 1 (Bad Request)
     stubFor(
@@ -990,15 +1009,14 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
 
   it should "retry when there is a server error while fetching a page" in {
-    val retryScenario   = "Retry"
-    val failedState     = "Failed"
+    val retryScenario = "Retry"
+    val failedState   = "Failed"
 
     // Page 1 (Internal Server Error)
     stubFor(
@@ -1059,8 +1077,7 @@ class DpsConnectorSpec
         )
     )
 
-    connector
-      .fetchCustomsOfficeLists
+    connector.fetchCustomsOfficeLists
       .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
       .map(_ mustBe List(customsOfficeListPage1, customsOfficeListPage2))
   }
