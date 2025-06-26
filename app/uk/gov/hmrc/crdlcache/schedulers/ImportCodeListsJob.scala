@@ -120,12 +120,19 @@ class ImportCodeListsJob @Inject() (
         val maybeNewEntries  = groupedEntries.get(key)
 
         // In case of multiple entries for a given key with the same activation date,
-        // the one with the latest modification timestamp is used.
+        // the one with the latest modification timestamp and latest action ID is used.
         val entriesByDate = maybeNewEntries.map { newEntries =>
           newEntries
             .groupBy(_.activeFrom) // Group by activation date
             .view
-            .mapValues(_.maxBy(_.updatedAt)) // Pick the latest modification
+            .mapValues(
+              _.maxBy(entry =>
+                (
+                  entry.updatedAt,
+                  entry.properties.value.get("actionIdentification").flatMap(_.asOpt[String])
+                )
+              )
+            ) // Pick the latest modification and SEED "ActionIdentification"
             .values
             .toSet
         }

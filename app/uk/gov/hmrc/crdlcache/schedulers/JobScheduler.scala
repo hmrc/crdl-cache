@@ -35,13 +35,10 @@ class JobScheduler @Inject() (
 )(using
   ec: ExecutionContext
 ) extends Logging {
+  private val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
 
-  val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
-
-  quartz.setJobFactory(jobFactory)
-  lifecycle.addStopHook(() => Future(quartz.shutdown()))
-
-  val codeListJobDetail = newJob(classOf[ImportCodeListsJob])
+  // Import code lists
+  private val codeListsJobDetail = newJob(classOf[ImportCodeListsJob])
     .withIdentity("import-code-lists")
     .build()
 
@@ -49,15 +46,15 @@ class JobScheduler @Inject() (
     .withIdentity("import-offices")
     .build()
 
-  val codeListSchedule = CronScheduleBuilder.cronSchedule(config.importCodeListsSchedule)
+  private val codeListsJobSchedule = CronScheduleBuilder
+    .cronSchedule(config.importCodeListsSchedule)
 
   val customsOfficeListSchedule = CronScheduleBuilder.cronSchedule(config.importOfficesSchedule)
 
-  val codeListTrigger =
-    newTrigger()
-      .forJob(codeListJobDetail)
-      .withSchedule(codeListSchedule)
-      .build()
+  private val codeListsJobTrigger = newTrigger()
+    .forJob(codeListsJobDetail)
+    .withSchedule(codeListsJobSchedule)
+    .build()
 
   val customsOfficesListJob =
     newTrigger()
@@ -65,8 +62,25 @@ class JobScheduler @Inject() (
       .withSchedule(customsOfficeListSchedule)
       .build()
 
-  quartz.scheduleJob(codeListJobDetail, codeListTrigger)
-  quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesListJob)
+  def startCodeListImport(): Unit = {
+    quartz.triggerJob(codeListsJobDetail.getKey)
+  }
 
-  quartz.start()
+  def startCustomsOfficeListImport(): Unit = {
+    quartz.triggerJob(customsOfficeListJobDetail.getKey)
+  }
+
+  private def startScheduler(): Unit = {
+    val quartz = StdSchedulerFactory.getDefaultScheduler
+
+    quartz.setJobFactory(jobFactory)
+
+    lifecycle.addStopHook(() => Future(quartz.shutdown()))
+
+    quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
+    quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesListJob)
+    quartz.start()
+  }
+
+  startScheduler()
 }

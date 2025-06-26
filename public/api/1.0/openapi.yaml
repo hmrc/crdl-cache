@@ -16,11 +16,57 @@ servers:
   - url: https://crdl-cache.protected.mdtp/crdl-cache
     description: MDTP
 
+tags:
+  - name: Codelists
+    description: |
+      These endpoints provide operations for working with reference data codelists.
+      
+      Reference data codelists usually have a key-value structure, but in some cases they may have additional useful properties.
+      
+      For example, entries in the excise products codelist (BC36) contain properties describing the excise product category
+      they belong to, and applicability flags describing which kinds of excise information apply to that particular product.
+
 components:
+  schemas:
+    CodeListEntry:
+      type: object
+      x-tags:
+        - Codelists
+      required:
+        - key
+        - value
+        - properties
+      additionalProperties: false
+      properties:
+        key:
+          type: string
+          description: The unique key of the codelist entry.
+        value:
+          type: string
+          description: The description of the codelist entry.
+        properties:
+          type: object
+          description: Feed-specific and codelist-specific properties.
+          patternProperties:
+            "Flag$":
+              type: boolean
+          additionalProperties:
+            type: [ "string", "null" ]
+      examples:
+        - key: BM
+          value: Bermuda
+          properties:
+            actionIdentification: "824"
+  
   responses:
     badRequest:
-      description: Bad Request
-      summary: |
+      x-summary: Bad Request
+      description: |
+        This error is returned when invalid path parameter or query parameter values are used.
+
+        Unfortunately the [JsonErrorHandler](https://github.com/hmrc/bootstrap-play/blob/466657a13dec046a94ace9d3138dde33bead82e3/bootstrap-backend-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/backend/http/JsonErrorHandler.scala) of [bootstrap-play](https://github.com/hmrc/bootstrap-play) unconditionally redacts anything which looks like a parameter parsing error.
+
+        We can implement our own error handler if this proves excessively unhelpful to consuming services.
       content:
         application/json:
           schema:
@@ -38,16 +84,58 @@ components:
                   - 400
               message:
                 type: string
-                description: The message indicating the cause of the bad request status.
+                description: A message indicating the cause of the bad request status.
                 examples:
                   - "bad request, cause: REDACTED"
 
 paths:
+  /lists:
+    get:
+      summary: Fetch Codelist Versions
+      description: |
+        This endpoint is used to fetch the available codelists and their version information.
+      tags:
+        - Codelists
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - codeListCode
+                    - snapshotVersion
+                    - lastUpdated
+                  additionalProperties: false
+                  properties:
+                    codeListCode:
+                      type: string
+                      description: A unique code identifying the reference data codelist
+                      examples:
+                        - BC08
+                        - BC36
+                        - CL239
+                    snapshotVersion:
+                      type: integer
+                      description: An incrementing integer version of the codelist.
+                      examples:
+                        - 1
+                    lastUpdated:
+                      type: string
+                      format: date-time
+                      description: The timestamp at which the codelist was last updated.
+                      examples:
+                        - "2025-06-05T04:03:02Z"
   /lists/{code}:
     get:
       summary: Fetch Codelist Entries
       description: |
         This endpoint is used to fetch entries of a reference data codelist.
+      tags:
+        - Codelists
       parameters:
         - name: code
           in: path
@@ -60,16 +148,55 @@ paths:
               - BC08
               - BC36
               - CL239
-        - name: activeAt
+        - name: keys
           in: query
           description: |
-            The timestamp at which to view entries. If omitted the current timestamp is used.
-            Historical data support is best-effort only as it requires cooperation from the DPS API.
+            Used to specify the keys of entries to return in the response.
+            
+            You can provide comma-separated values for keys, or provide multiple occurrences of the `keys` parameter, or both.
+            
+            For example: `?keys=AW,BL&keys=XI&keys=GB`.
           required: false
           schema:
-            type: string
-            format: date-time
-            example: "2025-06-05T00:00:00Z"
+            type: array
+            items:
+              type: string
+              example: [ "GB", "XI" ]
+              examples:
+                - [ "GB", "XI" ]
+                - [ "B000", "E200" ]
+        - name: properties
+          in: query
+          description: |
+            Used to filter entries by the feed-specific and codelist-specific properties in the `properties` object.
+            
+            **Note:** This API allows any query parameter name to be used for filtering feed-specific and codelist-specific properties. You do not need to prefix the query parameter with `properties`.
+            
+            For example: `?unitOfMeasureCode=3&responsibleDataManager=null`.
+          required: false
+          explode: true
+          schema:
+            type: object
+            patternProperties:
+              "Flag$":
+                type: boolean
+            additionalProperties:
+              type: [ "string", "null" ]
+            examples:
+              - unitOfMeasureCode: "3"
+              - alcoholicStrengthApplicabilityFlag: true
+              - responsibleDataManager: "null"
+        # The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
+        # - name: activeAt
+        #   in: query
+        #   description: |
+        #     The timestamp at which to view entries. If omitted the current timestamp is used.
+        #     Historical data support is best-effort only as it requires cooperation from the DPS API.
+        #   required: false
+        #   schema:
+        #     type: string
+        #     format: date-time
+        #     example: "2025-06-05T00:00:00Z"
       responses:
         200:
           description: OK
@@ -78,28 +205,35 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - key
-                    - value
-                    - properties
-                  additionalProperties: false
-                  properties:
-                    key:
-                      type: string
-                      description: The unique key of the codelist entry.
-                      examples:
-                        - BM
-                    value:
-                      type: string
-                      description: The description of the codelist entry.
-                      examples:
-                        - Bermuda
-                    properties:
-                      type: object
-                      description: Feed-specific and codelist-specific properties.
-                      examples:
-                        - actionIdentification: "823"
+                  $ref: "#/components/schemas/CodeListEntry"
+                examples:
+                  - - key: B000
+                      value: Beer
+                      properties:
+                        actionIdentification: "1087"
+                        exciseProductsCategoryCode: "B"
+                        unitOfMeasureCode: "3"
+                        alcoholicStrengthApplicabilityFlag: true
+                        degreePlatoApplicabilityFlag: true
+                        densityApplicabilityFlag: false
+                    - key: E200
+                      value: Vegetable and animal oils Products falling within CN codes 1507 to 1518, if these are intended for use as heating fuel or motor fuel (Article 20(1)(a))
+                      properties:
+                        actionIdentification: "1088"
+                        exciseProductsCategoryCode: "E"
+                        unitOfMeasureCode: "2"
+                        alcoholicStrengthApplicabilityFlag: false
+                        degreePlatoApplicabilityFlag: false
+                        densityApplicabilityFlag: true
+                    - key: W200
+                      value: Still wine and still fermented beverages other than wine and beer
+                      properties:
+                        actionIdentification: "1116"
+                        exciseProductsCategoryCode: "W"
+                        unitOfMeasureCode: "3"
+                        alcoholicStrengthApplicabilityFlag: true
+                        degreePlatoApplicabilityFlag: false
+                        densityApplicabilityFlag: false
 
         400:
           $ref: "#/components/responses/badRequest"

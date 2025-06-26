@@ -28,10 +28,10 @@ import play.api.Application
 import play.api.http.Status
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
-import uk.gov.hmrc.crdlcache.repositories.CodeListsRepository
+import play.api.libs.json.*
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
+import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
@@ -53,7 +53,8 @@ class CodeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
-  private val repository = mock[CodeListsRepository]
+  private val repository            = mock[CodeListsRepository]
+  private val lastUpdatedRepository = mock[LastUpdatedRepository]
 
   private val fixedInstant = Instant.parse("2025-06-05T00:00:00Z")
 
@@ -82,21 +83,34 @@ class CodeListsControllerSpec
     )
   )
 
+  private val lastUpdatedEntries = List(LastUpdated(BC08, 1, Instant.parse("2025-06-29T00:00:00Z")),
+    LastUpdated(BC66, 1, Instant.parse("2025-06-28T00:00:00Z"))
+  )
+
   override def beforeEach(): Unit = {
     reset(repository)
+    reset(lastUpdatedRepository)
   }
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .overrides(
         bind[CodeListsRepository].toInstance(repository),
+        bind[LastUpdatedRepository].toInstance(lastUpdatedRepository),
         bind[HttpClientV2].toInstance(httpClientV2),
         bind[Clock].toInstance(Clock.fixed(fixedInstant, ZoneOffset.UTC))
       )
       .build()
 
   "CodeListsController" should "return 200 OK when there are no errors" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(fixedInstant)))
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
       .thenReturn(Future.successful(entries))
 
     val response =
@@ -122,7 +136,14 @@ class CodeListsControllerSpec
   }
 
   it should "return 200 OK when there are no entries to return" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(fixedInstant)))
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
       .thenReturn(Future.successful(List.empty))
 
     val response =
@@ -132,6 +153,152 @@ class CodeListsControllerSpec
         .futureValue
 
     response.json mustBe Json.arr()
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys from the keys parameter when there is only one key" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB"))),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys from the keys parameter when there are multiple keys" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB", "XI"))),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys when there are multiple declarations of the keys parameter" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB", "XI", "AW", "BL"))),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI&keys=AW,BL")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated keys when there is no value declared for the keys parameter" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set.empty)),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as boolean property filters when they are valid boolean values" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC36),
+        equalTo(Some(Set("B000"))),
+        equalTo(Some(Map("alcoholicStrengthApplicabilityFlag" -> JsBoolean(true)))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC36.code}?keys=B000&alcoholicStrengthApplicabilityFlag=true"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as null property filters when the query parameter value is null" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC66),
+        equalTo(Some(Set("B"))),
+        equalTo(Some(Map("responsibleDataManager" -> JsNull))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&responsibleDataManager=null"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse other query parameters as String property filters when they are neither boolean nor null values" in {
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(Some(Set("GB"))),
+        equalTo(Some(Map("actionIdentification" -> JsString("384")))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(
+          url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=384"
+        )
+        .execute[HttpResponse]
+        .futureValue
+
     response.status mustBe Status.OK
   }
 
@@ -158,12 +325,58 @@ class CodeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
-    when(repository.fetchCodeListEntries(equalTo(BC08), equalTo(fixedInstant)))
+    when(
+      repository.fetchCodeListEntries(
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  "CodeListsController.fetchCodeListVersions" should "return 200 OK when there are no errors" in {
+    when(lastUpdatedRepository.fetchAllLastUpdated)
+      .thenReturn(Future.successful(lastUpdatedEntries))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.arr(
+      Json.obj(
+        "codeListCode"        -> "BC08",
+        "snapshotVersion"      -> 1,
+        "lastUpdated" -> "2025-06-29T00:00:00Z"
+      ),
+      Json.obj(
+        "codeListCode"        -> "BC66",
+        "snapshotVersion"      -> 1,
+        "lastUpdated" -> "2025-06-28T00:00:00Z"
+      )
+    )
+
+    response.status mustBe Status.OK
+  }
+
+  it should "return 500 Internal Server Error when there is an error fetching from the last updated repository" in {
+    when(lastUpdatedRepository.fetchAllLastUpdated)
+      .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/")
         .execute[HttpResponse]
         .futureValue
 

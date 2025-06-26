@@ -21,11 +21,12 @@ import org.mongodb.scala.*
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, Instruction}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
@@ -40,12 +41,18 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
     mongoComponent,
     collectionName = "codelists",
     domainFormat = CodeListEntry.mongoFormat,
+    extraCodecs =
+      Codecs.playFormatSumCodecs[JsValue](Format(Reads.JsValueReads, Writes.jsValueWrites)) ++
+        Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
     indexes = Seq(
       IndexModel(
         Indexes.ascending("codeListCode", "key", "activeFrom"),
         IndexOptions().unique(true)
       ),
-      IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS))
+      IndexModel(
+        Indexes.ascending("activeTo"),
+        IndexOptions().expireAfter(30, TimeUnit.DAYS)
+      )
     )
   )
   with Transactions {
@@ -63,17 +70,37 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
       .toFuture
       .map(_.toSet)
 
-  def fetchCodeListEntries(code: CodeListCode, activeAt: Instant): Future[Seq[CodeListEntry]] =
+  def fetchCodeListEntries(
+    code: CodeListCode,
+    filterKeys: Option[Set[String]],
+    filterProperties: Option[Map[String, JsValue]],
+    activeAt: Instant
+  ): Future[Seq[CodeListEntry]] = {
+    val mandatoryFilters = List(
+      equal("codeListCode", code.code),
+      lte("activeFrom", activeAt),
+      or(equal("activeTo", null), gt("activeTo", activeAt))
+    )
+
+    val keyFilters = filterKeys
+      .map(ks => if ks.nonEmpty then List(in("key", ks.toSeq*)) else List.empty)
+      .getOrElse(List.empty)
+
+    val propertyFilters = filterProperties
+      .map { props =>
+        if props.nonEmpty
+        then props.map((k, v) => equal(s"properties.$k", v))
+        else List.empty
+      }
+      .getOrElse(List.empty)
+
+    val allFilters = mandatoryFilters ++ keyFilters ++ propertyFilters
+
     collection
-      .find(
-        and(
-          equal("codeListCode", code.code),
-          lte("activeFrom", activeAt),
-          or(equal("activeTo", null), gt("activeTo", activeAt))
-        )
-      )
+      .find(and(allFilters*))
       .sort(Sorts.ascending("key"))
       .toFuture()
+  }
 
   private def supersedePreviousEntries(
     session: ClientSession,
@@ -155,5 +182,4 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
           }
         }
     }
-
 }

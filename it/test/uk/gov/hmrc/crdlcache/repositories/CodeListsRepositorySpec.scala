@@ -23,8 +23,8 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{Assertion, OptionValues}
-import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
+import play.api.libs.json.{JsNull, JsString, JsTrue, Json}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
 import uk.gov.hmrc.crdlcache.models.CodeListEntry
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.mongo.test.{
@@ -238,27 +238,86 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain allElementsOf activeCodelistEntries)
+  }
+
+  it should "apply filtering of entries according to the supplied keys" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = Some(Set("AW", "BL")),
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain allElementsOf activeCodelistEntries.take(2))
+  }
+
+  it should "not apply filtering of entries when the set of supplied keys is empty" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = Some(Set.empty),
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain allElementsOf activeCodelistEntries)
   }
 
   it should "not return entries from other lists" in withCodeListEntries(codelistEntries) { _ =>
     repository
-      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain noElementsOf differentCodeListEntries)
+  }
+
+  it should "not return entries from other lists even when matching keys are specified" in withCodeListEntries(
+    codelistEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = Some(Set("B")),
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain noElementsOf differentCodeListEntries)
   }
 
   it should "not return entries that have been superseded" in withCodeListEntries(codelistEntries) {
     _ =>
       repository
-        .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+        .fetchCodeListEntries(
+          BC08,
+          filterKeys = None,
+          filterProperties = None,
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        )
         .map(_ must contain noElementsOf supersededCodeListEntries)
   }
 
   it should "not return entries that are not yet active" in withCodeListEntries(codelistEntries) {
     _ =>
       repository
-        .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+        .fetchCodeListEntries(
+          BC08,
+          filterKeys = None,
+          filterProperties = None,
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        )
         .map(_ mustNot contain(postDatedEntry))
   }
 
@@ -266,8 +325,126 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(BC08, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCodeListEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain(invalidatedIoEntry))
+  }
+
+  private val exciseProductEntries = Seq(
+    CodeListEntry(
+      BC36,
+      "B000",
+      "Beer",
+      Instant.parse("2018-01-16T00:00:00Z"),
+      None,
+      Some(Instant.parse("2018-01-15T00:00:00Z")),
+      Json.obj(
+        "exciseProductsCategoryCode"         -> "B",
+        "unitOfMeasureCode"                  -> "3",
+        "alcoholicStrengthApplicabilityFlag" -> true,
+        "degreePlatoApplicabilityFlag"       -> true,
+        "densityApplicabilityFlag"           -> false,
+        "responsibleDataManager"             -> null
+      )
+    ),
+    CodeListEntry(
+      BC36,
+      "E200",
+      "Vegetable and animal oils Products falling within CN codes 1507 to 1518, if these are intended for use a\ns heating fuel or motor fuel (Article 20(1)(a))",
+      Instant.parse("2022-05-15T00:00:00Z"),
+      None,
+      Some(Instant.parse("2022-05-13T00:00:00Z")),
+      Json.obj(
+        "exciseProductsCategoryCode"         -> "E",
+        "unitOfMeasureCode"                  -> "2",
+        "alcoholicStrengthApplicabilityFlag" -> false,
+        "degreePlatoApplicabilityFlag"       -> false,
+        "densityApplicabilityFlag"           -> true
+      )
+    ),
+    CodeListEntry(
+      BC36,
+      "W200",
+      "Still wine and still fermented beverages other than wine and beer",
+      Instant.parse("2023-11-02T00:00:00Z"),
+      None,
+      Some(Instant.parse("2023-11-01T00:00:00Z")),
+      Json.obj(
+        "exciseProductsCategoryCode"         -> "W",
+        "unitOfMeasureCode"                  -> "3",
+        "alcoholicStrengthApplicabilityFlag" -> true,
+        "degreePlatoApplicabilityFlag"       -> false,
+        "densityApplicabilityFlag"           -> false,
+        "responsibleDataManager"             -> "ABC"
+      )
+    )
+  )
+
+  it should "apply filtering of entries using String properties" in withCodeListEntries(
+    exciseProductEntries
+  ) { _ =>
+    repository
+      .fetchCodeListEntries(
+        BC36,
+        filterKeys = Some(Set("B000", "W200")),
+        filterProperties = Some(Map("exciseProductsCategoryCode" -> JsString("W"))),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain only exciseProductEntries.last)
+  }
+
+  it should "apply filtering of entries using Boolean properties" in withCodeListEntries(
+    exciseProductEntries
+  ) { _ =>
+    for {
+      allEntriesWithFlag <- repository
+        .fetchCodeListEntries(
+          BC36,
+          filterKeys = None,
+          filterProperties = Some(Map("alcoholicStrengthApplicabilityFlag" -> JsTrue)),
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        )
+
+      filteredEntriesWithFlag <- repository
+        .fetchCodeListEntries(
+          BC36,
+          filterKeys = Some(Set("B000", "W200")),
+          filterProperties = Some(Map("degreePlatoApplicabilityFlag" -> JsTrue)),
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        )
+    } yield {
+      allEntriesWithFlag must contain allOf (exciseProductEntries.head, exciseProductEntries.last)
+      filteredEntriesWithFlag must contain only exciseProductEntries.head
+    }
+  }
+
+  it should "apply filtering of entries using null or missing values" in withCodeListEntries(
+    exciseProductEntries
+  ) { _ =>
+    for {
+      allEntriesWithNull <- repository
+        .fetchCodeListEntries(
+          BC36,
+          filterKeys = None,
+          filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        )
+
+      filteredEntriesWithNull <- repository
+        .fetchCodeListEntries(
+          BC36,
+          filterKeys = Some(Set("B000", "W200")),
+          filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        )
+    } yield {
+      allEntriesWithNull must contain allElementsOf exciseProductEntries.init
+      filteredEntriesWithNull must contain only exciseProductEntries.head
+    }
   }
 
   "CodeListsRepository.executeInstructions" should "invalidate existing entries" in withCodeListEntries(

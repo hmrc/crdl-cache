@@ -31,10 +31,13 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.*
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
+import uk.gov.hmrc.crdlcache.models.Operation.Update
 import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
+import uk.gov.hmrc.crdlcache.models.dps.codelist.{CodeListResponse, DataItem, LanguageDescription}
+import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.{
@@ -619,6 +622,73 @@ class ImportCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "849"
+          )
+        )
+      )
+    )
+  }
+
+  it should "pick the latest entry by modification date and action identification when there are duplicate entries for a given key and activation date" in {
+    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC36)))
+      .thenReturn(Future.successful(Set("E470")))
+
+    val codeListConfig = CodeListConfig(BC36, SEED, "ExciseProductCode")
+
+    val instructions = codeListsJob
+      .processSnapshot(
+        clientSession,
+        codeListConfig,
+        CodeListSnapshot(
+          BC36,
+          "ExciseProducts",
+          1,
+          Set(
+            CodeListSnapshotEntry(
+              "E470",
+              "Heavy fuel oil falling within CN codes 2710 19 62, 2710 19 66, 2710 19 67, 2710 20 32 and 2710 20 38 (Article 20(1)(c) of Directive 2003/96/EC)",
+              Instant.parse("2023-11-02T00:00:00Z"),
+              Some(Instant.parse("2023-10-31T00:00:00Z")),
+              Some(Update),
+              Json.obj(
+                "actionIdentification" -> "1093"
+              )
+            ),
+            CodeListSnapshotEntry(
+              "E470",
+              "Heavy fuel oil falling within CN codes 2710 19 62, 2710 19 66, 2710 19 67, 2710 20 32 and 2710 20 38 (Article 20(1)(c) of Directive 2003/96/EC)",
+              Instant.parse("2023-11-02T00:00:00Z"),
+              Some(Instant.parse("2023-11-01T00:00:00Z")),
+              Some(Update),
+              Json.obj(
+                "actionIdentification" -> "1096"
+              )
+            ),
+            CodeListSnapshotEntry(
+              "E470",
+              "Heavy fuel oil falling within CN codes 2710 19 62, 2710 19 66, 2710 19 67, 2710 20 32 and 2710 20 38 (Article 20(1)(c) of Directive 2003/96/EC)",
+              Instant.parse("2023-11-02T00:00:00Z"),
+              Some(Instant.parse("2023-11-01T00:00:00Z")),
+              Some(Update),
+              Json.obj(
+                "actionIdentification" -> "1099"
+              )
+            )
+          )
+        )
+      )
+      .futureValue
+
+    instructions mustBe List(
+      UpsertEntry(
+        CodeListEntry(
+          BC36,
+          "E470",
+          "Heavy fuel oil falling within CN codes 2710 19 62, 2710 19 66, 2710 19 67, 2710 20 32 and 2710 20 38 (Article 20(1)(c) of Directive 2003/96/EC)",
+          Instant.parse("2023-11-02T00:00:00Z"),
+          None,
+          Some(Instant.parse("2023-11-01T00:00:00Z")),
+          Json.obj(
+            "actionIdentification" -> "1099"
           )
         )
       )

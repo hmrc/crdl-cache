@@ -8,7 +8,40 @@ This service exists to reduce the load on the DPS reference data APIs by caching
 
 ## Usage
 
-[API Documentation (1.0)](https://redocly.github.io/redoc/?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fhmrc%2Fcrdl-cache%40main%2Fpublic%2Fapi%2F1.0%2Fopenapi.yaml)
+[API Documentation (1.0)](https://redocly.github.io/redoc/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fhmrc%2Fcrdl-cache%2Frefs%2Fheads%2Fmain%2Fpublic%2Fapi%2F1.0%2Fopenapi.yaml)
+
+### Fetch Codelist Versions
+
+This endpoint is used to fetch the available codelists and their version information.
+
+* **URL**
+
+  `/crdl-cache/lists`
+
+* **Method:**
+
+  `GET`
+
+* **Success Response:**
+    * **Status:** 200 <br/>
+    * **Content:**
+        ```json
+        [{
+          "codeListCode": "BC08",
+          "snapshotVersion": 21,
+          "lastUpdated": "2025-06-11T13:47:18.238Z"
+        }, {
+          "codeListCode": "BC36",
+          "snapshotVersion": 9,
+          "lastUpdated": "2025-06-11T13:47:10.836Z"
+        }]
+        ```
+
+* **Sample Request:**
+
+  ```shell
+  curl --fail-with-body http://localhost:7252/crdl-cache/lists
+  ```
 
 ### Fetch Codelist Entries
 
@@ -32,7 +65,24 @@ This endpoint is used to fetch entries of a reference data codelist.
 
   **Optional:**
 
+    * `keys: Seq[String]`
+
+      Used to specify the keys of entries to return in the response.
+
+      You can provide comma-separated values for keys, or provide multiple occurrences of the `keys` parameter, or both.
+
+      For example: `?keys=AW,BL&keys=XI&keys=GB`.
+
+    <!-- The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
     * `activeAt: Instant` - The timestamp at which to view entries. If omitted the current timestamp is used.
+    -->
+
+    * Any other query parameter name can be used for filtering feed-specific and codelist-specific properties.
+
+      You do not need to prefix the query parameter with `properties`.
+
+      For example: `?unitOfMeasureCode=3&responsibleDataManager=null`.
+
 
 * **Success Response:**
     * **Status:** 200 <br/>
