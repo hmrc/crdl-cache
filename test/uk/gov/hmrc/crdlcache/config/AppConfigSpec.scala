@@ -20,7 +20,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.Configuration
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, Unknown}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.*
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 
 import java.time.LocalDate
@@ -36,13 +36,22 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.customs-offices-path" -> "views/iv_crdl_customs_office",
         "microservice.services.dps-api.clientId"             -> "abc123",
         "microservice.services.dps-api.clientSecret"         -> "def456",
+        "last-updated-date.default"                          -> "2025-05-29",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
+        "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
         "import-offices.schedule"                            -> "*/10 * * * * ?",
-        "import-codelists.last-updated-date.default"         -> "2025-05-29",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
           Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode"),
           Map("code" -> "BC17", "origin" -> "SEED", "keyProperty" -> "KindOfPackages")
+        ),
+        "import-correspondence-lists.correspondence-lists" -> List(
+          Map(
+            "code"          -> "E200",
+            "origin"        -> "SEED",
+            "keyProperty"   -> "CnCode",
+            "valueProperty" -> "ExciseProductCode"
+          )
         )
       )
     )
@@ -57,11 +66,15 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
 
     appConfig.importCodeListsSchedule mustBe "*/10 * * * * ?"
     appConfig.importOfficesSchedule mustBe "*/10 * * * * ?"
+    appConfig.importCorrespondenceListsSchedule mustBe "*/10 * * * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 5, 29)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
       CodeListConfig(Unknown("BC17"), SEED, "KindOfPackages")
+    )
+    appConfig.correspondenceListConfigs mustBe List(
+      CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
     )
   }
 
@@ -77,11 +90,13 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
 
     appConfig.importOfficesSchedule mustBe "0 0 4 * * ?"
     appConfig.importCodeListsSchedule mustBe "0 0 4 * * ?"
+    appConfig.importCorrespondenceListsSchedule mustBe "0 0 4 * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
       CodeListConfig(BC66, SEED, "ExciseProductsCategoryCode")
     )
+    appConfig.correspondenceListConfigs mustBe List.empty
   }
 }

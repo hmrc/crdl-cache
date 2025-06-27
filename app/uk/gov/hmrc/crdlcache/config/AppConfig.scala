@@ -37,9 +37,11 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
 
   val importCodeListsSchedule: String = config.get[String]("import-codelists.schedule")
   val importOfficesSchedule: String   = config.get[String]("import-offices.schedule")
+  val importCorrespondenceListsSchedule: String =
+    config.get[String]("import-correspondence-lists.schedule")
 
   val defaultLastUpdated: LocalDate =
-    LocalDate.parse(config.get[String]("import-codelists.last-updated-date.default"))
+    LocalDate.parse(config.get[String]("last-updated-date.default"))
 
   val codeListConfigs: List[CodeListConfig] =
     config
@@ -49,6 +51,19 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
           CodeListCode.fromString(codeListConfig.getString("code")),
           CodeListOrigin.valueOf(codeListConfig.getString("origin")),
           codeListConfig.getString("keyProperty")
+        )
+      }
+      .toList
+
+  val correspondenceListConfigs: List[CorrespondenceListConfig] =
+    config
+      .get[Seq[Config]]("import-correspondence-lists.correspondence-lists")
+      .map { codeListConfig =>
+        CorrespondenceListConfig(
+          CodeListCode.fromString(codeListConfig.getString("code")),
+          CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+          codeListConfig.getString("keyProperty"),
+          codeListConfig.getString("valueProperty")
         )
       }
       .toList
