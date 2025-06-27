@@ -148,6 +148,7 @@ class CustomsOfficeListsRepositorySpec
       )
     )
   )
+  
   val invalidatedoffice = CustomsOffice(
     "IT314102",
     Instant.parse("2025-03-22T00:00:00Z"),
