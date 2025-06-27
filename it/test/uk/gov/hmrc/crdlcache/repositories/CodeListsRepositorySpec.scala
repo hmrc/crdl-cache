@@ -207,7 +207,7 @@ class CodeListsRepositorySpec
   private val codelistEntries =
     activeCodelistEntries ++ differentCodeListEntries ++ supersededCodeListEntries :+ invalidatedIoEntry :+ postDatedEntry
 
-  "CodeListsRepository.fetchCodeListEntryKeys" should "return entries that have been superseded" in withCodeListEntries(
+  "CodeListsRepository.fetchCodeListEntryKeys" should "return entries that have not been superseded" in withCodeListEntries(
     codelistEntries
   ) { session =>
     repository.fetchCodeListEntryKeys(session, BC08).map(_ must contain("BL"))

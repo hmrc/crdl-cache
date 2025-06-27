@@ -18,5 +18,8 @@ package uk.gov.hmrc.crdlcache.config
 
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
 
-case class CodeListConfig(code: CodeListCode, origin: CodeListOrigin, keyProperty: String)
-  extends ListConfig
+trait ListConfig {
+  def code: CodeListCode
+  def origin: CodeListOrigin
+  def keyProperty: String
+}

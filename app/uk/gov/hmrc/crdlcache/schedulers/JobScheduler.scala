@@ -50,8 +50,25 @@ class JobScheduler @Inject() (
     .withSchedule(codeListsJobSchedule)
     .build()
 
+  // Import correspondence lists
+  private val correspondenceListsJobDetail = newJob(classOf[ImportCorrespondenceListsJob])
+    .withIdentity("import-correspondence-lists")
+    .build()
+
+  private val correspondenceListsJobSchedule = CronScheduleBuilder
+    .cronSchedule(config.importCorrespondenceListsSchedule)
+
+  private val correspondenceListsJobTrigger = newTrigger()
+    .forJob(correspondenceListsJobDetail)
+    .withSchedule(correspondenceListsJobSchedule)
+    .build()
+
   def startCodeListImport(): Unit = {
     quartz.triggerJob(codeListsJobDetail.getKey)
+  }
+
+  def startCorrespondenceListImport(): Unit = {
+    quartz.triggerJob(correspondenceListsJobDetail.getKey)
   }
 
   private def startScheduler(): Unit = {
@@ -62,6 +79,7 @@ class JobScheduler @Inject() (
     lifecycle.addStopHook(() => Future(quartz.shutdown()))
 
     quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
+    quartz.scheduleJob(correspondenceListsJobDetail, correspondenceListsJobTrigger)
 
     quartz.start()
   }
