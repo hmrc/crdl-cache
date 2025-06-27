@@ -78,6 +78,8 @@ enum CodeListCode(val code: String) {
   case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
   case CL141 extends CodeListCode("CL141")
+  // E200 (CN Code <-> Excise Products Correspondence)
+  case E200 extends CodeListCode("E200")
   // Unknown codelist code
   case Unknown(override val code: String) extends CodeListCode(code)
 }
@@ -113,7 +115,8 @@ object CodeListCode {
       BC107,
       BC108,
       BC109,
-      CL141
+      CL141,
+      E200
     )
 
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap

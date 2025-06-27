@@ -29,24 +29,9 @@ import play.api.http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.dps.*
-import RelationType.{Next, Prev, Self}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.{
-  CodeListEntry,
-  CodeListResponse,
-  CodeListSnapshot,
-  DataItem,
-  LanguageDescription
-}
-import uk.gov.hmrc.crdlcache.models.dps.col.{
-  CustomsOfficeDetail,
-  CustomsOffice,
-  CustomsOfficeListResponse,
-  CustomsOfficeTimetable,
-  RDEntryStatus,
-  RoleTrafficCompetence,
-  SpecificNotes,
-  TimetableLine
-}
+import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
+import uk.gov.hmrc.crdlcache.models.dps.codeList.*
+import uk.gov.hmrc.crdlcache.models.dps.col.*
 import uk.gov.hmrc.http.test.{HttpClientV2Support, WireMockSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
@@ -83,10 +68,12 @@ class DpsConnectorSpec
       "microservice.services.dps-api.port"                 -> wireMockPort,
       "microservice.services.dps-api.clientId"             -> clientId,
       "microservice.services.dps-api.clientSecret"         -> clientSecret,
+      "last-updated-date.default"                          -> "2025-05-29",
       "import-codelists.schedule"                          -> "* * * * * ?",
       "import-offices.schedule"                            -> "* * * * * ?",
-      "import-codelists.last-updated-date.default"         -> "2025-05-29",
+      "import-correspondence-lists.schedule"               -> "* * * * * ?",
       "import-codelists.codelists"                         -> List.empty,
+      "import-correspondence-lists.correspondence-lists"   -> List.empty,
       "http-verbs.retries.intervals"                       -> List("1.millis")
     )
   )
@@ -874,8 +861,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.
-        fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -893,8 +879,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -925,8 +910,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -959,15 +943,14 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
 
   it should "not retry when there is a client error while fetching a page" in {
     val retryScenario = "Retry"
-    val failedState = "Failed"
+    val failedState   = "Failed"
 
     // Page 1 (Bad Request)
     stubFor(
@@ -1001,15 +984,14 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector
-        .fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
 
   it should "retry when there is a server error while fetching a page" in {
-    val retryScenario   = "Retry"
-    val failedState     = "Failed"
+    val retryScenario = "Retry"
+    val failedState   = "Failed"
 
     // Page 1 (Internal Server Error)
     stubFor(
@@ -1070,8 +1052,7 @@ class DpsConnectorSpec
         )
     )
 
-    connector
-      .fetchCustomsOfficeLists
+    connector.fetchCustomsOfficeLists
       .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
       .map(_ mustBe List(customsOfficeListPage1, customsOfficeListPage2))
   }

@@ -19,7 +19,11 @@ package uk.gov.hmrc.crdlcache.controllers.testonly
 import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
+import uk.gov.hmrc.crdlcache.repositories.{
+  CodeListsRepository,
+  CorrespondenceListsRepository,
+  LastUpdatedRepository
+}
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -31,7 +35,8 @@ class TestOnlyController @Inject() (
   cc: ControllerComponents,
   jobScheduler: JobScheduler,
   lastUpdatedRepository: LastUpdatedRepository,
-  codeListsRepository: CodeListsRepository
+  codeListsRepository: CodeListsRepository,
+  correspondenceListsRepository: CorrespondenceListsRepository
 )(using ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -40,8 +45,20 @@ class TestOnlyController @Inject() (
     Accepted
   }
 
+  def importCorrespondenceLists(): Action[AnyContent] = Action {
+    jobScheduler.startCorrespondenceListImport()
+    Accepted
+  }
+
   def deleteCodeLists(): Action[AnyContent] = Action.async {
     codeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
+      case result if result.wasAcknowledged() => Ok
+      case _                                  => InternalServerError
+    }
+  }
+
+  def deleteCorrespondenceLists(): Action[AnyContent] = Action.async {
+    correspondenceListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
       case _                                  => InternalServerError
     }
