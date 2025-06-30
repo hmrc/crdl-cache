@@ -569,10 +569,7 @@ class ImportCorrespondenceListsJobSpec
       .thenReturn(Future.unit)
       .thenReturn(Future.failed(MongoError.NotAcknowledged))
 
-    correspondenceListsJob
-      .importCodeLists()
-      .failed
-      .futureValue mustBe MongoError.NotAcknowledged
+    correspondenceListsJob.importCodeLists().futureValue
 
     verify(correspondenceListsRepository, times(2)).executeInstructions(
       equalTo(clientSession),

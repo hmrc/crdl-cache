@@ -18,6 +18,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.stream.{ActorAttributes, Supervision}
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
@@ -133,6 +134,7 @@ class ImportCorrespondenceListsJob @Inject() (
 
     val importCorrespondenceLists = Source(appConfig.correspondenceListConfigs)
       .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
+      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
 
     val importAll = importStaticLists.concat(importCorrespondenceLists).run().map(_ => ())
 

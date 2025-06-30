@@ -172,6 +172,7 @@ abstract class ImportCodeListsJob[K, I](
   private[schedulers] def importCodeLists(): Future[Unit] = {
     val importCodeLists = Source(appConfig.codeListConfigs)
       .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
+      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
       .run()
       .map(_ => ())
 

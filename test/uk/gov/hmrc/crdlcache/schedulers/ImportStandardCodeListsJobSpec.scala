@@ -444,7 +444,7 @@ class ImportStandardCodeListsJobSpec
       .thenReturn(Future.unit)
       .thenReturn(Future.failed(MongoError.NotAcknowledged))
 
-    codeListsJob.importCodeLists().failed.futureValue mustBe MongoError.NotAcknowledged
+    codeListsJob.importCodeLists().futureValue
 
     verify(codeListsRepository, times(1)).executeInstructions(
       equalTo(clientSession),
