@@ -23,7 +23,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{Assertion, OptionValues}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.crdlcache.models.CodeListCode.E200
 import uk.gov.hmrc.crdlcache.models.CodeListEntry
 import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{
@@ -226,6 +226,7 @@ class CorrespondenceListsRepositorySpec
       .fetchCorrespondenceListEntries(
         E200,
         filterKeys = None,
+        filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeEntries)
@@ -238,6 +239,7 @@ class CorrespondenceListsRepositorySpec
       .fetchCorrespondenceListEntries(
         E200,
         filterKeys = Some(Set("27101944")),
+        filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeEntries.take(2))
@@ -250,6 +252,7 @@ class CorrespondenceListsRepositorySpec
       .fetchCorrespondenceListEntries(
         E200,
         filterKeys = Some(Set.empty),
+        filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeEntries)
@@ -262,6 +265,7 @@ class CorrespondenceListsRepositorySpec
       .fetchCorrespondenceListEntries(
         E200,
         filterKeys = None,
+        filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain noElementsOf supersededListEntries)
@@ -274,6 +278,7 @@ class CorrespondenceListsRepositorySpec
       .fetchCorrespondenceListEntries(
         E200,
         filterKeys = None,
+        filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ mustNot contain(postDatedE470Entry))
@@ -286,9 +291,36 @@ class CorrespondenceListsRepositorySpec
       .fetchCorrespondenceListEntries(
         E200,
         filterKeys = None,
+        filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain(invalidatedEntry))
+  }
+
+  it should "apply filtering of entries using properties" in withCorrespondenceListEntries(
+    correspondenceListEntries
+  ) { _ =>
+    repository
+      .fetchCorrespondenceListEntries(
+        E200,
+        filterKeys = None,
+        filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain theSameElementsAs List(activeEntries(1), activeEntries(3)))
+  }
+
+  it should "apply filtering of entries using keys and properties" in withCorrespondenceListEntries(
+    correspondenceListEntries
+  ) { _ =>
+    repository
+      .fetchCorrespondenceListEntries(
+        E200,
+        filterKeys = Some(Set("27101944")),
+        filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain only activeEntries(1))
   }
 
   "CorrespondenceListsRepository.executeInstructions" should "invalidate existing entries" in withCorrespondenceListEntries(

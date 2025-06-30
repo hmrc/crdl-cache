@@ -83,7 +83,11 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
     )
 
     val keyFilters = filterKeys
-      .map(ks => if ks.nonEmpty then List(in("key", ks.toSeq*)) else List.empty)
+      .map { ks =>
+        if ks.nonEmpty
+        then List(in("key", ks.toSeq*))
+        else List.empty
+      }
       .getOrElse(List.empty)
 
     val propertyFilters = filterProperties

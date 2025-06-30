@@ -19,8 +19,8 @@ package uk.gov.hmrc.crdlcache.models
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.config.CodeListConfig
-import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
+import uk.gov.hmrc.crdlcache.config.{CodeListConfig, CorrespondenceListConfig}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, E200}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Update}
 import uk.gov.hmrc.crdlcache.models.dps.codeList
@@ -36,6 +36,7 @@ import java.time.Instant
 
 class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData {
   private val BC08Config = CodeListConfig(BC08, SEED, "CountryCode")
+  private val E200Config = CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
 
   private val convertedEntry = CodeListSnapshotEntry(
     "AW",
@@ -66,6 +67,15 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       CodeListSnapshotEntry.fromDpsEntry(
         BC08Config,
         codeList.CodeListEntry(List(DataItem(BC08Config.keyProperty, Some("AW"))), List.empty)
+      )
+    }
+  }
+
+  it should "fail when importing a correspondence list if the value property is missing" in {
+    assertThrows[RequiredDataItemMissing] {
+      CodeListSnapshotEntry.fromDpsEntry(
+        E200Config,
+        codeList.CodeListEntry(List(DataItem(E200Config.keyProperty, Some("27101944"))), List.empty)
       )
     }
   }

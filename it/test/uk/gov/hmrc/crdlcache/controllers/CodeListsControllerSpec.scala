@@ -29,9 +29,13 @@ import play.api.http.Status
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, E200}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
-import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
+import uk.gov.hmrc.crdlcache.repositories.{
+  CodeListsRepository,
+  CorrespondenceListsRepository,
+  LastUpdatedRepository
+}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
@@ -53,12 +57,13 @@ class CodeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
-  private val repository            = mock[CodeListsRepository]
-  private val lastUpdatedRepository = mock[LastUpdatedRepository]
+  private val codeListsRepository           = mock[CodeListsRepository]
+  private val correspondenceListsRepository = mock[CorrespondenceListsRepository]
+  private val lastUpdatedRepository         = mock[LastUpdatedRepository]
 
   private val fixedInstant = Instant.parse("2025-06-05T00:00:00Z")
 
-  private val entries = List(
+  private val codeListEntries = List(
     CodeListEntry(
       BC08,
       "AW",
@@ -83,19 +88,46 @@ class CodeListsControllerSpec
     )
   )
 
-  private val lastUpdatedEntries = List(LastUpdated(BC08, 1, Instant.parse("2025-06-29T00:00:00Z")),
+  private val correspondenceListEntries = List(
+    CodeListEntry(
+      E200,
+      "27101944",
+      "E430",
+      Instant.parse("2025-01-01T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-12-30T00:00:00Z")),
+      Json.obj(
+        "actionIdentification" -> "433"
+      )
+    ),
+    CodeListEntry(
+      E200,
+      "27101944",
+      "E440",
+      Instant.parse("2025-01-01T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-12-30T00:00:00Z")),
+      Json.obj(
+        "actionIdentification" -> "437"
+      )
+    )
+  )
+
+  private val lastUpdatedEntries = List(
+    LastUpdated(BC08, 1, Instant.parse("2025-06-29T00:00:00Z")),
     LastUpdated(BC66, 1, Instant.parse("2025-06-28T00:00:00Z"))
   )
 
   override def beforeEach(): Unit = {
-    reset(repository)
+    reset(codeListsRepository)
     reset(lastUpdatedRepository)
   }
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .overrides(
-        bind[CodeListsRepository].toInstance(repository),
+        bind[CodeListsRepository].toInstance(codeListsRepository),
+        bind[CorrespondenceListsRepository].toInstance(correspondenceListsRepository),
         bind[LastUpdatedRepository].toInstance(lastUpdatedRepository),
         bind[HttpClientV2].toInstance(httpClientV2),
         bind[Clock].toInstance(Clock.fixed(fixedInstant, ZoneOffset.UTC))
@@ -104,14 +136,14 @@ class CodeListsControllerSpec
 
   "CodeListsController" should "return 200 OK when there are no errors" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant)
       )
     )
-      .thenReturn(Future.successful(entries))
+      .thenReturn(Future.successful(codeListEntries))
 
     val response =
       httpClientV2
@@ -135,9 +167,42 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
+  it should "use the correct repository for correspondence lists like E200" in {
+    when(
+      correspondenceListsRepository.fetchCorrespondenceListEntries(
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(correspondenceListEntries))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${E200.code}")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.arr(
+      Json.obj(
+        "key"        -> "27101944",
+        "value"      -> "E430",
+        "properties" -> Json.obj("actionIdentification" -> "433")
+      ),
+      Json.obj(
+        "key"        -> "27101944",
+        "value"      -> "E440",
+        "properties" -> Json.obj("actionIdentification" -> "437")
+      )
+    )
+
+    response.status mustBe Status.OK
+  }
+
   it should "return 200 OK when there are no entries to return" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
@@ -158,7 +223,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys from the keys parameter when there is only one key" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(None),
@@ -178,7 +243,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys from the keys parameter when there are multiple keys" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(None),
@@ -198,7 +263,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys when there are multiple declarations of the keys parameter" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(None),
@@ -218,7 +283,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys when there is no value declared for the keys parameter" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set.empty)),
         equalTo(None),
@@ -238,7 +303,7 @@ class CodeListsControllerSpec
 
   it should "parse other query parameters as boolean property filters when they are valid boolean values" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC36),
         equalTo(Some(Set("B000"))),
         equalTo(Some(Map("alcoholicStrengthApplicabilityFlag" -> JsBoolean(true)))),
@@ -260,7 +325,7 @@ class CodeListsControllerSpec
 
   it should "parse other query parameters as null property filters when the query parameter value is null" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC66),
         equalTo(Some(Set("B"))),
         equalTo(Some(Map("responsibleDataManager" -> JsNull))),
@@ -282,7 +347,7 @@ class CodeListsControllerSpec
 
   it should "parse other query parameters as String property filters when they are neither boolean nor null values" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(Some(Map("actionIdentification" -> JsString("384")))),
@@ -326,7 +391,7 @@ class CodeListsControllerSpec
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
     when(
-      repository.fetchCodeListEntries(
+      codeListsRepository.fetchCodeListEntries(
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
@@ -356,14 +421,14 @@ class CodeListsControllerSpec
 
     response.json mustBe Json.arr(
       Json.obj(
-        "codeListCode"        -> "BC08",
-        "snapshotVersion"      -> 1,
-        "lastUpdated" -> "2025-06-29T00:00:00Z"
+        "codeListCode"    -> "BC08",
+        "snapshotVersion" -> 1,
+        "lastUpdated"     -> "2025-06-29T00:00:00Z"
       ),
       Json.obj(
-        "codeListCode"        -> "BC66",
-        "snapshotVersion"      -> 1,
-        "lastUpdated" -> "2025-06-28T00:00:00Z"
+        "codeListCode"    -> "BC66",
+        "snapshotVersion" -> 1,
+        "lastUpdated"     -> "2025-06-28T00:00:00Z"
       )
     )
 

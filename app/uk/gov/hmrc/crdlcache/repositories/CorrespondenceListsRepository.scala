@@ -76,6 +76,7 @@ class CorrespondenceListsRepository @Inject() (val mongoComponent: MongoComponen
   def fetchCorrespondenceListEntries(
     code: CodeListCode,
     filterKeys: Option[Set[String]],
+    filterProperties: Option[Map[String, JsValue]],
     activeAt: Instant
   ): Future[Seq[CodeListEntry]] = {
     val mandatoryFilters = List(
@@ -85,10 +86,22 @@ class CorrespondenceListsRepository @Inject() (val mongoComponent: MongoComponen
     )
 
     val keyFilters = filterKeys
-      .map(ks => if ks.nonEmpty then List(in("key", ks.toSeq*)) else List.empty)
+      .map { ks =>
+        if ks.nonEmpty
+        then List(in("key", ks.toSeq*))
+        else List.empty
+      }
       .getOrElse(List.empty)
 
-    val allFilters = mandatoryFilters ++ keyFilters
+    val propertyFilters = filterProperties
+      .map { props =>
+        if props.nonEmpty
+        then props.map((k, v) => equal(s"properties.$k", v))
+        else List.empty
+      }
+      .getOrElse(List.empty)
+
+    val allFilters = mandatoryFilters ++ keyFilters ++ propertyFilters
 
     collection
       .find(and(allFilters*))
