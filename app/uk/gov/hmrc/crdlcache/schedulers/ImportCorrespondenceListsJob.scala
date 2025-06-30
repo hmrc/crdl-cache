@@ -64,7 +64,7 @@ class ImportCorrespondenceListsJob @Inject() (
   val ttl: Duration  = 1.hour
 
   // The date of the full SEED extract used to populate the E200 list
-  val SeedExtractDate = Instant.parse("2024-12-27T00:00:00Z")
+  val SeedExtractDate: Instant = Instant.parse("2024-12-27T10:53:17Z")
 
   private def fetchCurrentEntries(
     session: ClientSession,
@@ -227,6 +227,7 @@ class ImportCorrespondenceListsJob @Inject() (
 
   private[schedulers] def importStaticData(): Future[Unit] = {
     try {
+      logger.info(s"Importing static data for SEED correspondence list ${E200.code}")
       val json    = Json.parse(getClass.getResourceAsStream("/data/E200.json"))
       val entries = Json.fromJson[List[CodeListEntry]](json).get
       withSessionAndTransaction { session =>
@@ -237,7 +238,7 @@ class ImportCorrespondenceListsJob @Inject() (
       }
     } catch {
       case NonFatal(err) =>
-        logger.error("Error parsing static data for correspondence list E200", err)
+        logger.error(s"Error parsing static data for SEED correspondence list ${E200.code}", err)
         Future.failed(err)
     }
   }
@@ -247,6 +248,7 @@ class ImportCorrespondenceListsJob @Inject() (
 
     val importCorrespondenceLists = Source(appConfig.correspondenceListConfigs)
       .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCorrespondenceList)
+      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
 
     val importAll = importStaticLists.concat(importCorrespondenceLists).run().map(_ => ())
 

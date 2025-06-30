@@ -256,7 +256,7 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       equalTo(0L),
-      equalTo(Instant.parse("2024-12-27T00:00:00Z"))
+      equalTo(correspondenceListsJob.SeedExtractDate)
     )
 
     verify(clientSession, times(1)).commitTransaction()
