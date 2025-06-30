@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.crdlcache.repositories
 
-import com.mongodb.client.model.ReplaceOptions
 import org.mongodb.scala.*
-import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
 import play.api.libs.json.*
@@ -26,21 +25,18 @@ import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, CorrespondenceListInstruction}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import uk.gov.hmrc.mongo.transaction.Transactions
+import uk.gov.hmrc.mongo.play.json.Codecs
 
 import java.time.Instant
-import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CorrespondenceListsRepository @Inject() (val mongoComponent: MongoComponent)(using
+class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(using
   ec: ExecutionContext
-) extends PlayMongoRepository[CodeListEntry](
+) extends CodeListsRepository[(String, String), CorrespondenceListInstruction](
     mongoComponent,
     collectionName = "correspondenceLists",
-    domainFormat = CodeListEntry.mongoFormat,
     extraCodecs =
       Codecs.playFormatSumCodecs[JsValue](Format(Reads.JsValueReads, Writes.jsValueWrites)) ++
         Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
@@ -48,66 +44,18 @@ class CorrespondenceListsRepository @Inject() (val mongoComponent: MongoComponen
       IndexModel(
         Indexes.ascending("codeListCode", "key", "value", "activeFrom"),
         IndexOptions().unique(true)
-      ),
-      IndexModel(
-        Indexes.ascending("activeTo"),
-        IndexOptions().expireAfter(30, TimeUnit.DAYS)
       )
     )
-  )
-  with Transactions {
+  ) {
 
-  def fetchCorrespondenceKeys(
-    session: ClientSession,
-    code: CodeListCode
-  ): Future[Set[(String, String)]] =
-    collection
-      .find(
-        session,
-        and(
-          equal("codeListCode", code.code),
-          equal("activeTo", null)
-        )
-      )
-      .map(entry => (entry.key, entry.value))
-      .toFuture()
-      .map(_.toSet)
+  override def activationDate(instruction: CorrespondenceListInstruction): Instant =
+    instruction.activeFrom
 
-  def fetchCorrespondenceListEntries(
-    code: CodeListCode,
-    filterKeys: Option[Set[String]],
-    filterProperties: Option[Map[String, JsValue]],
-    activeAt: Instant
-  ): Future[Seq[CodeListEntry]] = {
-    val mandatoryFilters = List(
-      equal("codeListCode", code.code),
-      lte("activeFrom", activeAt),
-      or(equal("activeTo", null), gt("activeTo", activeAt))
-    )
+  override def keyOfEntry(codeListEntry: CodeListEntry): (String, String) =
+    (codeListEntry.key, codeListEntry.value)
 
-    val keyFilters = filterKeys
-      .map { ks =>
-        if ks.nonEmpty
-        then List(in("key", ks.toSeq*))
-        else List.empty
-      }
-      .getOrElse(List.empty)
-
-    val propertyFilters = filterProperties
-      .map { props =>
-        if props.nonEmpty
-        then props.map((k, v) => equal(s"properties.$k", v))
-        else List.empty
-      }
-      .getOrElse(List.empty)
-
-    val allFilters = mandatoryFilters ++ keyFilters ++ propertyFilters
-
-    collection
-      .find(and(allFilters*))
-      .sort(Sorts.ascending("key"))
-      .toFuture()
-  }
+  override def filtersForKey(key: (String, String)): Seq[Bson] =
+    Seq(equal("key", key._1), equal("value", key._2))
 
   private def deleteCorrespondenceListEntries(
     session: ClientSession,
@@ -124,7 +72,7 @@ class CorrespondenceListsRepository @Inject() (val mongoComponent: MongoComponen
           throw MongoError.NotAcknowledged
       }
 
-  def saveCorrespondenceListEntries(
+  def saveEntries(
     session: ClientSession,
     codeListCode: CodeListCode,
     entries: List[CodeListEntry]
@@ -138,98 +86,42 @@ class CorrespondenceListsRepository @Inject() (val mongoComponent: MongoComponen
       }
     } yield ()
 
-  private def supersedePreviousEntries(
+  def executeInstruction(
     session: ClientSession,
-    codeListCode: CodeListCode,
-    key: String,
-    value: String,
-    activeFrom: Instant,
-    includeActiveFrom: Boolean
-  ): Future[Unit] = {
-    collection
-      .updateMany(
-        session,
-        and(
-          equal("codeListCode", codeListCode.code),
-          if includeActiveFrom then lte("activeFrom", activeFrom) else lt("activeFrom", activeFrom),
-          equal("key", key),
-          equal("value", value),
-          or(equal("activeTo", null), exists("activeTo", false))
-        ),
-        Updates.set("activeTo", activeFrom)
-      )
-      .toFuture()
-      .map { result =>
-        if (!result.wasAcknowledged())
-          throw MongoError.NotAcknowledged
-      }
-  }
-
-  private def upsertEntry(session: ClientSession, codeListEntry: CodeListEntry) =
-    collection
-      .replaceOne(
-        session,
-        and(
-          equal("codeListCode", codeListEntry.codeListCode.code),
-          equal("activeFrom", codeListEntry.activeFrom),
-          equal("key", codeListEntry.key),
-          equal("value", codeListEntry.value)
-        ),
-        codeListEntry,
-        new ReplaceOptions().upsert(true)
-      )
-      .toFuture()
-      .map { result =>
-        if (!result.wasAcknowledged())
-          throw MongoError.NotAcknowledged
-        else if (result.getModifiedCount == 0 && result.getUpsertedId == BsonNull)
-          throw MongoError.NoMatchingDocument
-      }
-
-  def executeInstructions(
-    session: ClientSession,
-    instructions: List[CorrespondenceListInstruction]
+    instruction: CorrespondenceListInstruction
   ): Future[Unit] =
-    instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
-      (previousInstruction, nextInstruction) =>
-        previousInstruction.flatMap { _ =>
-          nextInstruction match {
-            case CorrespondenceListInstruction.UpsertEntry(codeListEntry) =>
-              for {
-                _ <- supersedePreviousEntries(
-                  session,
-                  codeListEntry.codeListCode,
-                  codeListEntry.key,
-                  codeListEntry.value,
-                  codeListEntry.activeFrom,
-                  includeActiveFrom = false
-                )
-                _ <- upsertEntry(session, codeListEntry)
-              } yield ()
-            case CorrespondenceListInstruction.InvalidateEntry(codeListEntry) =>
-              supersedePreviousEntries(
-                session,
-                codeListEntry.codeListCode,
-                codeListEntry.key,
-                codeListEntry.value,
-                codeListEntry.activeFrom,
-                includeActiveFrom = true
-              )
-            case CorrespondenceListInstruction.RecordMissingEntry(
-                  codeListCode,
-                  key,
-                  value,
-                  removedAt
-                ) =>
-              supersedePreviousEntries(
-                session,
-                codeListCode,
-                key,
-                value,
-                removedAt,
-                includeActiveFrom = true
-              )
-          }
-        }
+    instruction match {
+      case CorrespondenceListInstruction.UpsertEntry(codeListEntry) =>
+        for {
+          _ <- supersedePreviousEntries(
+            session,
+            codeListEntry.codeListCode,
+            keyOfEntry(codeListEntry),
+            codeListEntry.activeFrom,
+            includeActiveFrom = false
+          )
+          _ <- upsertEntry(session, codeListEntry)
+        } yield ()
+      case CorrespondenceListInstruction.InvalidateEntry(codeListEntry) =>
+        supersedePreviousEntries(
+          session,
+          codeListEntry.codeListCode,
+          keyOfEntry(codeListEntry),
+          codeListEntry.activeFrom,
+          includeActiveFrom = true
+        )
+      case CorrespondenceListInstruction.RecordMissingEntry(
+            codeListCode,
+            key,
+            value,
+            removedAt
+          ) =>
+        supersedePreviousEntries(
+          session,
+          codeListCode,
+          (key, value),
+          removedAt,
+          includeActiveFrom = true
+        )
     }
 }

@@ -195,23 +195,23 @@ class CorrespondenceListsRepositorySpec
   private val correspondenceListEntries =
     activeEntries ++ supersededListEntries :+ invalidatedEntry :+ postDatedE470Entry
 
-  "CorrespondenceListsRepository.fetchCorrespondenceKeys" should "return entries that have not been superseded" in withCorrespondenceListEntries(
+  "CorrespondenceListsRepository.fetchEntryKeys" should "return entries that have not been superseded" in withCorrespondenceListEntries(
     correspondenceListEntries
   ) { session =>
-    repository.fetchCorrespondenceKeys(session, E200).map(_ must contain("27101944" -> "E440"))
+    repository.fetchEntryKeys(session, E200).map(_ must contain("27101944" -> "E440"))
   }
 
   it should "not return entries that are invalidated" in withCorrespondenceListEntries(
     correspondenceListEntries
   ) { session =>
-    repository.fetchCorrespondenceKeys(session, E200).map(_ mustNot contain("27101944" -> "E460"))
+    repository.fetchEntryKeys(session, E200).map(_ mustNot contain("27101944" -> "E460"))
   }
 
   it should "contain the active code list entry keys" in withCorrespondenceListEntries(
     correspondenceListEntries
   ) { session =>
     repository
-      .fetchCorrespondenceKeys(session, E200)
+      .fetchEntryKeys(session, E200)
       .map {
         _ mustBe entriesWithNoEndDate
           .map(entry => (entry.key, entry.value))
@@ -219,11 +219,11 @@ class CorrespondenceListsRepositorySpec
       }
   }
 
-  "CorrespondenceListsRepository.fetchCorrespondenceListEntries" should "return the codelist entries whose activeFrom date is before the requested date" in withCorrespondenceListEntries(
+  "CorrespondenceListsRepository.fetchEntries" should "return the codelist entries whose activeFrom date is before the requested date" in withCorrespondenceListEntries(
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = None,
         filterProperties = None,
@@ -236,7 +236,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = Some(Set("27101944")),
         filterProperties = None,
@@ -249,7 +249,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = Some(Set.empty),
         filterProperties = None,
@@ -262,7 +262,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = None,
         filterProperties = None,
@@ -275,7 +275,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = None,
         filterProperties = None,
@@ -288,7 +288,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = None,
         filterProperties = None,
@@ -301,7 +301,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = None,
         filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
@@ -314,7 +314,7 @@ class CorrespondenceListsRepositorySpec
     correspondenceListEntries
   ) { _ =>
     repository
-      .fetchCorrespondenceListEntries(
+      .fetchEntries(
         E200,
         filterKeys = Some(Set("27101944")),
         filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
@@ -612,7 +612,7 @@ class CorrespondenceListsRepositorySpec
     )
 
     repository.withSessionAndTransaction { session =>
-      repository.saveCorrespondenceListEntries(session, E200, newEntries)
+      repository.saveEntries(session, E200, newEntries)
     }.futureValue
 
     find(
@@ -674,7 +674,7 @@ class CorrespondenceListsRepositorySpec
     )
 
     repository.withSessionAndTransaction { session =>
-      repository.saveCorrespondenceListEntries(session, E200, newEntries)
+      repository.saveEntries(session, E200, newEntries)
     }.futureValue
 
     find(

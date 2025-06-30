@@ -38,7 +38,7 @@ class JobScheduler @Inject() (
   private val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
 
   // Import code lists
-  private val codeListsJobDetail = newJob(classOf[ImportCodeListsJob])
+  private val codeListsJobDetail = newJob(classOf[ImportStandardCodeListsJob])
     .withIdentity("import-code-lists")
     .build()
 

@@ -238,14 +238,16 @@ class ImportCorrespondenceListsJobSpec
       .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
   }
 
-  "ImportCorrespondenceListsJob.importStaticData" should "import the static E200 codelist data" in {
-    when(correspondenceListsRepository.saveCorrespondenceListEntries(any(), any(), any()))
+  "importCodeListsJob.importStaticData" should "import the static E200 codelist data" in {
+    when(correspondenceListsRepository.saveEntries(any(), any(), any()))
       .thenReturn(Future.unit)
+    when(lastUpdatedRepository.fetchLastUpdated(any()))
+      .thenReturn(Future.successful(None))
     when(lastUpdatedRepository.setLastUpdated(any(), any(), any(), any())).thenReturn(Future.unit)
 
     correspondenceListsJob.importStaticData().futureValue
 
-    verify(correspondenceListsRepository, times(1)).saveCorrespondenceListEntries(
+    verify(correspondenceListsRepository, times(1)).saveEntries(
       equalTo(clientSession),
       equalTo(E200),
       any()
@@ -262,15 +264,39 @@ class ImportCorrespondenceListsJobSpec
     verify(clientSession, times(1)).commitTransaction()
   }
 
+  it should "skip the import process when later data already exists" in {
+    when(lastUpdatedRepository.fetchLastUpdated(any()))
+      .thenReturn(Future.successful(Some(LastUpdated(E200, 1, fixedInstant))))
+
+    correspondenceListsJob.importStaticData().futureValue
+
+    verify(correspondenceListsRepository, never()).saveEntries(
+      equalTo(clientSession),
+      equalTo(E200),
+      any()
+    )
+
+    verify(lastUpdatedRepository, never()).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(E200),
+      equalTo(0L),
+      equalTo(correspondenceListsJob.SeedExtractDate)
+    )
+
+    verify(clientSession, never()).commitTransaction()
+  }
+
   it should "roll back when there is an error during the import process" in {
-    when(correspondenceListsRepository.saveCorrespondenceListEntries(any(), any(), any()))
+    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+
+    when(correspondenceListsRepository.saveEntries(any(), any(), any()))
       .thenReturn(Future.failed(new RuntimeException("Boom!")))
 
     assertThrows[RuntimeException] {
       correspondenceListsJob.importStaticData().futureValue
     }
 
-    verify(correspondenceListsRepository, times(1)).saveCorrespondenceListEntries(
+    verify(correspondenceListsRepository, times(1)).saveEntries(
       equalTo(clientSession),
       equalTo(E200),
       any()
@@ -279,7 +305,7 @@ class ImportCorrespondenceListsJobSpec
     verify(clientSession, times(1)).abortTransaction()
   }
 
-  "ImportCorrespondenceListsJob.importCorrespondenceLists" should "import the configured correspondence lists when there is no last updated date stored" in {
+  "importCodeListsJob.importCodeLists" should "import the configured correspondence lists when there is no last updated date stored" in {
     val lastUpdated        = LocalDate.of(2025, 3, 12)
     val lastUpdatedInstant = lastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
 
@@ -300,7 +326,7 @@ class ImportCorrespondenceListsJobSpec
 
     // Correspondence list manipulation
     when(
-      correspondenceListsRepository.fetchCorrespondenceKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
       .thenReturn(
@@ -315,7 +341,7 @@ class ImportCorrespondenceListsJobSpec
       )
 
     when(
-      correspondenceListsRepository.saveCorrespondenceListEntries(
+      correspondenceListsRepository.saveEntries(
         equalTo(clientSession),
         equalTo(E200),
         any()
@@ -344,7 +370,7 @@ class ImportCorrespondenceListsJobSpec
     )
       .thenReturn(Future.unit)
 
-    correspondenceListsJob.importCorrespondenceLists().futureValue
+    correspondenceListsJob.importCodeLists().futureValue
 
     verify(correspondenceListsRepository, times(2)).executeInstructions(
       equalTo(clientSession),
@@ -353,14 +379,6 @@ class ImportCorrespondenceListsJobSpec
 
     verify(correspondenceListsRepository, times(2))
       .executeInstructions(equalTo(clientSession), any())
-
-    // There is one set of static data for E200
-    verify(lastUpdatedRepository, times(1)).setLastUpdated(
-      equalTo(clientSession),
-      equalTo(E200),
-      anyLong(),
-      equalTo(correspondenceListsJob.SeedExtractDate)
-    )
 
     // There is one set of static data for E200
     verify(lastUpdatedRepository, times(1)).setLastUpdated(
@@ -379,7 +397,7 @@ class ImportCorrespondenceListsJobSpec
     )
 
     // The (temporary) static data should have been saved
-    verify(correspondenceListsRepository, times(1)).saveCorrespondenceListEntries(
+    verify(correspondenceListsRepository, times(1)).saveEntries(
       equalTo(clientSession),
       equalTo(E200),
       any()
@@ -410,7 +428,7 @@ class ImportCorrespondenceListsJobSpec
 
     // Correspondence list manipulation
     when(
-      correspondenceListsRepository.fetchCorrespondenceKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
       .thenReturn(
@@ -425,7 +443,7 @@ class ImportCorrespondenceListsJobSpec
       )
 
     when(
-      correspondenceListsRepository.saveCorrespondenceListEntries(
+      correspondenceListsRepository.saveEntries(
         equalTo(clientSession),
         equalTo(E200),
         any()
@@ -454,14 +472,20 @@ class ImportCorrespondenceListsJobSpec
     )
       .thenReturn(Future.unit)
 
-    correspondenceListsJob.importCorrespondenceLists().futureValue
+    correspondenceListsJob.importCodeLists().futureValue
 
-    // There is one set of static data for E200
-    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+    // The static data is skipped because later data was imported already
+    verify(lastUpdatedRepository, never()).setLastUpdated(
       equalTo(clientSession),
       equalTo(E200),
       anyLong(),
       equalTo(correspondenceListsJob.SeedExtractDate)
+    )
+
+    verify(correspondenceListsRepository, never()).saveEntries(
+      equalTo(clientSession),
+      equalTo(E200),
+      any()
     )
 
     // There are two snapshots for E200, but we already have snapshot 1
@@ -475,15 +499,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(fixedInstant)
     )
 
-    // The (temporary) static data should have been saved
-    verify(correspondenceListsRepository, times(1)).saveCorrespondenceListEntries(
-      equalTo(clientSession),
-      equalTo(E200),
-      any()
-    )
-
-    // Only one snapshot plus the static data should have been committed
-    verify(clientSession, times(2)).commitTransaction()
+    // Only one snapshot should have been committed
+    verify(clientSession, times(1)).commitTransaction()
   }
 
   it should "roll back when there is an issue importing one of the correspondence list snapshots" in {
@@ -507,7 +524,7 @@ class ImportCorrespondenceListsJobSpec
 
     // Correspondence list manipulation
     when(
-      correspondenceListsRepository.fetchCorrespondenceKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
       .thenReturn(
@@ -522,7 +539,7 @@ class ImportCorrespondenceListsJobSpec
       )
 
     when(
-      correspondenceListsRepository.saveCorrespondenceListEntries(
+      correspondenceListsRepository.saveEntries(
         equalTo(clientSession),
         equalTo(E200),
         any()
@@ -553,7 +570,7 @@ class ImportCorrespondenceListsJobSpec
       .thenReturn(Future.failed(MongoError.NotAcknowledged))
 
     correspondenceListsJob
-      .importCorrespondenceLists()
+      .importCodeLists()
       .failed
       .futureValue mustBe MongoError.NotAcknowledged
 
@@ -574,7 +591,7 @@ class ImportCorrespondenceListsJobSpec
     )
 
     // The (temporary) static data should have been saved
-    verify(correspondenceListsRepository, times(1)).saveCorrespondenceListEntries(
+    verify(correspondenceListsRepository, times(1)).saveEntries(
       equalTo(clientSession),
       equalTo(E200),
       any()
@@ -590,7 +607,7 @@ class ImportCorrespondenceListsJobSpec
 
   "ImportCodeListsJob.processSnapshot" should "produce a list of instructions for a snapshot that contains only new entries" in {
     when(
-      correspondenceListsRepository.fetchCorrespondenceKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
 
@@ -663,7 +680,7 @@ class ImportCorrespondenceListsJobSpec
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
     when(
-      correspondenceListsRepository.fetchCorrespondenceKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
     )
       .thenReturn(
         Future.successful(
@@ -733,7 +750,7 @@ class ImportCorrespondenceListsJobSpec
 
   it should "pick the latest entry by modification date and action identification when there are duplicate entries for a given key->value mapping and activation date" in {
     when(
-      correspondenceListsRepository.fetchCorrespondenceKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
     )
       .thenReturn(
         Future.successful(

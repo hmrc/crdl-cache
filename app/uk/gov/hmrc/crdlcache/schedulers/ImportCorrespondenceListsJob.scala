@@ -18,12 +18,8 @@ package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
-import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervision}
-import org.mongodb.scala.ClientSession
-import org.quartz.{Job, JobExecutionContext}
-import play.api.Logging
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.config.{AppConfig, CorrespondenceListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.*
 import uk.gov.hmrc.crdlcache.models.CodeListCode.E200
@@ -35,57 +31,53 @@ import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Update}
 import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
-import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
+import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 import javax.inject.Inject
-import scala.concurrent.duration.*
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class ImportCorrespondenceListsJob @Inject() (
-  val mongoComponent: MongoComponent,
-  val lockRepository: MongoLockRepository,
+  mongoComponent: MongoComponent,
+  lockRepository: MongoLockRepository,
   lastUpdatedRepository: LastUpdatedRepository,
   correspondenceListsRepository: CorrespondenceListsRepository,
   dpsConnector: DpsConnector,
   appConfig: AppConfig,
   clock: Clock
 )(using system: ActorSystem, ec: ExecutionContext)
-  extends Job
-  with LockService
-  with Logging
-  with Transactions {
-
-  given TransactionConfiguration = TransactionConfiguration.strict
-
-  val lockId: String = "import-correspondence-lists"
-  val ttl: Duration  = 1.hour
-
+  extends ImportCodeListsJob[(String, String), CorrespondenceListInstruction](
+    "import-correspondence-lists",
+    mongoComponent,
+    lockRepository,
+    lastUpdatedRepository,
+    correspondenceListsRepository,
+    dpsConnector,
+    appConfig,
+    clock
+  ) {
   // The date of the full SEED extract used to populate the E200 list
   val SeedExtractDate: Instant = Instant.parse("2024-12-27T10:53:17Z")
 
-  private def fetchCurrentEntries(
-    session: ClientSession,
-    codeListCode: CodeListCode
-  ): Future[Set[(String, String)]] =
-    correspondenceListsRepository.fetchCorrespondenceKeys(session, codeListCode)
+  override protected def listConfigs: List[ListConfig] =
+    appConfig.correspondenceListConfigs
 
-  private def executeInstructions(
-    session: ClientSession,
-    instructions: List[CorrespondenceListInstruction]
-  ): Future[Unit] =
-    correspondenceListsRepository.executeInstructions(session, instructions)
+  override protected def keyOfEntry(entry: CodeListSnapshotEntry): (String, String) =
+    entry.key -> entry.value
 
-  private def setLastUpdated(
-    session: ClientSession,
+  override protected def recordMissing(
     codeListCode: CodeListCode,
-    snapshotVersion: Long,
-    lastUpdated: Instant
-  ) = lastUpdatedRepository.setLastUpdated(session, codeListCode, snapshotVersion, lastUpdated)
+    mapping: (String, String)
+  ): CorrespondenceListInstruction = {
+    // DPS provides no snapshot dates:
+    // the best we can do with removed entries is to use the start of today as their deactivation date
+    val (key, value) = mapping
+    val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
+    RecordMissingEntry(codeListCode, key, value, removedAt = startOfToday.toInstant)
+  }
 
-  private[schedulers] def processEntry(
+  protected def processEntry(
     codeListCode: CodeListCode,
     newEntry: CodeListSnapshotEntry
   ): CorrespondenceListInstruction = {
@@ -108,155 +100,44 @@ class ImportCorrespondenceListsJob @Inject() (
     }
   }
 
-  private[schedulers] def processSnapshot(
-    session: ClientSession,
-    correspondenceListConfig: CorrespondenceListConfig,
-    newSnapshot: CodeListSnapshot
-  ): Future[List[CorrespondenceListInstruction]] = {
-    logger.info(
-      s"Importing ${correspondenceListConfig.origin} codelist ${correspondenceListConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
-    )
+  private[schedulers] def importStaticData(): Future[Unit] =
+    lastUpdatedRepository.fetchLastUpdated(E200).flatMap { lastUpdated =>
+      val hasLaterSnapshots = lastUpdated
+        .map(_.lastUpdated)
+        .exists(_.isAfter(SeedExtractDate))
 
-    fetchCurrentEntries(session, correspondenceListConfig.code).map { currentKeySet =>
-      val incomingKeySet = newSnapshot.entries.map(entry => (entry.key, entry.value))
-      val mergedKeySet   = currentKeySet.union(incomingKeySet)
-
-      val groupedEntries = newSnapshot.entries.toList.groupBy(entry => (entry.key, entry.value))
-
-      val instructions = List.newBuilder[CorrespondenceListInstruction]
-
-      for (mapping @ (key, value) <- mergedKeySet) {
-        val hasExistingEntry = currentKeySet.contains(mapping)
-        val maybeNewEntries  = groupedEntries.get(mapping)
-
-        // In case of multiple entries for a given key->value mapping with the same activation date,
-        // the one with the latest modification timestamp and latest action ID is used.
-        val entriesByDate = maybeNewEntries.map { newEntries =>
-          newEntries
-            .groupBy(_.activeFrom) // Group by activation date
-            .view
-            .mapValues(
-              _.maxBy(entry =>
-                (
-                  entry.updatedAt,
-                  entry.properties.value.get("actionIdentification").flatMap(_.asOpt[String])
-                )
-              )
-            ) // Pick the latest modification and SEED "ActionIdentification"
-            .values
-            .toSet
-        }
-
-        (hasExistingEntry, entriesByDate) match {
-          case (_, Some(newEntries)) =>
-            instructions ++= newEntries.map(
-              processEntry(correspondenceListConfig.code, _)
-            )
-
-          case (true, None) =>
-            // DPS provides no snapshot dates:
-            // the best we can do with removed entries is to use the start of today as their deactivation date
-            val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
-            instructions += RecordMissingEntry(
-              correspondenceListConfig.code,
-              key,
-              value,
-              startOfToday.toInstant
-            )
-
-          case _ =>
-            throw IllegalStateException(
-              "Impossible case - we have neither a new nor existing entry for a key->value mapping"
-            )
-        }
-      }
-
-      instructions.result()
-    }
-  }
-
-  private def importCorrespondenceList(
-    correspondenceListConfig: CorrespondenceListConfig
-  ): Future[Unit] = {
-    for {
-      // Fetch last updated timestamp
-      storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(correspondenceListConfig.code)
-      defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
-      lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
-
-      _ = logger.info(
-        s"Importing correspondence list ${correspondenceListConfig.code.code} from DPS with last updated timestamp ${lastUpdated}"
-      )
-
-      _ <- dpsConnector
-        .fetchCodeListSnapshots(correspondenceListConfig.code, lastUpdated)
-        // Add a delay between calls to avoid overwhelming DPS
-        .delay(1.second, DelayOverflowStrategy.backpressure)
-        .mapConcat(_.elements)
-        .dropWhile { snapshot =>
-          // Ignore snapshot versions that we already have
-          storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
-        }
-        .map(CodeListSnapshot.fromDpsSnapshot(correspondenceListConfig, _))
-        .mapAsync(1) { snapshot =>
-          // Ensure that we roll back if something goes wrong processing the snapshot
+      if (hasLaterSnapshots) {
+        logger.info(s"Skipping static data import for codelist ${E200.code}")
+        Future.unit
+      } else {
+        try {
+          val json    = Json.parse(getClass.getResourceAsStream("/data/E200.json"))
+          val entries = Json.fromJson[List[CodeListEntry]](json).get
           withSessionAndTransaction { session =>
+            logger.info(s"Importing static data for codelist ${E200.code}")
             for {
-              instructions <- processSnapshot(session, correspondenceListConfig, snapshot)
-              _            <- executeInstructions(session, instructions)
-              _ <- setLastUpdated(
-                session,
-                correspondenceListConfig.code,
-                snapshot.version,
-                clock.instant()
-              )
+              _ <- correspondenceListsRepository.saveEntries(session, E200, entries)
+              _ <- lastUpdatedRepository.setLastUpdated(session, E200, 0, SeedExtractDate)
             } yield ()
           }
+        } catch {
+          case NonFatal(err) =>
+            logger.error(s"Error parsing static data for codelist ${E200.code}", err)
+            Future.failed(err)
         }
-        .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
-          logger.error(
-            s"Stopping correspondence list ${correspondenceListConfig.code.code} import job due to exception",
-            err
-          )
-          Supervision.stop
-        })
-        .run()
-
-    } yield ()
-  }
-
-  private[schedulers] def importStaticData(): Future[Unit] = {
-    try {
-      logger.info(s"Importing static data for SEED correspondence list ${E200.code}")
-      val json    = Json.parse(getClass.getResourceAsStream("/data/E200.json"))
-      val entries = Json.fromJson[List[CodeListEntry]](json).get
-      withSessionAndTransaction { session =>
-        for {
-          _ <- correspondenceListsRepository.saveCorrespondenceListEntries(session, E200, entries)
-          _ <- lastUpdatedRepository.setLastUpdated(session, E200, 0, SeedExtractDate)
-        } yield ()
       }
-    } catch {
-      case NonFatal(err) =>
-        logger.error(s"Error parsing static data for SEED correspondence list ${E200.code}", err)
-        Future.failed(err)
     }
-  }
 
-  private[schedulers] def importCorrespondenceLists(): Future[Unit] = {
+  override def importCodeLists(): Future[Unit] = {
     val importStaticLists = Source.future(importStaticData())
 
     val importCorrespondenceLists = Source(appConfig.correspondenceListConfigs)
-      .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCorrespondenceList)
-      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
+      .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
 
     val importAll = importStaticLists.concat(importCorrespondenceLists).run().map(_ => ())
 
-    importAll.foreach(_ => logger.info("Importing correspondence lists completed successfully"))
+    importAll.foreach(_ => logger.info(s"${jobName} job completed successfully"))
 
     importAll
   }
-
-  def execute(context: JobExecutionContext): Unit =
-    Await.result(importCorrespondenceLists(), Duration.Inf)
 }

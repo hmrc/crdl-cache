@@ -20,9 +20,9 @@ import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.repositories.{
-  CodeListsRepository,
   CorrespondenceListsRepository,
-  LastUpdatedRepository
+  LastUpdatedRepository,
+  StandardCodeListsRepository
 }
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -35,7 +35,7 @@ class TestOnlyController @Inject() (
   cc: ControllerComponents,
   jobScheduler: JobScheduler,
   lastUpdatedRepository: LastUpdatedRepository,
-  codeListsRepository: CodeListsRepository,
+  codeListsRepository: StandardCodeListsRepository,
   correspondenceListsRepository: CorrespondenceListsRepository
 )(using ec: ExecutionContext)
   extends BackendController(cc) {

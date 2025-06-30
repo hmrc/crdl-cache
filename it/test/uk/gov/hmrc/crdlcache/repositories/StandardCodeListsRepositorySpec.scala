@@ -38,7 +38,7 @@ import java.time.Instant
 import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future}
 
-class CodeListsRepositorySpec
+class StandardCodeListsRepositorySpec
   extends AnyFlatSpec
   with PlayMongoRepositorySupport[CodeListEntry]
   with CleanMongoCollectionSupport
@@ -50,7 +50,7 @@ class CodeListsRepositorySpec
   given TransactionConfiguration = TransactionConfiguration.strict
   given ec: ExecutionContext     = ExecutionContext.global
 
-  override protected val repository: CodeListsRepository = new CodeListsRepository(
+  override protected val repository: StandardCodeListsRepository = new StandardCodeListsRepository(
     mongoComponent
   )
 
@@ -207,26 +207,26 @@ class CodeListsRepositorySpec
   private val codelistEntries =
     activeCodelistEntries ++ differentCodeListEntries ++ supersededCodeListEntries :+ invalidatedIoEntry :+ postDatedEntry
 
-  "CodeListsRepository.fetchCodeListEntryKeys" should "return entries that have not been superseded" in withCodeListEntries(
+  "StandardCodeListsRepository.fetchEntryKeys" should "return entries that have not been superseded" in withCodeListEntries(
     codelistEntries
   ) { session =>
-    repository.fetchCodeListEntryKeys(session, BC08).map(_ must contain("BL"))
+    repository.fetchEntryKeys(session, BC08).map(_ must contain("BL"))
   }
 
   it should "not return entries that are invalidated" in withCodeListEntries(codelistEntries) {
     session =>
-      repository.fetchCodeListEntryKeys(session, BC08).map(_ mustNot contain("IO"))
+      repository.fetchEntryKeys(session, BC08).map(_ mustNot contain("IO"))
   }
 
   it should "not return entries from other code lists" in withCodeListEntries(codelistEntries) {
     session =>
-      repository.fetchCodeListEntryKeys(session, BC08).map(_ mustNot contain("B"))
+      repository.fetchEntryKeys(session, BC08).map(_ mustNot contain("B"))
   }
 
   it should "contain the active code list entry keys" in withCodeListEntries(codelistEntries) {
     session =>
       repository
-        .fetchCodeListEntryKeys(session, BC08)
+        .fetchEntryKeys(session, BC08)
         .map {
           _ mustBe entriesWithNoEndDate
             .map(_.key)
@@ -234,11 +234,11 @@ class CodeListsRepositorySpec
         }
   }
 
-  "CodeListsRepository.fetchCodeListEntries" should "return the codelist entries whose activeFrom date is before the requested date" in withCodeListEntries(
+  "StandardCodeListsRepository.fetchEntries" should "return the codelist entries whose activeFrom date is before the requested date" in withCodeListEntries(
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC08,
         filterKeys = None,
         filterProperties = None,
@@ -251,7 +251,7 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC08,
         filterKeys = Some(Set("AW", "BL")),
         filterProperties = None,
@@ -264,7 +264,7 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC08,
         filterKeys = Some(Set.empty),
         filterProperties = None,
@@ -275,7 +275,7 @@ class CodeListsRepositorySpec
 
   it should "not return entries from other lists" in withCodeListEntries(codelistEntries) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC08,
         filterKeys = None,
         filterProperties = None,
@@ -288,7 +288,7 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC08,
         filterKeys = Some(Set("B")),
         filterProperties = None,
@@ -300,7 +300,7 @@ class CodeListsRepositorySpec
   it should "not return entries that have been superseded" in withCodeListEntries(codelistEntries) {
     _ =>
       repository
-        .fetchCodeListEntries(
+        .fetchEntries(
           BC08,
           filterKeys = None,
           filterProperties = None,
@@ -312,7 +312,7 @@ class CodeListsRepositorySpec
   it should "not return entries that are not yet active" in withCodeListEntries(codelistEntries) {
     _ =>
       repository
-        .fetchCodeListEntries(
+        .fetchEntries(
           BC08,
           filterKeys = None,
           filterProperties = None,
@@ -325,7 +325,7 @@ class CodeListsRepositorySpec
     codelistEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC08,
         filterKeys = None,
         filterProperties = None,
@@ -388,7 +388,7 @@ class CodeListsRepositorySpec
     exciseProductEntries
   ) { _ =>
     repository
-      .fetchCodeListEntries(
+      .fetchEntries(
         BC36,
         filterKeys = Some(Set("B000", "W200")),
         filterProperties = Some(Map("exciseProductsCategoryCode" -> JsString("W"))),
@@ -402,7 +402,7 @@ class CodeListsRepositorySpec
   ) { _ =>
     for {
       allEntriesWithFlag <- repository
-        .fetchCodeListEntries(
+        .fetchEntries(
           BC36,
           filterKeys = None,
           filterProperties = Some(Map("alcoholicStrengthApplicabilityFlag" -> JsTrue)),
@@ -410,7 +410,7 @@ class CodeListsRepositorySpec
         )
 
       filteredEntriesWithFlag <- repository
-        .fetchCodeListEntries(
+        .fetchEntries(
           BC36,
           filterKeys = Some(Set("B000", "W200")),
           filterProperties = Some(Map("degreePlatoApplicabilityFlag" -> JsTrue)),
@@ -427,7 +427,7 @@ class CodeListsRepositorySpec
   ) { _ =>
     for {
       allEntriesWithNull <- repository
-        .fetchCodeListEntries(
+        .fetchEntries(
           BC36,
           filterKeys = None,
           filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
@@ -435,7 +435,7 @@ class CodeListsRepositorySpec
         )
 
       filteredEntriesWithNull <- repository
-        .fetchCodeListEntries(
+        .fetchEntries(
           BC36,
           filterKeys = Some(Set("B000", "W200")),
           filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
@@ -447,7 +447,7 @@ class CodeListsRepositorySpec
     }
   }
 
-  "CodeListsRepository.executeInstructions" should "invalidate existing entries" in withCodeListEntries(
+  "StandardCodeListsRepository.executeInstructions" should "invalidate existing entries" in withCodeListEntries(
     activeCodelistEntries :+ activeIoEntry
   ) { session =>
     for {

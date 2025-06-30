@@ -32,9 +32,9 @@ import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, E200}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
 import uk.gov.hmrc.crdlcache.repositories.{
-  CodeListsRepository,
   CorrespondenceListsRepository,
-  LastUpdatedRepository
+  LastUpdatedRepository,
+  StandardCodeListsRepository
 }
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -57,7 +57,7 @@ class CodeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
-  private val codeListsRepository           = mock[CodeListsRepository]
+  private val codeListsRepository           = mock[StandardCodeListsRepository]
   private val correspondenceListsRepository = mock[CorrespondenceListsRepository]
   private val lastUpdatedRepository         = mock[LastUpdatedRepository]
 
@@ -126,7 +126,7 @@ class CodeListsControllerSpec
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .overrides(
-        bind[CodeListsRepository].toInstance(codeListsRepository),
+        bind[StandardCodeListsRepository].toInstance(codeListsRepository),
         bind[CorrespondenceListsRepository].toInstance(correspondenceListsRepository),
         bind[LastUpdatedRepository].toInstance(lastUpdatedRepository),
         bind[HttpClientV2].toInstance(httpClientV2),
@@ -136,7 +136,7 @@ class CodeListsControllerSpec
 
   "CodeListsController" should "return 200 OK when there are no errors" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
@@ -169,7 +169,7 @@ class CodeListsControllerSpec
 
   it should "use the correct repository for correspondence lists like E200" in {
     when(
-      correspondenceListsRepository.fetchCorrespondenceListEntries(
+      correspondenceListsRepository.fetchEntries(
         equalTo(E200),
         equalTo(None),
         equalTo(None),
@@ -202,7 +202,7 @@ class CodeListsControllerSpec
 
   it should "return 200 OK when there are no entries to return" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
@@ -223,7 +223,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys from the keys parameter when there is only one key" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(None),
@@ -243,7 +243,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys from the keys parameter when there are multiple keys" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(None),
@@ -263,7 +263,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys when there are multiple declarations of the keys parameter" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(None),
@@ -283,7 +283,7 @@ class CodeListsControllerSpec
 
   it should "parse comma-separated keys when there is no value declared for the keys parameter" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(Some(Set.empty)),
         equalTo(None),
@@ -303,7 +303,7 @@ class CodeListsControllerSpec
 
   it should "parse other query parameters as boolean property filters when they are valid boolean values" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC36),
         equalTo(Some(Set("B000"))),
         equalTo(Some(Map("alcoholicStrengthApplicabilityFlag" -> JsBoolean(true)))),
@@ -325,7 +325,7 @@ class CodeListsControllerSpec
 
   it should "parse other query parameters as null property filters when the query parameter value is null" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC66),
         equalTo(Some(Set("B"))),
         equalTo(Some(Map("responsibleDataManager" -> JsNull))),
@@ -347,7 +347,7 @@ class CodeListsControllerSpec
 
   it should "parse other query parameters as String property filters when they are neither boolean nor null values" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(Some(Map("actionIdentification" -> JsString("384")))),
@@ -391,7 +391,7 @@ class CodeListsControllerSpec
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
     when(
-      codeListsRepository.fetchCodeListEntries(
+      codeListsRepository.fetchEntries(
         equalTo(BC08),
         equalTo(None),
         equalTo(None),

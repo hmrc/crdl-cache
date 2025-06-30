@@ -39,14 +39,14 @@ import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListResponse, DataItem, LanguageDescription}
 import uk.gov.hmrc.crdlcache.models.dps.{Relation, codeList}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
-import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
+import uk.gov.hmrc.crdlcache.repositories.{LastUpdatedRepository, StandardCodeListsRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{Lock, MongoLockRepository}
 
 import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
 
-class ImportCodeListsJobSpec
+class ImportStandardCodeListsJobSpec
   extends AnyFlatSpec
   with Matchers
   with MockitoSugar
@@ -59,7 +59,7 @@ class ImportCodeListsJobSpec
   private val clientSession         = mock[ClientSession]
   private val lockRepository        = mock[MongoLockRepository]
   private val lastUpdatedRepository = mock[LastUpdatedRepository]
-  private val codeListsRepository   = mock[CodeListsRepository]
+  private val codeListsRepository   = mock[StandardCodeListsRepository]
   private val dpsConnector          = mock[DpsConnector]
   private val appConfig             = mock[AppConfig]
   private val fixedInstant          = Instant.parse("2025-06-03T00:00:00Z")
@@ -68,7 +68,7 @@ class ImportCodeListsJobSpec
   given ActorSystem      = ActorSystem("test")
   given ExecutionContext = ExecutionContext.global
 
-  private val codeListsJob = new ImportCodeListsJob(
+  private val codeListsJob = new ImportStandardCodeListsJob(
     mongoComponent,
     lockRepository,
     lastUpdatedRepository,
@@ -237,7 +237,7 @@ class ImportCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
@@ -345,7 +345,7 @@ class ImportCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
@@ -416,7 +416,7 @@ class ImportCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
@@ -505,7 +505,7 @@ class ImportCodeListsJobSpec
   }
 
   "ImportCodeListsJob.processSnapshot" should "produce a list of instructions for a snapshot that contains only new entries" in {
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
 
     val codeListConfig = CodeListConfig(BC08, SEED, "CountryCode")
@@ -550,7 +550,7 @@ class ImportCodeListsJobSpec
   }
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
     val codeListConfig = CodeListConfig(BC08, SEED, "CountryCode")
@@ -621,7 +621,7 @@ class ImportCodeListsJobSpec
   }
 
   it should "pick the latest entry by modification date and action identification when there are duplicate entries for a given key and activation date" in {
-    when(codeListsRepository.fetchCodeListEntryKeys(equalTo(clientSession), equalTo(BC36)))
+    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC36)))
       .thenReturn(Future.successful(Set("E470")))
 
     val codeListConfig = CodeListConfig(BC36, SEED, "ExciseProductCode")

@@ -21,9 +21,9 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, STANDARD}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
 import uk.gov.hmrc.crdlcache.repositories.{
-  CodeListsRepository,
   CorrespondenceListsRepository,
-  LastUpdatedRepository
+  LastUpdatedRepository,
+  StandardCodeListsRepository
 }
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -34,7 +34,7 @@ import scala.concurrent.ExecutionContext
 @Singleton()
 class CodeListsController @Inject() (
   cc: ControllerComponents,
-  codeListsRepository: CodeListsRepository,
+  codeListsRepository: StandardCodeListsRepository,
   correspondenceListsRepository: CorrespondenceListsRepository,
   lastUpdatedRepository: LastUpdatedRepository,
   clock: Clock
@@ -50,7 +50,7 @@ class CodeListsController @Inject() (
     val codeListEntries = codeListCode.listType match {
       case STANDARD =>
         codeListsRepository
-          .fetchCodeListEntries(
+          .fetchEntries(
             codeListCode,
             filterKeys,
             filterProperties,
@@ -58,7 +58,7 @@ class CodeListsController @Inject() (
           )
       case CORRESPONDENCE =>
         correspondenceListsRepository
-          .fetchCorrespondenceListEntries(
+          .fetchEntries(
             codeListCode,
             filterKeys,
             filterProperties,
