@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import uk.gov.hmrc.crdlcache.config.{CodeListConfig, CorrespondenceListConfig, ListConfig}
+import uk.gov.hmrc.crdlcache.config.ListConfig
 import uk.gov.hmrc.crdlcache.models.dps.codeList
 
 case class CodeListSnapshot(

@@ -63,6 +63,9 @@ class ImportCorrespondenceListsJob @Inject() (
   val lockId: String = "import-correspondence-lists"
   val ttl: Duration  = 1.hour
 
+  // The date of the full SEED extract used to populate the E200 list
+  val SeedExtractDate = Instant.parse("2024-12-27T00:00:00Z")
+
   private def fetchCurrentEntries(
     session: ClientSession,
     codeListCode: CodeListCode
@@ -227,7 +230,10 @@ class ImportCorrespondenceListsJob @Inject() (
       val json    = Json.parse(getClass.getResourceAsStream("/data/E200.json"))
       val entries = Json.fromJson[List[CodeListEntry]](json).get
       withSessionAndTransaction { session =>
-        correspondenceListsRepository.saveCorrespondenceListEntries(session, E200, entries)
+        for {
+          _ <- correspondenceListsRepository.saveCorrespondenceListEntries(session, E200, entries)
+          _ <- lastUpdatedRepository.setLastUpdated(session, E200, 0, SeedExtractDate)
+        } yield ()
       }
     } catch {
       case NonFatal(err) =>

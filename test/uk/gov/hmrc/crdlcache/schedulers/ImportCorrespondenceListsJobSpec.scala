@@ -241,6 +241,7 @@ class ImportCorrespondenceListsJobSpec
   "ImportCorrespondenceListsJob.importStaticData" should "import the static E200 codelist data" in {
     when(correspondenceListsRepository.saveCorrespondenceListEntries(any(), any(), any()))
       .thenReturn(Future.unit)
+    when(lastUpdatedRepository.setLastUpdated(any(), any(), any(), any())).thenReturn(Future.unit)
 
     correspondenceListsJob.importStaticData().futureValue
 
@@ -248,6 +249,14 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       any()
+    )
+
+    // Last update date should be set to the date of the SEED extract
+    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(E200),
+      equalTo(0L),
+      equalTo(Instant.parse("2024-12-27T00:00:00Z"))
     )
 
     verify(clientSession, times(1)).commitTransaction()
@@ -284,7 +293,7 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        equalTo(fixedInstant)
+        any()
       )
     )
       .thenReturn(Future.unit)
@@ -345,6 +354,22 @@ class ImportCorrespondenceListsJobSpec
     verify(correspondenceListsRepository, times(2))
       .executeInstructions(equalTo(clientSession), any())
 
+    // There is one set of static data for E200
+    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(E200),
+      anyLong(),
+      equalTo(correspondenceListsJob.SeedExtractDate)
+    )
+
+    // There is one set of static data for E200
+    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(E200),
+      anyLong(),
+      equalTo(correspondenceListsJob.SeedExtractDate)
+    )
+
     // There are two snapshots for E200
     verify(lastUpdatedRepository, times(2)).setLastUpdated(
       equalTo(clientSession),
@@ -378,7 +403,7 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        equalTo(fixedInstant)
+        any()
       )
     )
       .thenReturn(Future.unit)
@@ -431,6 +456,14 @@ class ImportCorrespondenceListsJobSpec
 
     correspondenceListsJob.importCorrespondenceLists().futureValue
 
+    // There is one set of static data for E200
+    verify(lastUpdatedRepository, times(1)).setLastUpdated(
+      equalTo(clientSession),
+      equalTo(E200),
+      anyLong(),
+      equalTo(correspondenceListsJob.SeedExtractDate)
+    )
+
     // There are two snapshots for E200, but we already have snapshot 1
     verify(correspondenceListsRepository, times(1))
       .executeInstructions(equalTo(clientSession), any())
@@ -467,7 +500,7 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        equalTo(fixedInstant)
+        any()
       )
     )
       .thenReturn(Future.unit)
