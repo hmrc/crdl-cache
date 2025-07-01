@@ -79,13 +79,23 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCodeListsSchedule mustBe "0 0 4 * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
     appConfig.codeListConfigs mustBe List(
+      CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
+      CodeListConfig(BC03, SEED, "AcoActionNotPossibleReasonCode"),
       CodeListConfig(BC08, SEED, "CountryCode"),
+      CodeListConfig(BC09, SEED, "RefusalReasonCode"),
       CodeListConfig(BC11, SEED, "NationalAdministrationCode"),
+      CodeListConfig(BC12, SEED, "LanguageCode"),
+      CodeListConfig(BC15, SEED, "EventTypeCode"),
       CodeListConfig(BC17, SEED, "KindOfPackages"),
+      CodeListConfig(BC22, SEED, "AlertOrRejectionOfMovementReasonCode"),
+      CodeListConfig(BC26, SEED, "ReasonForInterruptionCode"),
+      CodeListConfig(BC34, SEED, "SubmittingPersonCode"),
       CodeListConfig(BC35, SEED, "TransportUnitCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
       CodeListConfig(BC37, SEED, "CnCode"),
+      CodeListConfig(BC40, SEED, "WineGrowingZoneCode"),
       CodeListConfig(BC41, SEED, "WineOperationCode"),
+      CodeListConfig(BC43, SEED, "CancellationReasonCode"),
       CodeListConfig(BC66, SEED, "ExciseProductsCategoryCode"),
       CodeListConfig(BC106, SEED, "DocumentType"),
       CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode")
