@@ -20,24 +20,84 @@ import play.api.libs.json.Format
 import play.api.mvc.PathBindable
 
 enum CodeListCode(val code: String) {
+  // BC01 (Evidence Types)
+  case BC01 extends CodeListCode("BC01")
+  // BC03 (Reasons for action not possible)
+  case BC03 extends CodeListCode("BC03")
   // BC08 (Country)
-  case BC08                               extends CodeListCode("BC08")
+  case BC08 extends CodeListCode("BC08")
+  // BC09 (Refusal reasons)
+  case BC09 extends CodeListCode("BC09")
+  // BC11 (National Administrations)
+  case BC11 extends CodeListCode("BC11")
+  // BC12 (Language Codes)
+  case BC12 extends CodeListCode("BC12")
+  // BC15 (Event Types)
+  case BC15 extends CodeListCode("BC15")
+  // BC17 (Packaging Types)
+  case BC17 extends CodeListCode("BC17")
+  // BC22 (Alert or rejection of movement reasons)
+  case BC22 extends CodeListCode("BC22")
+  // BC26 (Reasons for interruption)
+  case BC26 extends CodeListCode("BC26")
+  // BC34 (Event submitting persons)
+  case BC34 extends CodeListCode("BC34")
+  // BC35 (Transport Units)
+  case BC35 extends CodeListCode("BC35")
   // BC36 (Excise Products)
-  case BC36                               extends CodeListCode("BC36")
-  // BC66 (Excise Products Category)
-  case BC66                               extends CodeListCode("BC66")
+  case BC36 extends CodeListCode("BC36")
+  // BC37 (CN Codes)
+  case BC37 extends CodeListCode("BC37")
+  // BC40 (Wine growing zones)
+  case BC40 extends CodeListCode("BC40")
+  // BC41 (Wine Operations)
+  case BC41 extends CodeListCode("BC41")
+  // BC43 (Cancellation reasons)
+  case BC43 extends CodeListCode("BC43")
+  // BC66 (Excise Product Categories)
+  case BC66 extends CodeListCode("BC66")
+  // BC106 (Document Types)
+  case BC106 extends CodeListCode("BC106")
+  // BC109 (National Administration Degrees Plato)
+  case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
-  case CL141                              extends CodeListCode("CL141")
+  case CL141 extends CodeListCode("CL141")
   // CL239 (Additional Information)
-  case CL239                              extends CodeListCode("CL239")
+  case CL239 extends CodeListCode("CL239")
   // CL141 (Additional Reference)
-  case CL380                              extends CodeListCode("CL380")
+  case CL380 extends CodeListCode("CL380")
   // Unknown codelist code
   case Unknown(override val code: String) extends CodeListCode(code)
 }
 
 object CodeListCode {
-  private val values: Set[CodeListCode]        = Set(BC08, BC36, BC66, CL141, CL239, CL380)
+  private val values: Set[CodeListCode] =
+    Set(
+      BC01,
+      BC03,
+      BC08,
+      BC09,
+      BC11,
+      BC12,
+      BC15,
+      BC17,
+      BC22,
+      BC26,
+      BC34,
+      BC35,
+      BC36,
+      BC37,
+      BC40,
+      BC41,
+      BC43,
+      BC66,
+      BC106,
+      BC109,
+      CL141,
+      CL239,
+      CL380
+    )
+
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap
 
   def fromString(code: String): CodeListCode = codes.getOrElse(code, Unknown(code))

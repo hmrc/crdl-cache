@@ -20,7 +20,7 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.Configuration
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, CL239, CL380, Unknown}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.*
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
 
 import java.time.LocalDate
@@ -40,9 +40,9 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-offices.schedule"                            -> "*/10 * * * * ?",
         "import-codelists.last-updated-date.default"         -> "2025-05-29",
         "import-codelists.codelists" -> List(
-          Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
-          Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode"),
-          Map("code" -> "BC17", "origin" -> "SEED", "keyProperty" -> "KindOfPackages")
+          Map("code" -> "BC08", "origin"  -> "SEED", "keyProperty"  -> "CountryCode"),
+          Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode"),
+          Map("code" -> "CL218", "origin" -> "CSRD2", "keyProperty" -> "TransportModeCode")
         )
       )
     )
@@ -61,7 +61,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
-      CodeListConfig(Unknown("BC17"), SEED, "KindOfPackages")
+      CodeListConfig(Unknown("CL218"), CSRD2, "TransportModeCode")
     )
   }
 
@@ -79,9 +79,26 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCodeListsSchedule mustBe "0 0 4 * * ?"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
     appConfig.codeListConfigs mustBe List(
+      CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
+      CodeListConfig(BC03, SEED, "AcoActionNotPossibleReasonCode"),
       CodeListConfig(BC08, SEED, "CountryCode"),
+      CodeListConfig(BC09, SEED, "RefusalReasonCode"),
+      CodeListConfig(BC11, SEED, "NationalAdministrationCode"),
+      CodeListConfig(BC12, SEED, "LanguageCode"),
+      CodeListConfig(BC15, SEED, "EventTypeCode"),
+      CodeListConfig(BC17, SEED, "KindOfPackages"),
+      CodeListConfig(BC22, SEED, "AlertOrRejectionOfMovementReasonCode"),
+      CodeListConfig(BC26, SEED, "ReasonForInterruptionCode"),
+      CodeListConfig(BC34, SEED, "SubmittingPersonCode"),
+      CodeListConfig(BC35, SEED, "TransportUnitCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
+      CodeListConfig(BC37, SEED, "CnCode"),
+      CodeListConfig(BC40, SEED, "WineGrowingZoneCode"),
+      CodeListConfig(BC41, SEED, "WineOperationCode"),
+      CodeListConfig(BC43, SEED, "CancellationReasonCode"),
       CodeListConfig(BC66, SEED, "ExciseProductsCategoryCode"),
+      CodeListConfig(BC106, SEED, "DocumentType"),
+      CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode"),
       CodeListConfig(CL239, CSRD2, "AdditionalInformationCode"),
       CodeListConfig(CL380, CSRD2, "DocumentType")
     )
