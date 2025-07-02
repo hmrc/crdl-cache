@@ -152,7 +152,7 @@ class CustomsOfficeListsRepositorySpec
   val invalidatedoffice = CustomsOffice(
     "IT314102",
     Instant.parse("2025-03-22T00:00:00Z"),
-    Some(Instant.parse("2026-05-22T00:00:00Z")),
+    Some(Instant.parse("2025-05-22T00:00:00Z")),
     Some("ITP00023"),
     Some("IT314102"),
     Some("IT314102"),
@@ -292,7 +292,9 @@ class CustomsOfficeListsRepositorySpec
     )
   )
 
-  private val customsOffices = Seq(DK003102, invalidatedoffice)
+  val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z") )
+
+  private val customsOffices = Seq(DK003102, invalidatedoffice, postDatedOffice)
 
   "CustomsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers" should "return active offices present in the database" in withCustomsOfficeEntries(
     customsOffices
@@ -365,11 +367,11 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { session =>
     for {
-      _ <- repository.executeInstructions(session, List(UpsertCustomsOffice(newOffice)))
-      office <- repository.collection
+      _ <- repository.executeInstructions(session, List(UpsertCustomsOffice(newOffice), UpsertCustomsOffice(postDatedOffice)))
+      offices <- repository.collection
         .find(session, Filters.equal("referenceNumber", "IT223101"))
         .toFuture()
-    } yield office mustBe Seq(newOffice)
+    } yield offices mustBe Seq(newOffice.copy(activeTo = Some(Instant.parse("2026-05-01T00:00:00Z"))), postDatedOffice)
   }
 
   it should "replace existing offices with same active from date" in withCustomsOfficeEntries(
@@ -424,5 +426,22 @@ class CustomsOfficeListsRepositorySpec
 
       )
     }.futureValue
+  }
+
+  "CustomsOfficeLists.fetchCustomsOfficeLists" should "return the customs office list whose activeFrom date is before the requested date" in withCustomsOfficeEntries(customsOffices) {
+    _ =>
+     repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z")).map(_ must contain(DK003102))
+  }
+
+  it should "not return offices that have been superseded" in withCustomsOfficeEntries(customsOffices){
+    _ => repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z")).map(_ mustNot contain(invalidatedoffice))
+  }
+
+  it should "not return offices that are not yet active" in withCustomsOfficeEntries(customsOffices) {
+    _ => repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z")).map(_ mustNot contain(postDatedOffice))
+  }
+
+  it should "return offices that have been invalidated if the invalidation date is in the future" in withCustomsOfficeEntries(customsOffices) {
+    _ => repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-04-05T00:00:00Z")).map(_ must contain(invalidatedoffice))
   }
 }
