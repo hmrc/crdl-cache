@@ -25,12 +25,14 @@ tags:
       
       For example, entries in the excise products codelist (BC36) contain properties describing the excise product category
       they belong to, and applicability flags describing which kinds of excise information apply to that particular product.
-  - name: CustomsOfficeLists
+  - name: CustomsOffices
+    x-displayName: Customs Offices
+    description: |
       These endpoints provide operations for working with customs office lists.
       
       Customs office lists provide information about offices like their address, contact details, schedule, etc. Each customs office has a unique reference number.
     
-      Most of the fields are optional for the response, only a few are mandatory like referenceNumber, activeFrom, countryCode, postalCode, traderDedicated, customsOfficeDetails and CustomsOfficeTimetable details
+      Most of the fields are optional for the response, only a few are mandatory like referenceNumber, activeFrom, countryCode, postalCode, traderDedicated, customsOfficeDetails and CustomsOfficeTimetable details.
 
 components:
   schemas:
@@ -63,25 +65,25 @@ components:
           value: Bermuda
           properties:
             actionIdentification: "824"
-    CustomsOfficeList:
+    CustomsOffice:
       type: object
       x-tags:
-        - CustomsOfficeLists
+        - CustomsOffices
       required:
         - referenceNumber
         - activeFrom
         - countryCode
         - postalCode
         - traderDedicated
-        - customsOfficeLsd
-        - customsOfficeTimetable
-      additionalProperties: true #need any more structure?
+        - customsOfficeLsd #add a separate sub schema for this
+        - customsOfficeTimetable #add a separate sub schema for this
+      additionalProperties: false
       properties:
         referenceNumber:
           type: string
           description: The unique reference number for a customs office.
         activeFrom:
-          type: string #what should the datatype be?
+          type: string
           format: date-time
           description: The time from which the current office is active.
         countryCode:
@@ -91,15 +93,15 @@ components:
           type: string
           description: The postal code for the customs office.
         traderDedicated:
-          type: boolean #datatype represented correctly?
-          description: Boolean flag for whether there is a dedicated trader #description accurate?
+          type: boolean
+          description: Boolean flag for whether there is a dedicated trader
         customsOfficeLsd:
           type: object
           description: Additional customs office details like name, city, street number, etc
-          patternProperties: #okay?
+          patternProperties: #change this
             "Flag$":
               type: boolean
-          additionalProperties: #okay?
+          additionalProperties: #change this
             type: [ "string", "null", object ]
       examples:
         - referenceNumber: IT223100
@@ -108,11 +110,11 @@ components:
           postalCode: 40121
           traderDedicated: false
           customsOfficeLsd:
-            customsOfficeUsualName: "EMILIA 1 BOLOGNA" #do the values have to be string here
+            customsOfficeUsualName: "EMILIA 1 BOLOGNA"
             languageCode: "IT"
             city: "BOLOGNA"
             prefixSuffixFlag: false
-            prefixSuffixLevel: "A" #how to represent optional values
+            prefixSuffixLevel: "A" #deal with it in the schema
             spaceToAdd: true
             streetAndNumber:  "VIALE PIETRAMELLARA, 1/2"
           customsOfficeTimetable:
@@ -308,20 +310,20 @@ paths:
 
         400:
           $ref: "#/components/responses/badRequest"
-  /lists/customs-office:
+  /offices:
     get:
       summary: Fetch Customs Office Lists
       description: |
         This endpoint is used to fetch customs office lists.
       tags:
-        - CustomsOfficeLists
+        - CustomsOffices
       parameters:
         - name: activeAt
           in: path
           description: The timestamp at which we want to fetch the customs office lists.
           required: false
           schema:
-            type: string #is this right
+            type: string
             format: date-time
             example: "2025-06-05T00:00:00Z"
             examples:
@@ -336,7 +338,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CustomsOfficeList"
+                  $ref: "#/components/schemas/CustomsOffice"
                 examples:
                   - - referenceNumber: IT223100
                       activeFrom: 2025-05-01T00:00:00Z
@@ -344,11 +346,11 @@ paths:
                       postalCode: 40121
                       traderDedicated: false
                       customsOfficeLsd:
-                      customsOfficeUsualName: "EMILIA 1 BOLOGNA" #do the values have to be string here
+                      customsOfficeUsualName: "EMILIA 1 BOLOGNA"
                       languageCode: "IT"
                       city: "BOLOGNA"
                       prefixSuffixFlag: false
-                      prefixSuffixLevel: "A" #how to represent optional values
+                      prefixSuffixLevel: "A"
                       spaceToAdd: true
                       streetAndNumber: "VIALE PIETRAMELLARA, 1/2"
                       customsOfficeTimetable:
