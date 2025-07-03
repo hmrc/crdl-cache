@@ -114,5 +114,10 @@ class ImportCustomsOfficesListJob @Inject() (
   }
 
   def execute(context: JobExecutionContext): Unit =
-    Await.result(importCustomsOfficeLists(), Duration.Inf)
+    Await.result(
+      withLock(importCustomsOfficeLists()).map {
+        _.getOrElse { logger.info("Import Customs offices job lock could not be obtained") }
+      },
+      Duration.Inf
+    )
 }
