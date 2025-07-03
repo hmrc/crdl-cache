@@ -264,7 +264,7 @@ class ImportCorrespondenceListsJobSpec
     verify(clientSession, times(1)).commitTransaction()
   }
 
-  it should "skip the import process when later data already exists" in {
+  it should "skip the import process when data has been imported before" in {
     when(lastUpdatedRepository.fetchLastUpdated(any()))
       .thenReturn(Future.successful(Some(LastUpdated(E200, 1, fixedInstant))))
 

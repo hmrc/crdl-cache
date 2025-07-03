@@ -93,21 +93,16 @@ class ImportCorrespondenceListsJob @Inject() (
     )
 
     newEntry.operation match {
-      case Some(Create)     => UpsertEntry(updatedEntry)
-      case Some(Update)     => UpsertEntry(updatedEntry)
-      case Some(Invalidate) => InvalidateEntry(updatedEntry)
-      case Some(Delete)     => InvalidateEntry(updatedEntry)
-      case None             => UpsertEntry(updatedEntry)
+      case Some(Create | Update)     => UpsertEntry(updatedEntry)
+      case Some(Invalidate | Delete) => InvalidateEntry(updatedEntry)
+      case None                      => UpsertEntry(updatedEntry)
     }
   }
 
+  // TODO: Remove this logic once DPS INC3142610 is resolved
   private[schedulers] def importStaticData(): Future[Unit] =
     lastUpdatedRepository.fetchLastUpdated(E200).flatMap { lastUpdated =>
-      val hasLaterSnapshots = lastUpdated
-        .map(_.lastUpdated)
-        .exists(_.isAfter(SeedExtractDate))
-
-      if (hasLaterSnapshots) {
+      if (lastUpdated.isDefined) {
         logger.info(s"Skipping static data import for codelist ${E200.code}")
         Future.unit
       } else {
@@ -129,10 +124,11 @@ class ImportCorrespondenceListsJob @Inject() (
       }
     }
 
+  // TODO: Remove this override once DPS INC3142610 is resolved
   override def importCodeLists(): Future[Unit] = {
     val importStaticLists = Source.future(importStaticData())
 
-    val importCorrespondenceLists = Source(appConfig.correspondenceListConfigs)
+    val importCorrespondenceLists = Source(listConfigs)
       .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
       .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
 

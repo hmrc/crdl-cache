@@ -58,12 +58,12 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val correspondenceListConfigs: List[CorrespondenceListConfig] =
     config
       .get[Seq[Config]]("import-correspondence-lists.correspondence-lists")
-      .map { codeListConfig =>
+      .map { correspondenceListConfig =>
         CorrespondenceListConfig(
-          CodeListCode.fromString(codeListConfig.getString("code")),
-          CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-          codeListConfig.getString("keyProperty"),
-          codeListConfig.getString("valueProperty")
+          CodeListCode.fromString(correspondenceListConfig.getString("code")),
+          CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
+          correspondenceListConfig.getString("keyProperty"),
+          correspondenceListConfig.getString("valueProperty")
         )
       }
       .toList

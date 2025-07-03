@@ -78,11 +78,9 @@ class ImportStandardCodeListsJob @Inject() (
     )
 
     newEntry.operation match {
-      case Some(Create)     => UpsertEntry(updatedEntry)
-      case Some(Update)     => UpsertEntry(updatedEntry)
-      case Some(Invalidate) => InvalidateEntry(updatedEntry)
-      case Some(Delete)     => InvalidateEntry(updatedEntry)
-      case None             => UpsertEntry(updatedEntry)
+      case Some(Create | Update)     => UpsertEntry(updatedEntry)
+      case Some(Invalidate | Delete) => InvalidateEntry(updatedEntry)
+      case None                      => UpsertEntry(updatedEntry)
     }
   }
 }
