@@ -75,8 +75,9 @@ components:
         - countryCode
         - postalCode
         - traderDedicated
-        - customsOfficeLsd #add a separate sub schema for this
-        - customsOfficeTimetable #add a separate sub schema for this
+        - customsOfficeSpecificNotesCodes
+        - customsOfficeLsd
+        - customsOfficeTimetable
       additionalProperties: false
       properties:
         referenceNumber:
@@ -86,50 +87,225 @@ components:
           type: string
           format: date-time
           description: The time from which the current office is active.
+        activeTo:
+          type: string
+          format: date-time
+          description: The time until which the office is active.
+        referenceNumberMainOffice:
+          type: string
+          description: The main office reference number.
+        referenceNumberHigherAuthority:
+          type: string
+          description: The higher authority office reference number.
+        referenceNumberCompetentAuthorityOfEnquiry:
+          type: string
+          description: The competent authority of enquiry office reference number.
+        referenceNumberCompetentAuthorityOfRecovery:
+          type: string
+          description: The competent authority of recovery office reference number.
+        referenceNumberTakeover:
+          type: string
+          description: The takeover reference number.
         countryCode:
           type: string
           description: The country code for the customs office.
+        emailAddress:
+          type: string
+          description: The email address of the office.
+        unLocodeId:
+          type: string
+          description: ID used to identify locations used in trade and transport.
+        nctsEntryDate:
+          type: date
+          description: Date of entry into NCTS.
+        nearestOffice:
+          type: string
+          description: Nearest office reference number.
         postalCode:
           type: string
           description: The postal code for the customs office.
+        phoneNumber:
+          type: string
+          description: Contact number.
+        faxNumber:
+          type: string
+          description: Fax number.
+        telexNumber:
+          type: string
+          description: Telex number.
+        geoInfoCode:
+          type: string
+          description: Geo information code.
+        regionCode:
+          type: string
+          description: Region code.
         traderDedicated:
           type: boolean
-          description: Boolean flag for whether there is a dedicated trader
+          description: Boolean flag for whether there is a dedicated trader.
+        dedicatedTraderLanguageCode:
+          type: string
+          description: Dedicated trader language code.
+        dedicatedTraderName:
+          type: string
+          description: Dedicated trader name.
+        customsOfficeSpecificNotesCodes:
+          type: array
+          items:
+            type: string
+          description: A list of specific notes codes.
         customsOfficeLsd:
-          type: object
-          description: Additional customs office details like name, city, street number, etc
-          patternProperties: #change this
-            "Flag$":
-              type: boolean
-          additionalProperties: #change this
-            type: [ "string", "null", object ]
+          $ref: "#/components/schemas/customsOfficeLsd"
+        customsOfficeTimetable:
+          $ref: "#/components/schemas/customsOfficeTimetable"
       examples:
-        - referenceNumber: IT223100
-          activeFrom: 2025-05-01T00:00:00Z
-          countryCode: IT
+        - referenceNumber: MK002041
+          activeFrom: 2024-11-21T00:00:00Z
+          referenceNumberMainOffice: MK002000
+          referenceNumberHigherAuthority: MK002000
+          referenceNumberCompetentAuthorityOfEnquiry: MK009000
+          referenceNumberCompetentAuthorityOfRecovery: MK009000
+          referenceNumberTakeover: MK002031
+          countryCode: MK
+          emailAddress: test@customs.gov.mk
+          unLocodeId: PLN
+          nctsEntryDate: 2015-07-01
+          nearestOffice: MK002031
           postalCode: 40121
+          phoneNumber: 0038931800060
+          faxNumber: NA #good example?
+          geoInfoCode: MK/RS
           traderDedicated: false
+          customsOfficeSpecificNotesCodes: []
           customsOfficeLsd:
-            customsOfficeUsualName: "EMILIA 1 BOLOGNA"
-            languageCode: "IT"
-            city: "BOLOGNA"
+            customsOfficeUsualName: Customs Office Pelince
+            languageCode: EN
+            city: Pelince
             prefixSuffixFlag: false
-            prefixSuffixLevel: "A" #deal with it in the schema
-            spaceToAdd: true
-            streetAndNumber:  "VIALE PIETRAMELLARA, 1/2"
+            prefixSuffixLevel: A
+            spaceToAdd: false
+            streetAndNumber:  BP Pelince
           customsOfficeTimetable:
-            seasonCode: "1"
-            seasonName: "ALL YEAR"
-            seasonStartDate: "2018-01-01"
-            seasonEndDate: "2099-12-31"
+            seasonCode: 1
+            seasonName: ALL YEAR
+            seasonStartDate: 2019-01-01
+            seasonEndDate: 2019-12-31
             customsOfficeTimetableLine:
-              dayInTheWeekBeginDay: "1"
-              openingHoursTimeFirstPeriodFrom: "0800"
-              openingHoursTimeFirstPeriodTo: "1800"
-              dayInTheWeekEndDay: "6"
-              customsOfficeRoleTrafficCompetence:
-                roleName: "EXC"
-                trafficType: "R"
+              - dayInTheWeekBeginDay: 1
+                openingHoursTimeFirstPeriodFrom: 0001
+                openingHoursTimeFirstPeriodTo: 2359
+                dayInTheWeekEndDay: 7
+                customsOfficeRoleTrafficCompetence:
+                 - roleName: TRA
+                   trafficType: R
+    customsOfficeLsd:
+      type: object
+      x-tags:
+        - customsOfficeLsd
+      required:
+        - customsOfficeUsualName
+        - languageCode
+        - city
+        - prefixSuffixFlag
+        - spaceToAdd
+        - streetAndNumber
+      additionalProperties: false
+      properties:
+        customsOfficeUsualName:
+          type: string
+          description: The customs office name.
+        languageCode:
+          type: string
+          description: The language code in which the details are described.
+        city:
+          type: string
+          description: The city name.
+        prefixSuffixFlag:
+          type: boolean
+          description: A flag to identify whether it has a prefix or suffix #need to confirm what true, false means
+        prefixSuffixLevel:
+          type: string
+          description: The position where affix are added to the office detail to modify it's meaning.
+        prefixSuffixName:
+          type: string
+          description: The actual prefix or suffix.
+        spaceToAdd:
+          type: boolean
+          description: A flag to determine whether there needs to be a space added.
+        streetAndNumber:
+          type: string
+          description: The street name and number of the office.
+    customsOfficeTimetable:
+      type: object
+      x-tags:
+        - customsOfficeTimetable
+      required:
+        - seasonCode
+        - seasonStartDate
+        - seasonEndDate
+        - customsOfficeTimetableLine
+      additionalProperties: false
+      properties:
+        seasonCode:
+          type: integer
+          description: They are integer values for season code.
+        seasonName:
+          type: string
+          description: The office availability season name.
+        seasonStartDate:
+          type: date
+          description: The season start date.
+        seasonEndDate:
+          type: date
+          description: The season end date.
+        customsOfficeTimetableLine:
+          $ref: "#/components/schemas/customsOfficeTimetableLine"
+    customsOfficeTimetableLine:
+      type: object
+      x-tags:
+        - customsOfficeTimetableLine
+      required:
+        - dayInTheWeekBeginDay
+        - openingHoursTimeFirstPeriodFrom
+        - openingHoursTimeFirstPeriodTo
+        - dayInTheWeekEndDay
+        - customsOfficeRoleTrafficCompetence
+      additionalProperties: false
+      properties:
+        dayInTheWeekBeginDay:
+          type: integer
+          description: The day in the week when the office starts.
+        openingHoursTimeFirstPeriodFrom:
+          type: string
+          description: The time at which the office opens.
+        openingHoursTimeFirstPeriodTo:
+          type: string
+          description: The time at which the office closes.
+        dayInTheWeekEndDay:
+          type: integer
+          description: The day in the week when the office ends.
+        openingHoursTimeSecondPeriodFrom:
+          type: string
+          description: The second period start time.
+        openingHoursTimeSecondPeriodTo:
+          type: string
+          description: The second period end time.
+        customsOfficeRoleTrafficCompetence:
+          $ref: "#/components/schemas/customsOfficeRoleTrafficCompetence"
+    customsOfficeRoleTrafficCompetence:
+      type: object
+      x-tags:
+        - customsOfficeRoleTrafficCompetence
+      required:
+        - roleName
+        - trafficType
+      additionalProperties: false
+      properties:
+        roleName:
+          type: string
+          description: Role name
+        trafficType:
+        type: string
+        description: Type of traffic.
 
   responses:
     badRequest:
@@ -325,7 +501,7 @@ paths:
           schema:
             type: string
             format: date-time
-            example: "2025-06-05T00:00:00Z"
+            example: 2025-06-05T00:00:00Z
             examples:
               - 2025-06-05T00:00:00Z
               - 2026-06-05T12:34:56Z
@@ -342,31 +518,81 @@ paths:
                 examples:
                   - - referenceNumber: IT223100
                       activeFrom: 2025-05-01T00:00:00Z
+                      activeTo: 2027-05-29T00:00:00Z
+                      referenceNumberHigherAuthority: ITP00002
                       countryCode: IT
+                      emailAddress: test@adm.gov.it
+                      nctsEntryDate : 2025-05-01
                       postalCode: 40121
+                      phoneNumber: 0039 0515283611
+                      faxNumber: 0039 0515283622
+                      geoInfoCode: Q
                       traderDedicated: false
+                      dedicatedTraderLanguageCode: IT
+                      customsOfficeSpecificNotesCodes: []
                       customsOfficeLsd:
-                      customsOfficeUsualName: "EMILIA 1 BOLOGNA"
-                      languageCode: "IT"
-                      city: "BOLOGNA"
-                      prefixSuffixFlag: false
-                      prefixSuffixLevel: "A"
-                      spaceToAdd: true
-                      streetAndNumber: "VIALE PIETRAMELLARA, 1/2"
+                        customsOfficeUsualName: EMILIA 1 BOLOGNA
+                        languageCode: IT
+                        city: BOLOGNA
+                        prefixSuffixFlag: false
+                        prefixSuffixLevel: A
+                        spaceToAdd: true
+                        streetAndNumber: VIALE PIETRAMELLARA, 1/2
                       customsOfficeTimetable:
-                      seasonCode: "1"
-                      seasonName: "ALL YEAR"
-                      seasonStartDate: "2018-01-01"
-                      seasonEndDate: "2099-12-31"
-                      customsOfficeTimetableLine:
-                      dayInTheWeekBeginDay: "1"
-                      openingHoursTimeFirstPeriodFrom: "0800"
-                      openingHoursTimeFirstPeriodTo: "1800"
-                      dayInTheWeekEndDay: "6"
-                      customsOfficeRoleTrafficCompetence:
-                      roleName: "EXC"
-                      trafficType: "R"
-                      #need more examples?
+                        seasonCode: 1
+                        seasonName: ALL YEAR
+                        seasonStartDate: 2018-01-01
+                        seasonEndDate: 2099-12-31
+                        customsOfficeTimetableLine:
+                          - dayInTheWeekBeginDay: 1
+                            openingHoursTimeFirstPeriodFrom: 0800
+                            openingHoursTimeFirstPeriodTo: 1800
+                            dayInTheWeekEndDay: 6
+                            customsOfficeRoleTrafficCompetence:
+                             - roleName: EXC
+                               trafficType: R
+                    - referenceNumber: LV000724
+                      activeFrom: 2024-06-07T00:00:00Z
+                      referenceNumberMainOffice: LV002600
+                      referenceNumberHigherAuthority: LV009999
+                      referenceNumberCompetentAuthorityOfEnquiry: LV000724
+                      referenceNumberCompetentAuthorityOfRecovery: LV009999
+                      countryCode: LV
+                      emailAddress: test@vid.gov.lv
+                      nctsEntryDate: 2004-05-01
+                      postalCode: LV-5717
+                      phoneNumber: +371 67123127
+                      telexNumber: 3726762999
+                      geoInfoCode: LV/RU
+                      regionCode: CFU
+                      traderDedicated: false
+                      customsOfficeSpecificNotesCodes:
+                        - SN0033
+                        - SN0032
+                      customsOfficeLsd:
+                        customsOfficeUsualName: KĀRSAVAS MKP"
+                        languageCode: LV
+                        city: Kārsavas nov.
+                        prefixSuffixFlag: false
+                        spaceToAdd: true
+                        streetAndNumber: Bozova, Malnavas pag.
+                      customsOfficeTimetable:
+                        seasonCode: 1
+                        seasonName: all year
+                        seasonStartDate: 2018-01-01
+                        seasonEndDate: 2099-12-31
+                        customsOfficeTimetableLine:
+                          - dayInTheWeekBeginDay: 1
+                            openingHoursTimeFirstPeriodFrom: 0800
+                            openingHoursTimeFirstPeriodTo: 1200
+                            dayInTheWeekEndDay: 7
+                            openingHoursTimeSecondPeriodFrom: 1330
+                            openingHoursTimeSecondPeriodTo: 1730
+                            customsOfficeRoleTrafficCompetence:
+                              - roleName: DEP
+                                trafficType: V
+                              - roleName: PCI
+                                trafficType: V
         400:
           $ref: "#/components/responses/badRequest"
 

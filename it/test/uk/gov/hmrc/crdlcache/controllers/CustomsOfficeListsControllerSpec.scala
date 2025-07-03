@@ -248,7 +248,7 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
     when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant))).thenReturn(Future.successful(office))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/lists/customs-office")
+      .get(url"http://localhost:$port/crdl-cache/offices")
       .execute[HttpResponse]
       .futureValue
 
@@ -259,7 +259,7 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
     when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant))).thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/lists/customs-office")
+      .get(url"http://localhost:$port/crdl-cache/offices")
       .execute[HttpResponse]
       .futureValue
 
@@ -270,7 +270,7 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
   it should "return 400 Bad Request when the user provides an invalid activeAt timestamp" in {
     val response =
       httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/lists/customs-office?activeAt=2025-06-05")
+        .get(url"http://localhost:$port/crdl-cache/offices?activeAt=2025-06-05")
         .execute[HttpResponse]
         .futureValue
 
@@ -285,7 +285,7 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
 
     val response =
       httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/lists/customs-office")
+        .get(url"http://localhost:$port/crdl-cache/offices")
         .execute[HttpResponse]
         .futureValue
 
