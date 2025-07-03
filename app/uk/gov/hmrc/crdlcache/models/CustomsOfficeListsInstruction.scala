@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.col
-import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.dps.Relation
+package uk.gov.hmrc.crdlcache.models
 
-case class CustomsOfficeListResponse(elements: List[DpsCustomsOffice], links: List[Relation])
+import java.time.Instant
 
-object CustomsOfficeListResponse {
-  given Reads[CustomsOfficeListResponse] = Json.reads[CustomsOfficeListResponse]
+enum CustomsOfficeListsInstruction {
+  case UpsertCustomsOffice(customsOffice: CustomsOffice)
+  case RecordMissingCustomsOffice(referenceNumber: String, removedAt: Instant)
+
+  def activeFrom: Instant = this match {
+    case CustomsOfficeListsInstruction.UpsertCustomsOffice(customsOffice) =>
+      customsOffice.activeFrom
+    case CustomsOfficeListsInstruction.RecordMissingCustomsOffice(_, removedAt) => removedAt
+  }
 }
