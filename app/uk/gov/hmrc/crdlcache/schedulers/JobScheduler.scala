@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 import org.quartz.JobBuilder.newJob
 import org.quartz.TriggerBuilder.newTrigger
 import org.quartz.impl.StdSchedulerFactory
-import org.quartz.{CronScheduleBuilder, Scheduler, SchedulerFactory}
+import org.quartz.{CronScheduleBuilder, Scheduler, SchedulerFactory, Trigger}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.crdlcache.config.AppConfig
@@ -64,16 +64,23 @@ class JobScheduler @Inject() (
     .withSchedule(correspondenceListsJobSchedule)
     .build()
 
+  private def getJobStatus(trigger: Trigger): JobStatus =
+    JobStatus(quartz.getTriggerState(trigger.getKey))
+
   def startCodeListImport(): Unit = {
     quartz.triggerJob(codeListsJobDetail.getKey)
   }
 
   def codeListImportStatus(): JobStatus = {
-    JobStatus(quartz.getTriggerState(codeListsJobTrigger.getKey))
+    getJobStatus(codeListsJobTrigger)
   }
 
   def startCorrespondenceListImport(): Unit = {
     quartz.triggerJob(correspondenceListsJobDetail.getKey)
+  }
+
+  def correspondenceListImportStatus(): JobStatus = {
+    getJobStatus(correspondenceListsJobTrigger)
   }
 
   private def startScheduler(): Unit = {

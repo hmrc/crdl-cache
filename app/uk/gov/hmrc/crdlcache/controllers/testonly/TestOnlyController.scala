@@ -55,6 +55,10 @@ class TestOnlyController @Inject() (
     Accepted
   }
 
+  def correspondenceListImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.codeListImportStatus()))
+  }
+
   def deleteCodeLists(): Action[AnyContent] = Action.async {
     codeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
