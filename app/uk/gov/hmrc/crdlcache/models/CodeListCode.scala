@@ -54,10 +54,26 @@ enum CodeListCode(val code: String) {
   case BC41 extends CodeListCode("BC41")
   // BC43 (Cancellation reasons)
   case BC43 extends CodeListCode("BC43")
+  // BC46 (Unsatisfactory Reasons)
+  case BC46 extends CodeListCode("BC46")
+  // BC51 (Delay Explanations)
+  case BC51 extends CodeListCode("BC51")
+  // BC52 (Units Of Measure)
+  case BC52 extends CodeListCode("BC52")
+  // BC57 (Request Actions)
+  case BC57 extends CodeListCode("BC57")
+  // BC58 (Reasons For Delayed Result)
+  case BC58 extends CodeListCode("BC58")
   // BC66 (Excise Product Categories)
   case BC66 extends CodeListCode("BC66")
+  // BC67 (Transport Modes)
+  case BC67 extends CodeListCode("BC67")
   // BC106 (Document Types)
   case BC106 extends CodeListCode("BC106")
+  // BC107 (Manual Closure Request Reasons)
+  case BC107 extends CodeListCode("BC107")
+  // BC108 (Manual Closure Rejection Reasons)
+  case BC108 extends CodeListCode("BC108")
   // BC109 (National Administration Degrees Plato)
   case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
@@ -90,8 +106,16 @@ object CodeListCode {
       BC40,
       BC41,
       BC43,
+      BC46,
+      BC51,
+      BC52,
+      BC57,
+      BC58,
       BC66,
+      BC67,
       BC106,
+      BC107,
+      BC108,
       BC109,
       CL141,
       CL239,
