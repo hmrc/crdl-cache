@@ -42,7 +42,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin"  -> "SEED", "keyProperty"  -> "CountryCode"),
           Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode"),
-          Map("code" -> "CL380", "origin" -> "CSRD2", "keyProperty" -> "DocumentType")
+          Map("code" -> "CL218", "origin" -> "CSRD2", "keyProperty" -> "TransportModeCode")
         )
       )
     )
@@ -61,7 +61,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
-      CodeListConfig(Unknown("CL380"), CSRD2, "DocumentType")
+      CodeListConfig(Unknown("CL218"), CSRD2, "TransportModeCode")
     )
   }
 
@@ -106,7 +106,9 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC106, SEED, "DocumentType"),
       CodeListConfig(BC107, SEED, "ManualClosureRequestReasonCode"),
       CodeListConfig(BC108, SEED, "ManualClosureRejectionReasonCode"),
-      CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode")
+      CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode"),
+      CodeListConfig(CL239, CSRD2, "AdditionalInformationCode"),
+      CodeListConfig(CL380, CSRD2, "DocumentType")
     )
   }
 }
