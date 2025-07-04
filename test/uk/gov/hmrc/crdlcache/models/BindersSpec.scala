@@ -143,10 +143,10 @@ class BindersSpec
         "",
         Map(
           "degreePlatoApplicabilityFlag" -> JsTrue,
-          "responsibleDataManager" -> JsNull,
-          "actionIdentification" -> JsString("823"),
-          "unitOfMeasureCode" -> JsNumber(BigDecimal(3)),
-          "exciseProductCategoryCode" -> JsString("W")
+          "responsibleDataManager"       -> JsNull,
+          "actionIdentification"         -> JsString("823"),
+          "unitOfMeasureCode"            -> JsNumber(BigDecimal(3)),
+          "exciseProductCategoryCode"    -> JsString("W")
         )
       )
     }

@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.col
+package uk.gov.hmrc.crdlcache.models.formats
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.Format
 
-case class CustomsOfficeDetail(
-  customsofficeusualname: String,
-  languagecode: String,
-  city: String,
-  prefixsuffixflag: String,
-  prefixsuffixlevel: Option[String],
-  spacetoadd: String,
-  streetandnumber: String
-)
+import java.time.format.DateTimeFormatter
+import java.time.{DayOfWeek, LocalTime}
 
-object CustomsOfficeDetail {
-  given Reads[CustomsOfficeDetail] = Json.reads[CustomsOfficeDetail]
+trait JavaTimeFormats {
+  protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+
+  given Format[DayOfWeek] = Format.of[Int].bimap(DayOfWeek.of, _.getValue)
+
+  given Format[LocalTime] =
+    Format.of[String].bimap(LocalTime.parse(_, timeFormat), timeFormat.format)
+
 }

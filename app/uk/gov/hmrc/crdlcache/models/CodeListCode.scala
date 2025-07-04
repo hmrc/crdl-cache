@@ -77,7 +77,7 @@ enum CodeListCode(val code: String) {
   // BC109 (National Administration Degrees Plato)
   case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
-  case CL141 extends CodeListCode("CL141")
+  case CL141                              extends CodeListCode("CL141")
   // Unknown codelist code
   case Unknown(override val code: String) extends CodeListCode(code)
 }
