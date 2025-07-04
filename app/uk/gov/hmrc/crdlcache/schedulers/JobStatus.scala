@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.schedulers
 
-import com.google.inject.AbstractModule
-import org.quartz.SchedulerFactory
-import org.quartz.impl.StdSchedulerFactory
-import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
+import org.quartz.Trigger.TriggerState
+import play.api.libs.json.{JsString, Json, Writes}
 
-import java.time.Clock
+case class JobStatus(status: TriggerState)
 
-class Module extends AbstractModule {
-
-  override def configure(): Unit = {
-    bind(classOf[AppConfig]).asEagerSingleton()
-    bind(classOf[Clock]).toInstance(Clock.systemUTC())
-    bind(classOf[SchedulerFactory]).toInstance(new StdSchedulerFactory())
-    bind(classOf[JobScheduler]).asEagerSingleton()
+object JobStatus {
+  given Writes[TriggerState] = {
+    case TriggerState.BLOCKED => JsString("RUNNING")
+    case TriggerState.NORMAL  => JsString("IDLE")
+    case other                => JsString(other.toString)
   }
+
+  given Writes[JobStatus] = Json.writes[JobStatus]
 }

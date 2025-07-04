@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 import org.quartz.JobBuilder.newJob
 import org.quartz.TriggerBuilder.newTrigger
 import org.quartz.impl.StdSchedulerFactory
-import org.quartz.{CronScheduleBuilder, Scheduler}
+import org.quartz.{CronScheduleBuilder, Scheduler, SchedulerFactory}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.crdlcache.config.AppConfig
@@ -30,12 +30,13 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class JobScheduler @Inject() (
   lifecycle: ApplicationLifecycle,
+  schedulerFactory: SchedulerFactory,
   jobFactory: ScheduledJobFactory,
   config: AppConfig
 )(using
   ec: ExecutionContext
 ) extends Logging {
-  private val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
+  private val quartz: Scheduler = schedulerFactory.getScheduler
 
   // Import code lists
   private val codeListsJobDetail = newJob(classOf[ImportCodeListsJob])
@@ -52,6 +53,10 @@ class JobScheduler @Inject() (
 
   def startCodeListImport(): Unit = {
     quartz.triggerJob(codeListsJobDetail.getKey)
+  }
+
+  def codeListImportStatus(): JobStatus = {
+    JobStatus(quartz.getTriggerState(codeListsJobTrigger.getKey))
   }
 
   private def startScheduler(): Unit = {
