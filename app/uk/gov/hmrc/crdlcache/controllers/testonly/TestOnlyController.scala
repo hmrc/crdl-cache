@@ -18,6 +18,7 @@ package uk.gov.hmrc.crdlcache.controllers.testonly
 
 import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.repositories.{
   CorrespondenceListsRepository,
@@ -43,6 +44,10 @@ class TestOnlyController @Inject() (
   def importCodeLists(): Action[AnyContent] = Action {
     jobScheduler.startCodeListImport()
     Accepted
+  }
+
+  def codeListImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.codeListImportStatus()))
   }
 
   def importCorrespondenceLists(): Action[AnyContent] = Action {

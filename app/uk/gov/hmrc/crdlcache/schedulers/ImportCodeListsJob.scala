@@ -20,7 +20,7 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervision}
 import org.mongodb.scala.ClientSession
-import org.quartz.{Job, JobExecutionContext}
+import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
 import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
@@ -34,6 +34,7 @@ import java.time.{Clock, ZoneOffset}
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
+@DisallowConcurrentExecution
 abstract class ImportCodeListsJob[K, I](
   val jobName: String,
   val mongoComponent: MongoComponent,
