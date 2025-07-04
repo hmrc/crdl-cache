@@ -18,8 +18,13 @@ package uk.gov.hmrc.crdlcache.controllers
 
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, STANDARD}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
-import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
+import uk.gov.hmrc.crdlcache.repositories.{
+  CorrespondenceListsRepository,
+  LastUpdatedRepository,
+  StandardCodeListsRepository
+}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.{Clock, Instant}
@@ -29,7 +34,8 @@ import scala.concurrent.ExecutionContext
 @Singleton()
 class CodeListsController @Inject() (
   cc: ControllerComponents,
-  codeListsRepository: CodeListsRepository,
+  codeListsRepository: StandardCodeListsRepository,
+  correspondenceListsRepository: CorrespondenceListsRepository,
   lastUpdatedRepository: LastUpdatedRepository,
   clock: Clock
 )(using ec: ExecutionContext)
@@ -41,16 +47,28 @@ class CodeListsController @Inject() (
     filterProperties: Option[Map[String, JsValue]],
     activeAt: Option[Instant]
   ): Action[AnyContent] = Action.async { _ =>
-    codeListsRepository
-      .fetchCodeListEntries(
-        codeListCode,
-        filterKeys,
-        filterProperties,
-        activeAt.getOrElse(clock.instant())
-      )
-      .map { entries =>
-        Ok(Json.toJson(entries))
-      }
+    val codeListEntries = codeListCode.listType match {
+      case STANDARD =>
+        codeListsRepository
+          .fetchEntries(
+            codeListCode,
+            filterKeys,
+            filterProperties,
+            activeAt.getOrElse(clock.instant())
+          )
+      case CORRESPONDENCE =>
+        correspondenceListsRepository
+          .fetchEntries(
+            codeListCode,
+            filterKeys,
+            filterProperties,
+            activeAt.getOrElse(clock.instant())
+          )
+    }
+
+    codeListEntries.map { entries =>
+      Ok(Json.toJson(entries))
+    }
   }
 
   def fetchCodeListVersions: Action[AnyContent] = Action.async { _ =>

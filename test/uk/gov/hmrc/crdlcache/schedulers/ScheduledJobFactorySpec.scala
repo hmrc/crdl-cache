@@ -29,11 +29,11 @@ class ScheduledJobFactorySpec extends AnyFlatSpec with Matchers with MockitoSuga
     val bundle    = mock[TriggerFiredBundle]
     val jobDetail = mock[JobDetail]
     when(bundle.getJobDetail).thenReturn(jobDetail)
-    when(jobDetail.getJobClass).thenReturn(classOf[ImportCodeListsJob])
+    when(jobDetail.getJobClass).thenReturn(classOf[ImportStandardCodeListsJob])
 
     val injector = mock[Injector]
-    val job      = mock[ImportCodeListsJob]
-    when(injector.instanceOf(classOf[ImportCodeListsJob])).thenReturn(job)
+    val job      = mock[ImportStandardCodeListsJob]
+    when(injector.instanceOf(classOf[ImportStandardCodeListsJob])).thenReturn(job)
 
     val scheduler = mock[Scheduler]
     val factory   = new ScheduledJobFactory(injector)

@@ -17,60 +17,65 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
+import org.bson.codecs.Codec
 import org.mongodb.scala.*
 import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, Instruction}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-@Singleton
-class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
+abstract class CodeListsRepository[K, I](
+  val mongoComponent: MongoComponent,
+  collectionName: String,
+  indexes: Seq[IndexModel],
+  extraCodecs: Seq[Codec[?]]
+)(using
   ec: ExecutionContext
 ) extends PlayMongoRepository[CodeListEntry](
     mongoComponent,
-    collectionName = "codelists",
+    collectionName,
     domainFormat = CodeListEntry.mongoFormat,
-    extraCodecs =
-      Codecs.playFormatSumCodecs[JsValue](Format(Reads.JsValueReads, Writes.jsValueWrites)) ++
-        Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
-    indexes = Seq(
-      IndexModel(
-        Indexes.ascending("codeListCode", "key", "activeFrom"),
-        IndexOptions().unique(true)
-      ),
-      IndexModel(
-        Indexes.ascending("activeTo"),
-        IndexOptions().expireAfter(30, TimeUnit.DAYS)
-      )
-    )
+    extraCodecs = extraCodecs,
+    indexes = IndexModel(
+      Indexes.ascending("activeTo"),
+      IndexOptions().expireAfter(30, TimeUnit.DAYS)
+    ) +: indexes
   )
   with Transactions {
 
-  def fetchCodeListEntryKeys(session: ClientSession, code: CodeListCode): Future[Set[String]] =
+  def activationDate(instruction: I): Instant
+
+  def keyOfEntry(codeListEntry: CodeListEntry): K
+
+  def filtersForKey(key: K): Seq[Bson]
+
+  def executeInstruction(session: ClientSession, instruction: I): Future[Unit]
+
+  def executeInstructions(session: ClientSession, instructions: List[I]): Future[Unit] =
+    instructions.sortBy(activationDate).foldLeft(Future.unit) {
+      (previousInstruction, nextInstruction) =>
+        previousInstruction.flatMap(_ => executeInstruction(session, nextInstruction))
+    }
+
+  def fetchEntryKeys(session: ClientSession, code: CodeListCode): Future[Set[K]] =
     collection
-      .find(
-        session,
-        and(
-          equal("codeListCode", code.code),
-          equal("activeTo", null)
-        )
-      )
-      .map(_.key)
-      .toFuture
+      .find(session, and(equal("codeListCode", code.code), equal("activeTo", null)))
+      .map(keyOfEntry)
+      .toFuture()
       .map(_.toSet)
 
-  def fetchCodeListEntries(
+  def fetchEntries(
     code: CodeListCode,
     filterKeys: Option[Set[String]],
     filterProperties: Option[Map[String, JsValue]],
@@ -83,7 +88,11 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
     )
 
     val keyFilters = filterKeys
-      .map(ks => if ks.nonEmpty then List(in("key", ks.toSeq*)) else List.empty)
+      .map { ks =>
+        if ks.nonEmpty
+        then List(in("key", ks.toSeq*))
+        else List.empty
+      }
       .getOrElse(List.empty)
 
     val propertyFilters = filterProperties
@@ -102,10 +111,10 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
       .toFuture()
   }
 
-  private def supersedePreviousEntries(
+  protected def supersedePreviousEntries(
     session: ClientSession,
     codeListCode: CodeListCode,
-    key: String,
+    key: K,
     activeFrom: Instant,
     includeActiveFrom: Boolean
   ): Future[Unit] = {
@@ -113,10 +122,13 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
       .updateMany(
         session,
         and(
-          equal("codeListCode", codeListCode.code),
-          if includeActiveFrom then lte("activeFrom", activeFrom) else lt("activeFrom", activeFrom),
-          equal("key", key),
-          or(equal("activeTo", null), exists("activeTo", false))
+          Seq(
+            equal("codeListCode", codeListCode.code),
+            if includeActiveFrom
+            then lte("activeFrom", activeFrom)
+            else lt("activeFrom", activeFrom),
+            or(equal("activeTo", null), exists("activeTo", false))
+          ) ++ filtersForKey(key)*
         ),
         Updates.set("activeTo", activeFrom)
       )
@@ -127,14 +139,15 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
       }
   }
 
-  private def upsertEntry(session: ClientSession, codeListEntry: CodeListEntry) =
+  protected def upsertEntry(session: ClientSession, codeListEntry: CodeListEntry): Future[Unit] =
     collection
       .replaceOne(
         session,
         and(
-          equal("codeListCode", codeListEntry.codeListCode.code),
-          equal("activeFrom", codeListEntry.activeFrom),
-          equal("key", codeListEntry.key)
+          Seq(
+            equal("codeListCode", codeListEntry.codeListCode.code),
+            equal("activeFrom", codeListEntry.activeFrom)
+          ) ++ filtersForKey(keyOfEntry(codeListEntry))*
         ),
         codeListEntry,
         new ReplaceOptions().upsert(true)
@@ -146,40 +159,4 @@ class CodeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
         else if (result.getModifiedCount == 0 && result.getUpsertedId == BsonNull)
           throw MongoError.NoMatchingDocument
       }
-
-  def executeInstructions(session: ClientSession, instructions: List[Instruction]): Future[Unit] =
-    instructions.sortBy(_.activeFrom).foldLeft(Future.unit) {
-      (previousInstruction, nextInstruction) =>
-        previousInstruction.flatMap { _ =>
-          nextInstruction match {
-            case models.Instruction.UpsertEntry(codeListEntry) =>
-              for {
-                _ <- supersedePreviousEntries(
-                  session,
-                  codeListEntry.codeListCode,
-                  codeListEntry.key,
-                  codeListEntry.activeFrom,
-                  includeActiveFrom = false
-                )
-                _ <- upsertEntry(session, codeListEntry)
-              } yield ()
-            case models.Instruction.InvalidateEntry(codeListEntry) =>
-              supersedePreviousEntries(
-                session,
-                codeListEntry.codeListCode,
-                codeListEntry.key,
-                codeListEntry.activeFrom,
-                includeActiveFrom = true
-              )
-            case models.Instruction.RecordMissingEntry(codeListCode, key, removedAt) =>
-              supersedePreviousEntries(
-                session,
-                codeListCode,
-                key,
-                removedAt,
-                includeActiveFrom = true
-              )
-          }
-        }
-    }
 }
