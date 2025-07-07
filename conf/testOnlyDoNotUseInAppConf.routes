@@ -13,6 +13,7 @@
 ->            /                                         prod.Routes
 ->            /                                         definition.Routes
 
+GET           /crdl-cache/test-only/codelists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.codeListImportStatus()
 POST          /crdl-cache/test-only/codelists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCodeLists()
 DELETE        /crdl-cache/test-only/codelists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCodeLists()
 DELETE        /crdl-cache/test-only/last-updated        uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteLastUpdated()
