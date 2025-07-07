@@ -138,12 +138,6 @@ This endpoint is used to fetch customs office list.
 
   `GET`
 
-* **Path Parameters**
-
-  **Required:**
-
-    * `code: String` - The codelist code, e.g. `BC08`, `BC36`.
-
 * **Query Parameters**
 
   **Optional:**
