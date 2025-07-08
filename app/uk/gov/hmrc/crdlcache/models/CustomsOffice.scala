@@ -88,13 +88,13 @@ object CustomsOffice {
     Json.format[CustomsOffice]
   }
 
-  private val dateFormat1 = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-  private val dateFormat2 = DateTimeFormatter.ofPattern("yyyyMMdd")
+  private val ukLocalDate  = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+  private val basicIsoDate = DateTimeFormatter.BASIC_ISO_DATE
 
   def fromDpsCustomOfficeList(dpsCustomOfficeList: DpsCustomsOffice): CustomsOffice = {
     CustomsOffice(
       dpsCustomOfficeList.referencenumber,
-      parseDateToInstant(dpsCustomOfficeList.rdentrystatus.activefrom, dateFormat1),
+      parseDateToInstant(dpsCustomOfficeList.rdentrystatus.activefrom, ukLocalDate),
       None,
       dpsCustomOfficeList.referencenumbermainoffice,
       dpsCustomOfficeList.referencenumberhigherauthority,
@@ -104,7 +104,7 @@ object CustomsOffice {
       dpsCustomOfficeList.countrycode,
       dpsCustomOfficeList.emailaddress,
       dpsCustomOfficeList.unlocodeid,
-      dpsCustomOfficeList.nctsentrydate.map(parseDate(_, dateFormat2)),
+      dpsCustomOfficeList.nctsentrydate.map(parseDate(_, basicIsoDate)),
       dpsCustomOfficeList.nearestoffice,
       dpsCustomOfficeList.postalcode,
       dpsCustomOfficeList.phonenumber,
@@ -122,7 +122,7 @@ object CustomsOffice {
         dpsCustomOfficeList.customsofficelsd.headOption
           .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
       ),
-      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, dateFormat2)
+      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate)
     )
 
   }

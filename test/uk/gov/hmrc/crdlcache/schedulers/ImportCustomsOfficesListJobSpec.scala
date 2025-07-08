@@ -442,10 +442,10 @@ class ImportCustomsOfficesListJobSpec
       equalTo(clientSession),
       equalTo(
         List(
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.head)),
           UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last))
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.head)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head))
         )
       )
     )
@@ -470,8 +470,8 @@ class ImportCustomsOfficesListJobSpec
     instructions mustBe List(
       RecordMissingCustomsOffice("IT223100", fixedInstant),
       UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last)),
-      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head)),
-      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last))
+      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last)),
+      UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head))
     )
   }
 

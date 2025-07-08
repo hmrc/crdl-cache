@@ -62,19 +62,16 @@ class ImportCustomsOfficesListJob @Inject() (
     logger.info("Importing customs office lists")
     customsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers(session).flatMap {
       existingReferenceNumbers =>
-        val incomingReferenceNumbers = customsOffices
-          .map(_.referenceNumber)
-          .toSet
-        val mergedReferenceNumbers = existingReferenceNumbers.union(incomingReferenceNumbers)
-        val incomingGroupedReferenceNumbers = customsOffices.toSet
-        val instructions                    = List.newBuilder[CustomsOfficeListsInstruction]
+        val incomingCustomsOffices   = customsOffices.groupBy(_.referenceNumber)
+        val incomingReferenceNumbers = incomingCustomsOffices.keySet
+        val mergedReferenceNumbers   = existingReferenceNumbers.union(incomingReferenceNumbers)
+
+        val instructions = List.newBuilder[CustomsOfficeListsInstruction]
 
         for (referenceNumber <- mergedReferenceNumbers) {
 
           val hasExistingOffice = existingReferenceNumbers.contains(referenceNumber)
-          val maybeNewOffice = incomingGroupedReferenceNumbers.find(
-            _.referenceNumber == referenceNumber
-          )
+          val maybeNewOffice    = incomingCustomsOffices.get(referenceNumber).flatMap(_.headOption)
 
           (hasExistingOffice, maybeNewOffice) match {
             // First case is when there may or may not be an existing office with the reference number and new office details are available, we would Upsert.
@@ -117,5 +114,10 @@ class ImportCustomsOfficesListJob @Inject() (
   }
 
   def execute(context: JobExecutionContext): Unit =
-    Await.result(importCustomsOfficeLists(), Duration.Inf)
+    Await.result(
+      withLock(importCustomsOfficeLists()).map {
+        _.getOrElse { logger.info("Import Customs offices job lock could not be obtained") }
+      },
+      Duration.Inf
+    )
 }
