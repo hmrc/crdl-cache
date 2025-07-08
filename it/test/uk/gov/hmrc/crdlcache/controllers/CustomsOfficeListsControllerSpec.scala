@@ -113,13 +113,12 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
         LocalDate.parse("20991231", dateFormat),
         List(
           TimetableLine(
-            Some(DayOfWeek.of(1)),
-            Some(LocalTime.parse("0800", timeFormat)),
-            Some(LocalTime.parse("1600", timeFormat)),
-            Some(DayOfWeek.of(5)),
+            DayOfWeek.of(1),
+            LocalTime.parse("0800", timeFormat),
+            LocalTime.parse("1600", timeFormat),
+            DayOfWeek.of(5),
             None,
             None,
-            Some(
               List(
                 RoleTrafficCompetence("EXL", "P"),
                 RoleTrafficCompetence("EXL", "R"),
@@ -140,7 +139,6 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
               )
             )
           )
-        )
       )
     ))
 
