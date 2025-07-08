@@ -20,39 +20,42 @@ import uk.gov.hmrc.crdlcache.models.RoleTrafficCompetence.fromDpsRoleTrafficComp
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.formats.JavaTimeFormats
+import uk.gov.hmrc.crdlcache.utils.ParserUtils.{parseDayOfWeek, parseTime}
 
 import java.time.{DayOfWeek, LocalTime}
 
 case class TimetableLine(
-  dayInTheWeekBeginDay: Option[DayOfWeek],
-  openingHoursTimeFirstPeriodFrom: Option[LocalTime],
-  openingHoursTimeFirstPeriodTo: Option[LocalTime],
-  dayInTheWeekEndDay: Option[DayOfWeek],
+  dayInTheWeekBeginDay: DayOfWeek,
+  openingHoursTimeFirstPeriodFrom: LocalTime,
+  openingHoursTimeFirstPeriodTo: LocalTime,
+  dayInTheWeekEndDay: DayOfWeek,
   openingHoursTimeSecondPeriodFrom: Option[LocalTime],
   openingHoursTimeSecondPeriodTo: Option[LocalTime],
-  customsOfficeRoleTrafficCompetence: Option[List[RoleTrafficCompetence]]
+  customsOfficeRoleTrafficCompetence: List[RoleTrafficCompetence]
 )
 object TimetableLine extends JavaTimeFormats {
 
   given format: Format[TimetableLine] = Json.format[TimetableLine]
 
-  def fromDpsTimetableLine(timetableLine: DpsTimetableLine): TimetableLine = {
-    TimetableLine(
-      timetableLine.dayintheweekbeginday.map(day =>
-        DayOfWeek.of(day.toInt)
-      ), // setting default values temporarily due to dps data issue
-      timetableLine.openinghourstimefirstperiodfrom.map(
-        LocalTime.parse(_, timeFormat)
-      ), // making optional temporarily
-      timetableLine.openinghourstimefirstperiodto.map(
-        LocalTime.parse(_, timeFormat)
-      ), // making optional temporarily
-      timetableLine.dayintheweekendday.map(day =>
-        DayOfWeek.of(day.toInt)
-      ), // making optional temporarily
-      timetableLine.openinghourstimesecondperiodfrom.map(LocalTime.parse(_, timeFormat)),
-      timetableLine.openinghourstimesecondperiodto.map(LocalTime.parse(_, timeFormat)),
-      timetableLine.customsofficeroletrafficcompetence.map(_.map(fromDpsRoleTrafficCompetence))
-    )
+  def fromDpsTimetableLine(timetableLine: DpsTimetableLine): Option[TimetableLine] = {
+    for {
+      beginDay            <- timetableLine.dayintheweekbeginday
+      endDay              <- timetableLine.dayintheweekendday
+      firstPeriodOpenFrom <- timetableLine.openinghourstimefirstperiodfrom
+      firstPeriodOpenTo   <- timetableLine.openinghourstimefirstperiodto
+      secondPeriodOpenFrom = timetableLine.openinghourstimesecondperiodfrom
+      secondPeriodOpenTo   = timetableLine.openinghourstimesecondperiodto
+      roleTraffic <- timetableLine.customsofficeroletrafficcompetence
+    } yield {
+      TimetableLine(
+        parseDayOfWeek(beginDay),
+        parseTime(firstPeriodOpenFrom, timeFormat),
+        parseTime(firstPeriodOpenTo, timeFormat),
+        parseDayOfWeek(endDay),
+        secondPeriodOpenFrom.map(parseTime(_, timeFormat)),
+        secondPeriodOpenTo.map(parseTime(_, timeFormat)),
+        roleTraffic.map(fromDpsRoleTrafficCompetence)
+      )
+    }
   }
 }

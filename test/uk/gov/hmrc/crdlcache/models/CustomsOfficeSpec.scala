@@ -19,7 +19,11 @@ package uk.gov.hmrc.crdlcache.models
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
+import uk.gov.hmrc.crdlcache.models.dps.col.RDEntryStatus
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
+  CustomsOfficeDetailMissing,
+  InvalidDateFormat
+}
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
@@ -69,31 +73,29 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       LocalDate.parse("20991231", dateFormat),
       List(
         TimetableLine(
-          Some(DayOfWeek.of(1)), // temporary change
-          Some(LocalTime.parse("0800", timeFormat)),
-          Some(LocalTime.parse("1600", timeFormat)),
-          Some(DayOfWeek.of(5)),
+          DayOfWeek.of(1),
+          LocalTime.parse("0800", timeFormat),
+          LocalTime.parse("1600", timeFormat),
+          DayOfWeek.of(5),
           None,
           None,
-          Some(
-            List(
-              RoleTrafficCompetence("EXL", "P"),
-              RoleTrafficCompetence("EXL", "R"),
-              RoleTrafficCompetence("EXP", "P"),
-              RoleTrafficCompetence("EXP", "R"),
-              RoleTrafficCompetence("EXT", "P"),
-              RoleTrafficCompetence("EXT", "R"),
-              RoleTrafficCompetence("PLA", "R"),
-              RoleTrafficCompetence("RFC", "R"),
-              RoleTrafficCompetence("DIS", "N/A"),
-              RoleTrafficCompetence("IPR", "N/A"),
-              RoleTrafficCompetence("ENQ", "P"),
-              RoleTrafficCompetence("ENQ", "R"),
-              RoleTrafficCompetence("ENQ", "N/A"),
-              RoleTrafficCompetence("REC", "P"),
-              RoleTrafficCompetence("REC", "R"),
-              RoleTrafficCompetence("REC", "N/A")
-            )
+          List(
+            RoleTrafficCompetence("EXL", "P"),
+            RoleTrafficCompetence("EXL", "R"),
+            RoleTrafficCompetence("EXP", "P"),
+            RoleTrafficCompetence("EXP", "R"),
+            RoleTrafficCompetence("EXT", "P"),
+            RoleTrafficCompetence("EXT", "R"),
+            RoleTrafficCompetence("PLA", "R"),
+            RoleTrafficCompetence("RFC", "R"),
+            RoleTrafficCompetence("DIS", "N/A"),
+            RoleTrafficCompetence("IPR", "N/A"),
+            RoleTrafficCompetence("ENQ", "P"),
+            RoleTrafficCompetence("ENQ", "R"),
+            RoleTrafficCompetence("ENQ", "N/A"),
+            RoleTrafficCompetence("REC", "P"),
+            RoleTrafficCompetence("REC", "R"),
+            RoleTrafficCompetence("REC", "N/A")
           )
         )
       )
@@ -220,5 +222,14 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
 
   it should "deserialize all properties from Mongo Extended JSON" in {
     Json.fromJson[CustomsOffice](mongoJson)(CustomsOffice.mongoFormat).get mustBe expectedSnapshot
+  }
+
+  it should "throw InvalidDateFormat error when an invalid date is provided the input" in {
+    val invalidDateFormat =
+      the[InvalidDateFormat] thrownBy
+        CustomsOffice.fromDpsCustomOfficeList(
+          inputOffice.copy(rdentrystatus = RDEntryStatus("valid", "xyz"))
+        )
+    invalidDateFormat.invalidDate mustBe "xyz"
   }
 }

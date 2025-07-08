@@ -21,9 +21,10 @@ import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeTimetable.fromDpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOffice
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
+import uk.gov.hmrc.crdlcache.utils.ParserUtils.{parseDate, parseDateToInstant}
 
-import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.format.{DateTimeFormatter}
+import java.time.{Instant, LocalDate}
 
 case class CustomsOffice(
   referenceNumber: String,
@@ -64,13 +65,10 @@ object CustomsOffice {
   private val dateFormat1 = DateTimeFormatter.ofPattern("dd-MM-yyyy")
   private val dateFormat2 = DateTimeFormatter.ofPattern("yyyyMMdd")
 
-  private def parseDate(value: String, dateFormat: DateTimeFormatter) =
-    LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
-
   def fromDpsCustomOfficeList(dpsCustomOfficeList: DpsCustomsOffice): CustomsOffice = {
     CustomsOffice(
       dpsCustomOfficeList.referencenumber,
-      parseDate(dpsCustomOfficeList.rdentrystatus.activefrom, dateFormat1),
+      parseDateToInstant(dpsCustomOfficeList.rdentrystatus.activefrom, dateFormat1),
       None,
       dpsCustomOfficeList.referencenumbermainoffice,
       dpsCustomOfficeList.referencenumberhigherauthority,
@@ -80,7 +78,7 @@ object CustomsOffice {
       dpsCustomOfficeList.countrycode,
       dpsCustomOfficeList.emailaddress,
       dpsCustomOfficeList.unlocodeid,
-      dpsCustomOfficeList.nctsentrydate.map(LocalDate.parse(_, dateFormat2)),
+      dpsCustomOfficeList.nctsentrydate.map(parseDate(_, dateFormat2)),
       dpsCustomOfficeList.nearestoffice,
       dpsCustomOfficeList.postalcode,
       dpsCustomOfficeList.phonenumber,

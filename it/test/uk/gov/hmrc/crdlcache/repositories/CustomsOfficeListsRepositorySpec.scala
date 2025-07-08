@@ -118,37 +118,35 @@ class CustomsOfficeListsRepositorySpec
       LocalDate.parse("20991231", dateFormat),
       List(
         TimetableLine(
-          Some(DayOfWeek.of(1)),
-          Some(LocalTime.parse("0800", timeFormat)),
-          Some(LocalTime.parse("1600", timeFormat)),
-          Some(DayOfWeek.of(5)),
+          DayOfWeek.of(1),
+          LocalTime.parse("0800", timeFormat),
+          LocalTime.parse("1600", timeFormat),
+          DayOfWeek.of(5),
           None,
           None,
-          Some(
-            List(
-              RoleTrafficCompetence("EXL", "P"),
-              RoleTrafficCompetence("EXL", "R"),
-              RoleTrafficCompetence("EXP", "P"),
-              RoleTrafficCompetence("EXP", "R"),
-              RoleTrafficCompetence("EXT", "P"),
-              RoleTrafficCompetence("EXT", "R"),
-              RoleTrafficCompetence("PLA", "R"),
-              RoleTrafficCompetence("RFC", "R"),
-              RoleTrafficCompetence("DIS", "N/A"),
-              RoleTrafficCompetence("IPR", "N/A"),
-              RoleTrafficCompetence("ENQ", "P"),
-              RoleTrafficCompetence("ENQ", "R"),
-              RoleTrafficCompetence("ENQ", "N/A"),
-              RoleTrafficCompetence("REC", "P"),
-              RoleTrafficCompetence("REC", "R"),
-              RoleTrafficCompetence("REC", "N/A")
-            )
+          List(
+            RoleTrafficCompetence("EXL", "P"),
+            RoleTrafficCompetence("EXL", "R"),
+            RoleTrafficCompetence("EXP", "P"),
+            RoleTrafficCompetence("EXP", "R"),
+            RoleTrafficCompetence("EXT", "P"),
+            RoleTrafficCompetence("EXT", "R"),
+            RoleTrafficCompetence("PLA", "R"),
+            RoleTrafficCompetence("RFC", "R"),
+            RoleTrafficCompetence("DIS", "N/A"),
+            RoleTrafficCompetence("IPR", "N/A"),
+            RoleTrafficCompetence("ENQ", "P"),
+            RoleTrafficCompetence("ENQ", "R"),
+            RoleTrafficCompetence("ENQ", "N/A"),
+            RoleTrafficCompetence("REC", "P"),
+            RoleTrafficCompetence("REC", "R"),
+            RoleTrafficCompetence("REC", "N/A")
           )
         )
       )
     )
   )
-  
+
   val invalidatedoffice = CustomsOffice(
     "IT314102",
     Instant.parse("2025-03-22T00:00:00Z"),
@@ -190,13 +188,12 @@ class CustomsOfficeListsRepositorySpec
       LocalDate.parse("99991231", dateFormat),
       List(
         TimetableLine(
-          Some(DayOfWeek.of(1)),
-          Some(LocalTime.parse("0800", timeFormat)),
-          Some(LocalTime.parse("1800", timeFormat)),
-          Some(DayOfWeek.of(5)),
+          DayOfWeek.of(1),
+          LocalTime.parse("0800", timeFormat),
+          LocalTime.parse("1800", timeFormat),
+          DayOfWeek.of(5),
           None,
           None,
-          Some(
             List(
               RoleTrafficCompetence("DEP", "R"),
               RoleTrafficCompetence("INC", "R"),
@@ -217,7 +214,6 @@ class CustomsOfficeListsRepositorySpec
         )
       )
     )
-  )
 
   val newOffice = CustomsOffice(
     "IT223101",
@@ -260,13 +256,12 @@ class CustomsOfficeListsRepositorySpec
       LocalDate.parse("20991231", dateFormat),
       List(
         TimetableLine(
-          Some(DayOfWeek.of(1)),
-          Some(LocalTime.parse("0000", timeFormat)),
-          Some(LocalTime.parse("2359", timeFormat)),
-          Some(DayOfWeek.of(6)),
+          DayOfWeek.of(1),
+          LocalTime.parse("0000", timeFormat),
+          LocalTime.parse("2359", timeFormat),
+          DayOfWeek.of(6),
           None,
           None,
-          Some(
             List(
               RoleTrafficCompetence("DEP", "AIR"),
               RoleTrafficCompetence("INC", "AIR"),
@@ -290,9 +285,8 @@ class CustomsOfficeListsRepositorySpec
         )
       )
     )
-  )
 
-  val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z") )
+  val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
 
   private val customsOffices = Seq(DK003102, invalidatedoffice, postDatedOffice)
 
@@ -367,11 +361,17 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { session =>
     for {
-      _ <- repository.executeInstructions(session, List(UpsertCustomsOffice(newOffice), UpsertCustomsOffice(postDatedOffice)))
+      _ <- repository.executeInstructions(
+        session,
+        List(UpsertCustomsOffice(newOffice), UpsertCustomsOffice(postDatedOffice))
+      )
       offices <- repository.collection
         .find(session, Filters.equal("referenceNumber", "IT223101"))
         .toFuture()
-    } yield offices mustBe Seq(newOffice.copy(activeTo = Some(Instant.parse("2026-05-01T00:00:00Z"))), postDatedOffice)
+    } yield offices mustBe Seq(
+      newOffice.copy(activeTo = Some(Instant.parse("2026-05-01T00:00:00Z"))),
+      postDatedOffice
+    )
   }
 
   it should "replace existing offices with same active from date" in withCustomsOfficeEntries(
@@ -422,26 +422,43 @@ class CustomsOfficeListsRepositorySpec
       } yield offices mustBe Seq(
         DK003102.copy(activeTo = Some(Instant.parse("2025-05-22T00:00:00Z"))),
         newOffice,
-        DK003102.copy(activeFrom = Instant.parse("2025-05-23T00:00:00Z"),emailAddress = Some("newEmail@test"))
-
+        DK003102.copy(
+          activeFrom = Instant.parse("2025-05-23T00:00:00Z"),
+          emailAddress = Some("newEmail@test")
+        )
       )
     }.futureValue
   }
 
-  "CustomsOfficeLists.fetchCustomsOfficeLists" should "return the customs office list whose activeFrom date is before the requested date" in withCustomsOfficeEntries(customsOffices) {
-    _ =>
-     repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z")).map(_ must contain(DK003102))
+  "CustomsOfficeLists.fetchCustomsOfficeLists" should "return the customs office list whose activeFrom date is before the requested date" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ must contain(DK003102))
   }
 
-  it should "not return offices that have been superseded" in withCustomsOfficeEntries(customsOffices){
-    _ => repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z")).map(_ mustNot contain(invalidatedoffice))
+  it should "not return offices that have been superseded" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ mustNot contain(invalidatedoffice))
   }
 
-  it should "not return offices that are not yet active" in withCustomsOfficeEntries(customsOffices) {
-    _ => repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z")).map(_ mustNot contain(postDatedOffice))
+  it should "not return offices that are not yet active" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .map(_ mustNot contain(postDatedOffice))
   }
 
-  it should "return offices that have been invalidated if the invalidation date is in the future" in withCustomsOfficeEntries(customsOffices) {
-    _ => repository.fetchCustomsOfficeLists(activeAt = Instant.parse("2025-04-05T00:00:00Z")).map(_ must contain(invalidatedoffice))
+  it should "return offices that have been invalidated if the invalidation date is in the future" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-04-05T00:00:00Z"))
+      .map(_ must contain(invalidatedoffice))
   }
 }

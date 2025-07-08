@@ -27,9 +27,10 @@ import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   RequiredDataItemsMissing,
   UnknownOperation
 }
+import uk.gov.hmrc.crdlcache.utils.ParserUtils.parseDateToInstant
 
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.Instant
 
 case class CodeListSnapshotEntry(
   key: String,
@@ -50,9 +51,6 @@ object CodeListSnapshotEntry {
     CSRD2.activeDateProperty
   )
 
-  private def parseDate(value: String) =
-    LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
-
   def fromDpsEntry(
     config: CodeListConfig,
     dpsEntry: DpsCodeListEntry
@@ -70,13 +68,13 @@ object CodeListSnapshotEntry {
     val activeFrom = dpsEntry
       .getProperty(config.origin.activeDateProperty)
       .flatMap(_.dataitem_value)
-      .map(parseDate)
+      .map(parseDateToInstant(_, dateFormat))
       .getOrElse(throw RequiredDataItemsMissing(CodeListOrigin.values.map(_.activeDateProperty)*))
 
     val updatedAt = config.origin.modificationDateProperty
       .flatMap(dpsEntry.getProperty)
       .flatMap(_.dataitem_value)
-      .map(parseDate)
+      .map(parseDateToInstant(_, dateFormat))
 
     val operation = config.origin.operationProperty
       .flatMap(dpsEntry.getProperty)
