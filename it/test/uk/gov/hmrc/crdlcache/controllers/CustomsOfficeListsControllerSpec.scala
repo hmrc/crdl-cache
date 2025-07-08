@@ -31,7 +31,13 @@ import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
 import org.mockito.ArgumentMatchers.eq as equalTo
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeDetail,
+  CustomsOfficeTimetable,
+  RoleTrafficCompetence,
+  TimetableLine
+}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -40,14 +46,15 @@ import java.time.format.DateTimeFormatter
 import java.time.{Clock, DayOfWeek, Instant, LocalDate, LocalTime, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
 
-class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
+class CustomsOfficeListsControllerSpec
+  extends AnyFlatSpec
   with Matchers
   with MockitoSugar
   with ScalaFutures
   with IntegrationPatience
   with HttpClientV2Support
   with GuiceOneServerPerSuite
-  with BeforeAndAfterEach  {
+  with BeforeAndAfterEach {
 
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
@@ -68,7 +75,7 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
         bind[Clock].toInstance(Clock.fixed(fixedInstant, ZoneOffset.UTC))
       )
       .build()
-  private val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
+  private val dateFormat                      = DateTimeFormatter.ofPattern("yyyyMMdd")
   protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
 
   private val office = List(
@@ -119,131 +126,144 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
             DayOfWeek.of(5),
             None,
             None,
-              List(
-                RoleTrafficCompetence("EXL", "P"),
-                RoleTrafficCompetence("EXL", "R"),
-                RoleTrafficCompetence("EXP", "P"),
-                RoleTrafficCompetence("EXP", "R"),
-                RoleTrafficCompetence("EXT", "P"),
-                RoleTrafficCompetence("EXT", "R"),
-                RoleTrafficCompetence("PLA", "R"),
-                RoleTrafficCompetence("RFC", "R"),
-                RoleTrafficCompetence("DIS", "N/A"),
-                RoleTrafficCompetence("IPR", "N/A"),
-                RoleTrafficCompetence("ENQ", "P"),
-                RoleTrafficCompetence("ENQ", "R"),
-                RoleTrafficCompetence("ENQ", "N/A"),
-                RoleTrafficCompetence("REC", "P"),
-                RoleTrafficCompetence("REC", "R"),
-                RoleTrafficCompetence("REC", "N/A")
-              )
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
             )
           )
+        )
       )
-    ))
+    )
+  )
 
   val responseJson = Json.obj(
-    "phoneNumber" -> "+45 342234 34543",
-    "emailAddress" -> "test@dk",
+    "referenceNumber"                             -> "DK003102",
+    "referenceNumberMainOffice"                   -> null,
+    "referenceNumberHigherAuthority"              -> null,
+    "referenceNumberCompetentAuthorityOfEnquiry"  -> "DK003102",
+    "referenceNumberCompetentAuthorityOfRecovery" -> "DK003102",
+    "referenceNumberTakeover"                     -> null,
+    "countryCode"                                 -> "DK",
+    "emailAddress"                                -> "test@dk",
+    "unLocodeId"                                  -> null,
+    "nctsEntryDate"                               -> null,
+    "nearestOffice"                               -> null,
+    "postalCode"                                  -> "9850",
+    "phoneNumber"                                 -> "+45 342234 34543",
+    "faxNumber"                                   -> null,
+    "telexNumber"                                 -> null,
+    "geoInfoCode"                                 -> null,
+    "regionCode"                                  -> null,
+    "traderDedicated"                             -> false,
+    "dedicatedTraderLanguageCode"                 -> null,
+    "dedicatedTraderName"                         -> null,
+    "customsOfficeSpecificNotesCodes"             -> Json.arr("SN0009"),
     "customsOfficeLsd" -> Json.obj(
-      "city" -> "Hirtshals",
-      "languageCode" -> "DA",
-      "spaceToAdd" -> false,
+      "city"                   -> "Hirtshals",
+      "languageCode"           -> "DA",
+      "spaceToAdd"             -> false,
       "customsOfficeUsualName" -> "Hirtshals Toldekspedition",
-      "prefixSuffixFlag" -> false,
-      "streetAndNumber" -> "Dalsagervej 7"
+      "prefixSuffixFlag"       -> false,
+      "streetAndNumber"        -> "Dalsagervej 7"
     ),
     "customsOfficeTimetable" -> Json.obj(
-      "seasonCode" -> 1,
+      "seasonCode"      -> 1,
       "seasonStartDate" -> "2018-01-01",
-      "seasonEndDate" -> "2099-12-31",
+      "seasonEndDate"   -> "2099-12-31",
       "customsOfficeTimetableLine" -> Json.arr(
         Json.obj(
-          "dayInTheWeekEndDay" -> 5,
+          "dayInTheWeekEndDay"              -> 5,
           "openingHoursTimeFirstPeriodFrom" -> "0800",
-          "dayInTheWeekBeginDay" -> 1,
-          "openingHoursTimeFirstPeriodTo" -> "1600",
+          "dayInTheWeekBeginDay"            -> 1,
+          "openingHoursTimeFirstPeriodTo"   -> "1600",
           "customsOfficeRoleTrafficCompetence" -> Json.arr(
             Json.obj(
-              "roleName" -> "EXL",
+              "roleName"    -> "EXL",
               "trafficType" -> "P"
             ),
             Json.obj(
-              "roleName" -> "EXL",
+              "roleName"    -> "EXL",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "EXP",
+              "roleName"    -> "EXP",
               "trafficType" -> "P"
             ),
             Json.obj(
-              "roleName" -> "EXP",
+              "roleName"    -> "EXP",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "EXT",
+              "roleName"    -> "EXT",
               "trafficType" -> "P"
             ),
             Json.obj(
-              "roleName" -> "EXT",
+              "roleName"    -> "EXT",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "PLA",
+              "roleName"    -> "PLA",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "RFC",
+              "roleName"    -> "RFC",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "DIS",
+              "roleName"    -> "DIS",
               "trafficType" -> "N/A"
             ),
             Json.obj(
-              "roleName" -> "IPR",
+              "roleName"    -> "IPR",
               "trafficType" -> "N/A"
             ),
             Json.obj(
-              "roleName" -> "ENQ",
+              "roleName"    -> "ENQ",
               "trafficType" -> "P"
             ),
             Json.obj(
-              "roleName" -> "ENQ",
+              "roleName"    -> "ENQ",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "ENQ",
+              "roleName"    -> "ENQ",
               "trafficType" -> "N/A"
             ),
             Json.obj(
-              "roleName" -> "REC",
+              "roleName"    -> "REC",
               "trafficType" -> "P"
             ),
             Json.obj(
-              "roleName" -> "REC",
+              "roleName"    -> "REC",
               "trafficType" -> "R"
             ),
             Json.obj(
-              "roleName" -> "REC",
+              "roleName"    -> "REC",
               "trafficType" -> "N/A"
             )
           )
         )
       )
-    ),
-    "postalCode" -> "9850",
-    "activeFrom" -> "2025-03-22T00:00:00Z",
-    "countryCode" -> "DK",
-    "customsOfficeSpecificNotesCodes" -> Json.arr("SN0009"),
-    "traderDedicated" -> false,
-    "referenceNumberCompetentAuthorityOfEnquiry" -> "DK003102",
-    "referenceNumberCompetentAuthorityOfRecovery" -> "DK003102",
-    "referenceNumber" -> "DK003102"
+    )
   )
 
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
-    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant))).thenReturn(Future.successful(office))
+    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant)))
+      .thenReturn(Future.successful(office))
 
     val response = httpClientV2
       .get(url"http://localhost:$port/crdl-cache/offices")
@@ -254,7 +274,8 @@ class CustomsOfficeListsControllerSpec   extends AnyFlatSpec
   }
 
   it should "return 200 OK when there are no offices to return" in {
-    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant))).thenReturn(Future.successful(List.empty))
+    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant)))
+      .thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
       .get(url"http://localhost:$port/crdl-cache/offices")

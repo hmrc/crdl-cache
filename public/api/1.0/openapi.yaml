@@ -83,44 +83,36 @@ components:
         referenceNumber:
           type: string
           description: The unique reference number for a customs office.
-        activeFrom:
-          type: string
-          format: date-time
-          description: The time from which the current office is active.
-        activeTo:
-          type: string
-          format: date-time
-          description: The time until which the office is active.
         referenceNumberMainOffice:
           type: string
-          description: The main office reference number.
+          description: The reference number of the main office. This is relevant when this office is subordinate to another office.
         referenceNumberHigherAuthority:
           type: string
-          description: The higher authority office reference number.
+          description: The reference number of another office which has authority over this office. This office should have the Higher Authority (AUT) role.
         referenceNumberCompetentAuthorityOfEnquiry:
           type: string
-          description: The competent authority of enquiry office reference number.
+          description: The reference number of another office which takes the role of Competent Authority of Enquiry (ENQ) on behalf of this office.
         referenceNumberCompetentAuthorityOfRecovery:
           type: string
-          description: The competent authority of recovery office reference number.
+          description: The reference number of another office which takes the role of Competent Authority of Recovery (REC) on behalf of this office.
         referenceNumberTakeover:
           type: string
-          description: The takeover reference number.
+          description: The reference number of another office which takes over from this office in the event that it is unable to perform transit operations.
         countryCode:
           type: string
-          description: The country code for the customs office.
+          description: The country code for the customs office. This should reference entries of the "CountryCodesCustomsOfficeLists" (CL070) codelist.
         emailAddress:
           type: string
           description: The email address of the office.
         unLocodeId:
           type: string
-          description: ID used to identify locations used in trade and transport.
+          description: The UN/LOCODE used to identify the country and territory of the customs office. This should reference entries of the "UnLocode" (CL144) codelist.
         nctsEntryDate:
           type: date
           description: Date of entry into NCTS.
         nearestOffice:
           type: string
-          description: Nearest office reference number.
+          description:  Reference number of the nearest customs office. This property is required when the customs office is located on the frontier according to its `geoInfoCode`.
         postalCode:
           type: string
           description: The postal code for the customs office.
@@ -135,16 +127,16 @@ components:
           description: Telex number.
         geoInfoCode:
           type: string
-          description: Geo information code.
+          description: Geo information code. This code identifies the geographical location of the office, and whether the office is on the frontier with another location. It should reference entries of the "GeoInfoCodes" (CL015) codelist.
         regionCode:
           type: string
-          description: Region code.
+          description: Code indicating the region within a country where the office is located. This should reference entries of the "CountryRegion" (CL142) codelist.
         traderDedicated:
           type: boolean
           description: Boolean flag for whether there is a dedicated trader.
         dedicatedTraderLanguageCode:
           type: string
-          description: Dedicated trader language code.
+          description: Dedicated trader language code. This should reference entries of the "LanguageCodes" (CL012) codelist.
         dedicatedTraderName:
           type: string
           description: Dedicated trader name.
@@ -152,7 +144,7 @@ components:
           type: array
           items:
             type: string
-          description: A list of specific notes codes.
+          description: A list of specific notes codes. They should reference entries of the "SpecificNotesCode" (CL067) codelist.
         customsOfficeLsd:
           $ref: "#/components/schemas/customsOfficeLsd"
         customsOfficeTimetable:
@@ -172,7 +164,7 @@ components:
           nearestOffice: MK002031
           postalCode: "40121"
           phoneNumber: "0038931800060"
-          faxNumber: NA #good example?
+          faxNumber: "0038931800061"
           geoInfoCode: MK/RS
           traderDedicated: false
           customsOfficeSpecificNotesCodes: []
@@ -215,16 +207,16 @@ components:
           description: The customs office name.
         languageCode:
           type: string
-          description: The language code in which the details are described.
+          description: The language code in which the details are described. This should reference entries of the "LanguageCodes" (CL012) codelist.
         city:
           type: string
           description: The city name.
         prefixSuffixFlag:
           type: boolean
-          description: A flag to identify whether it has a prefix or suffix #need to confirm what true, false means
+          description: A flag to identify whether it has a prefix or suffix.
         prefixSuffixLevel:
           type: string
-          description: The position where affix are added to the office detail to modify it's meaning.
+          description: The position where affix are added to the office detail to modify it's meaning. This should reference entries of the "PrefixSuffixLevel" (CL053) codelist.
         prefixSuffixName:
           type: string
           description: The actual prefix or suffix.
@@ -247,7 +239,9 @@ components:
       properties:
         seasonCode:
           type: integer
-          description: They are integer values for season code.
+          minimum: 1
+          maximum: 9
+          description: Numeric season code. Each entry must have a unique season code.
         seasonName:
           type: string
           description: The office availability season name.
@@ -273,21 +267,39 @@ components:
       properties:
         dayInTheWeekBeginDay:
           type: integer
-          description: The day in the week when the office starts.
+          minimum: 1
+          maximum: 7
+          description: |
+            The day in the week when the office begins operating.
+
+            This should reference entries of the "DayInTheWeek" (CL105) codelist.
+
+            NCTS uses ISO weekday numbering where weekdays are represented as numbers from 1-7, starting on Monday and ending on Sunday.
         openingHoursTimeFirstPeriodFrom:
           type: string
+          format: time
           description: The time at which the office opens.
         openingHoursTimeFirstPeriodTo:
           type: string
+          format: time
           description: The time at which the office closes.
         dayInTheWeekEndDay:
           type: integer
-          description: The day in the week when the office ends.
+          minimum: 1
+          maximum: 7
+          description: |
+            The day in the week when the office stops operating.
+
+            This should reference entries of the "DayInTheWeek" (CL105) codelist.
+
+            NCTS uses ISO weekday numbering where weekdays are represented as numbers from 1-7, starting on Monday and ending on Sunday.
         openingHoursTimeSecondPeriodFrom:
           type: string
+          format: time
           description: The second period start time.
         openingHoursTimeSecondPeriodTo:
           type: string
+          format: time
           description: The second period end time.
         customsOfficeRoleTrafficCompetence:
           $ref: "#/components/schemas/customsOfficeRoleTrafficCompetence"
@@ -302,10 +314,10 @@ components:
       properties:
         roleName:
           type: string
-          description: Role name
+          description: Customs office role code. This should reference entries of the "Role" (CL056) codelist.
         trafficType:
         type: string
-        description: Type of traffic.
+        description: The type of traffic that this customs office can process. This should reference entries of the "TrafficType" (CL020) codelist.
 
   responses:
     badRequest:
