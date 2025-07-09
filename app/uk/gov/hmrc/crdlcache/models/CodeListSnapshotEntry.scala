@@ -18,7 +18,7 @@ package uk.gov.hmrc.crdlcache.models
 
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.crdlcache.config.CodeListConfig
+import uk.gov.hmrc.crdlcache.config.{CodeListConfig, CorrespondenceListConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.DpsCodeListEntry
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
@@ -54,7 +54,7 @@ object CodeListSnapshotEntry {
     LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
 
   def fromDpsEntry(
-    config: CodeListConfig,
+    config: ListConfig,
     dpsEntry: DpsCodeListEntry
   ): CodeListSnapshotEntry = {
     val key = dpsEntry
@@ -62,10 +62,18 @@ object CodeListSnapshotEntry {
       .flatMap(_.dataitem_value)
       .getOrElse(throw RequiredDataItemMissing(config.keyProperty))
 
-    val value = dpsEntry.language
-      .find(_.lang_code.equalsIgnoreCase("en"))
-      .map(_.lang_desc)
-      .getOrElse(throw LanguageDescriptionMissing)
+    val value = config match {
+      case _: CodeListConfig =>
+        dpsEntry.language
+          .find(_.lang_code.equalsIgnoreCase("en"))
+          .map(_.lang_desc)
+          .getOrElse(throw LanguageDescriptionMissing)
+      case correspondence: CorrespondenceListConfig =>
+        dpsEntry
+          .getProperty(correspondence.valueProperty)
+          .flatMap(_.dataitem_value)
+          .getOrElse(throw RequiredDataItemMissing(correspondence.valueProperty))
+    }
 
     val activeFrom = dpsEntry
       .getProperty(config.origin.activeDateProperty)
@@ -83,7 +91,13 @@ object CodeListSnapshotEntry {
       .flatMap(_.dataitem_value)
       .map { value => Operation.fromString(value).getOrElse(throw UnknownOperation(value)) }
 
-    val usedProperties = knownProperties.incl(config.keyProperty)
+    val usedProperties =
+      config match {
+        case _: CodeListConfig =>
+          knownProperties.incl(config.keyProperty)
+        case correspondence: CorrespondenceListConfig =>
+          knownProperties.incl(config.keyProperty).incl(correspondence.valueProperty)
+      }
 
     val builder = Json.newBuilder
 

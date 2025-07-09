@@ -18,11 +18,13 @@ package uk.gov.hmrc.crdlcache.controllers.testonly
 
 import org.mongodb.scala.*
 import org.mongodb.scala.model.Filters
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.repositories.{
-  CodeListsRepository,
-  CustomsOfficeListsRepository,
-  LastUpdatedRepository
+  CorrespondenceListsRepository,
+  LastUpdatedRepository,
+  StandardCodeListsRepository,
+  CustomsOfficeListsRepository
 }
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -35,7 +37,8 @@ class TestOnlyController @Inject() (
   cc: ControllerComponents,
   jobScheduler: JobScheduler,
   lastUpdatedRepository: LastUpdatedRepository,
-  codeListsRepository: CodeListsRepository,
+  codeListsRepository: StandardCodeListsRepository,
+  correspondenceListsRepository: CorrespondenceListsRepository,
   customsOfficeListsRepository: CustomsOfficeListsRepository
 )(using ec: ExecutionContext)
   extends BackendController(cc) {
@@ -45,8 +48,28 @@ class TestOnlyController @Inject() (
     Accepted
   }
 
+  def codeListImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.codeListImportStatus()))
+  }
+
+  def importCorrespondenceLists(): Action[AnyContent] = Action {
+    jobScheduler.startCorrespondenceListImport()
+    Accepted
+  }
+
+  def correspondenceListImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.codeListImportStatus()))
+  }
+
   def deleteCodeLists(): Action[AnyContent] = Action.async {
     codeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
+      case result if result.wasAcknowledged() => Ok
+      case _                                  => InternalServerError
+    }
+  }
+
+  def deleteCorrespondenceLists(): Action[AnyContent] = Action.async {
+    correspondenceListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok
       case _                                  => InternalServerError
     }

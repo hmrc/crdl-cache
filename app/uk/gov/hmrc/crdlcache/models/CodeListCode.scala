@@ -18,8 +18,9 @@ package uk.gov.hmrc.crdlcache.models
 
 import play.api.libs.json.Format
 import play.api.mvc.PathBindable
+import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, STANDARD}
 
-enum CodeListCode(val code: String) {
+enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   // BC01 (Evidence Types)
   case BC01 extends CodeListCode("BC01")
   // BC03 (Reasons for action not possible)
@@ -78,6 +79,12 @@ enum CodeListCode(val code: String) {
   case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
   case CL141 extends CodeListCode("CL141")
+  // CL239 (Additional Information)
+  case CL239 extends CodeListCode("CL239")
+  // CL141 (Additional Reference)
+  case CL380 extends CodeListCode("CL380")
+  // E200 (CN Code <-> Excise Products Correspondence)
+  case E200 extends CodeListCode("E200", listType = CORRESPONDENCE)
   // Unknown codelist code
   case Unknown(override val code: String) extends CodeListCode(code)
 }
@@ -113,7 +120,10 @@ object CodeListCode {
       BC107,
       BC108,
       BC109,
-      CL141
+      CL141,
+      CL239,
+      CL380,
+      E200
     )
 
   private val codes: Map[String, CodeListCode] = values.map(value => value.code -> value).toMap

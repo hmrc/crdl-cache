@@ -20,28 +20,27 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl.Source
 import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervision}
 import org.mongodb.scala.ClientSession
-import org.quartz.{Job, JobExecutionContext}
+import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
-import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
-import uk.gov.hmrc.crdlcache.models.*
-import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
-import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Update}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListSnapshot, CodeListSnapshotEntry}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
 import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
 
-import java.time.{Clock, Instant, LocalDate, ZoneOffset}
-import javax.inject.Inject
+import java.time.{Clock, ZoneOffset}
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-class ImportCodeListsJob @Inject() (
+@DisallowConcurrentExecution
+abstract class ImportCodeListsJob[K, I](
+  val jobName: String,
   val mongoComponent: MongoComponent,
   val lockRepository: MongoLockRepository,
   lastUpdatedRepository: LastUpdatedRepository,
-  codeListsRepository: CodeListsRepository,
+  repository: CodeListsRepository[K, I],
   dpsConnector: DpsConnector,
   appConfig: AppConfig,
   clock: Clock
@@ -53,67 +52,33 @@ class ImportCodeListsJob @Inject() (
 
   given TransactionConfiguration = TransactionConfiguration.strict
 
-  val lockId: String = "import-code-lists"
-  val ttl: Duration  = 1.hour
+  override val lockId: String = jobName
+  override val ttl: Duration  = 1.hour
 
-  private def fetchCurrentEntries(
+  protected def listConfigs: List[ListConfig]
+
+  protected def keyOfEntry(codeListSnapshotEntry: CodeListSnapshotEntry): K
+
+  protected def processEntry(codeListCode: CodeListCode, newEntry: CodeListSnapshotEntry): I
+
+  protected def recordMissing(codeListCode: CodeListCode, key: K): I
+
+  def processSnapshot(
     session: ClientSession,
-    codeListCode: CodeListCode
-  ): Future[Set[String]] =
-    codeListsRepository.fetchCodeListEntryKeys(session, codeListCode)
-
-  private def executeInstructions(
-    session: ClientSession,
-    instructions: List[Instruction]
-  ): Future[Unit] =
-    codeListsRepository.executeInstructions(session, instructions)
-
-  private def setLastUpdated(
-    session: ClientSession,
-    codeListCode: CodeListCode,
-    snapshotVersion: Long,
-    lastUpdated: Instant
-  ) = lastUpdatedRepository.setLastUpdated(session, codeListCode, snapshotVersion, lastUpdated)
-
-  private[schedulers] def processEntry(
-    codeListCode: CodeListCode,
-    newEntry: CodeListSnapshotEntry
-  ): Instruction = {
-    val updatedEntry: CodeListEntry = CodeListEntry(
-      codeListCode,
-      newEntry.key,
-      newEntry.value,
-      newEntry.activeFrom,
-      None,
-      newEntry.updatedAt,
-      newEntry.properties
-    )
-
-    newEntry.operation match {
-      case Some(Create)     => UpsertEntry(updatedEntry)
-      case Some(Update)     => UpsertEntry(updatedEntry)
-      case Some(Invalidate) => InvalidateEntry(updatedEntry)
-      case Some(Delete)     => InvalidateEntry(updatedEntry)
-      case None             => UpsertEntry(updatedEntry)
-    }
-  }
-
-  private[schedulers] def processSnapshot(
-    session: ClientSession,
-    codeListConfig: CodeListConfig,
+    listConfig: ListConfig,
     newSnapshot: CodeListSnapshot
-  ): Future[List[Instruction]] = {
+  ): Future[List[I]] = {
     logger.info(
-      s"Importing ${codeListConfig.origin} codelist ${codeListConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
+      s"Importing ${listConfig.origin} codelist ${listConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
     )
 
-    fetchCurrentEntries(session, codeListConfig.code).map { currentKeySet =>
-      val incomingKeySet = newSnapshot.entries.map(_.key)
+    repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>
+      val incomingKeySet = newSnapshot.entries.map(keyOfEntry)
       val mergedKeySet   = currentKeySet.union(incomingKeySet)
 
-      val groupedEntries = newSnapshot.entries.toList.groupBy(_.key)
+      val groupedEntries = newSnapshot.entries.toList.groupBy(keyOfEntry)
 
-      val instructions = List.newBuilder[Instruction]
+      val instructions = List.newBuilder[I]
 
       for (key <- mergedKeySet) {
         val hasExistingEntry = currentKeySet.contains(key)
@@ -140,14 +105,11 @@ class ImportCodeListsJob @Inject() (
         (hasExistingEntry, entriesByDate) match {
           case (_, Some(newEntries)) =>
             instructions ++= newEntries.map(
-              processEntry(codeListConfig.code, _)
+              processEntry(listConfig.code, _)
             )
 
           case (true, None) =>
-            // DPS provides no snapshot dates:
-            // the best we can do with removed entries is to use the start of today as their deactivation date
-            val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
-            instructions += RecordMissingEntry(codeListConfig.code, key, startOfToday.toInstant)
+            instructions += recordMissing(listConfig.code, key)
 
           case _ =>
             throw IllegalStateException(
@@ -160,7 +122,7 @@ class ImportCodeListsJob @Inject() (
     }
   }
 
-  private def importCodeList(codeListConfig: CodeListConfig): Future[Unit] = {
+  protected def importCodeList(codeListConfig: ListConfig): Future[Unit] = {
     for {
       // Fetch last updated timestamp
       storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
@@ -186,8 +148,13 @@ class ImportCodeListsJob @Inject() (
           withSessionAndTransaction { session =>
             for {
               instructions <- processSnapshot(session, codeListConfig, snapshot)
-              _            <- executeInstructions(session, instructions)
-              _ <- setLastUpdated(session, codeListConfig.code, snapshot.version, clock.instant())
+              _            <- repository.executeInstructions(session, instructions)
+              _ <- lastUpdatedRepository.setLastUpdated(
+                session,
+                codeListConfig.code,
+                snapshot.version,
+                clock.instant()
+              )
             } yield ()
           }
         }
@@ -204,16 +171,24 @@ class ImportCodeListsJob @Inject() (
   }
 
   private[schedulers] def importCodeLists(): Future[Unit] = {
-    val importCodeLists = Source(appConfig.codeListConfigs)
+    val importCodeLists = Source(listConfigs)
       .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
+      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
       .run()
       .map(_ => ())
 
-    importCodeLists.foreach(_ => logger.info("Importing codelists completed successfully"))
+    importCodeLists.foreach(_ => logger.info(s"${jobName} job completed successfully"))
 
     importCodeLists
   }
 
   def execute(context: JobExecutionContext): Unit =
-    Await.result(importCodeLists(), Duration.Inf)
+    Await.result(
+      withLock(importCodeLists()).map {
+        _.getOrElse {
+          logger.info(s"${jobName} job lock could not be obtained")
+        }
+      },
+      Duration.Inf
+    )
 }

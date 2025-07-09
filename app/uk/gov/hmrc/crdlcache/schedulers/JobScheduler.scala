@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 import org.quartz.JobBuilder.newJob
 import org.quartz.TriggerBuilder.newTrigger
 import org.quartz.impl.StdSchedulerFactory
-import org.quartz.{CronScheduleBuilder, Scheduler}
+import org.quartz.{CronScheduleBuilder, Scheduler, SchedulerFactory, Trigger}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.crdlcache.config.AppConfig
@@ -30,15 +30,16 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class JobScheduler @Inject() (
   lifecycle: ApplicationLifecycle,
+  schedulerFactory: SchedulerFactory,
   jobFactory: ScheduledJobFactory,
   config: AppConfig
 )(using
   ec: ExecutionContext
 ) extends Logging {
-  private val quartz: Scheduler = StdSchedulerFactory.getDefaultScheduler
+  private val quartz: Scheduler = schedulerFactory.getScheduler
 
   // Import code lists
-  private val codeListsJobDetail = newJob(classOf[ImportCodeListsJob])
+  private val codeListsJobDetail = newJob(classOf[ImportStandardCodeListsJob])
     .withIdentity("import-code-lists")
     .build()
 
@@ -56,6 +57,22 @@ class JobScheduler @Inject() (
     .withSchedule(codeListsJobSchedule)
     .build()
 
+  // Import correspondence lists
+  private val correspondenceListsJobDetail = newJob(classOf[ImportCorrespondenceListsJob])
+    .withIdentity("import-correspondence-lists")
+    .build()
+
+  private val correspondenceListsJobSchedule = CronScheduleBuilder
+    .cronSchedule(config.importCorrespondenceListsSchedule)
+
+  private val correspondenceListsJobTrigger = newTrigger()
+    .forJob(correspondenceListsJobDetail)
+    .withSchedule(correspondenceListsJobSchedule)
+    .build()
+
+  private def getJobStatus(trigger: Trigger): JobStatus =
+    JobStatus(quartz.getTriggerState(trigger.getKey))
+
   val customsOfficesListJob =
     newTrigger()
       .forJob(customsOfficeListJobDetail)
@@ -70,6 +87,18 @@ class JobScheduler @Inject() (
     quartz.triggerJob(customsOfficeListJobDetail.getKey)
   }
 
+  def codeListImportStatus(): JobStatus = {
+    getJobStatus(codeListsJobTrigger)
+  }
+
+  def startCorrespondenceListImport(): Unit = {
+    quartz.triggerJob(correspondenceListsJobDetail.getKey)
+  }
+
+  def correspondenceListImportStatus(): JobStatus = {
+    getJobStatus(correspondenceListsJobTrigger)
+  }
+
   private def startScheduler(): Unit = {
     val quartz = StdSchedulerFactory.getDefaultScheduler
 
@@ -78,6 +107,8 @@ class JobScheduler @Inject() (
     lifecycle.addStopHook(() => Future(quartz.shutdown()))
 
     quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
+    quartz.scheduleJob(correspondenceListsJobDetail, correspondenceListsJobTrigger)
+
     quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesListJob)
     quartz.start()
   }

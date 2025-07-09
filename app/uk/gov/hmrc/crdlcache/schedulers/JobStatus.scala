@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.schedulers
 
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
+import org.quartz.Trigger.TriggerState
+import play.api.libs.json.{JsString, Json, Writes}
 
-case class CodeListConfig(code: CodeListCode, origin: CodeListOrigin, keyProperty: String)
-  extends ListConfig
+case class JobStatus(status: TriggerState)
+
+object JobStatus {
+  given Writes[TriggerState] = {
+    case TriggerState.BLOCKED => JsString("RUNNING")
+    case TriggerState.NORMAL  => JsString("IDLE")
+    case other                => JsString(other.toString)
+  }
+
+  given Writes[JobStatus] = Json.writes[JobStatus]
+}
