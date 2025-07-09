@@ -14,6 +14,7 @@ lazy val microservice = Project("crdl-cache", file("."))
     // suppress warnings in generated routes files
     scalacOptions ++= Seq(
       "-Wconf:src=routes/.*:s",
+      // Disable duplicate compiler option warning as it's caused by our sbt plugins
       "-Wconf:msg=Flag.*repeatedly:s",
       // Ignore test-only code
       "--coverage-exclude-classlikes:uk.gov.hmrc.crdlcache.controllers.testonly",
@@ -28,7 +29,8 @@ lazy val microservice = Project("crdl-cache", file("."))
       "uk.gov.hmrc.crdlcache.models.Binders.bindableJsValueMap",
       "uk.gov.hmrc.crdlcache.models.Binders.bindableSet"
     ),
-    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+    // Change classloader layering to avert classloading issues
+    Compile / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
   )
 
 lazy val it = project
@@ -38,7 +40,10 @@ lazy val it = project
   .settings(DefaultBuildSettings.itSettings())
   .settings(
     libraryDependencies ++= AppDependencies.it,
-    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+    // Change classloader layering to avert classloading issues
+    Compile / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
+    // Disable duplicate compiler option warning as it's caused by our sbt plugins
+    scalacOptions += "-Wconf:msg=Flag.*repeatedly:s"
   )
 
 addCommandAlias("runAllChecks", ";clean;compile;scalafmtAll;coverage;test;it/test;coverageReport")
