@@ -79,6 +79,10 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
   case CL141 extends CodeListCode("CL141")
+  // CL239 (Additional Information)
+  case CL239 extends CodeListCode("CL239")
+  // CL141 (Additional Reference)
+  case CL380 extends CodeListCode("CL380")
   // E200 (CN Code <-> Excise Products Correspondence)
   case E200 extends CodeListCode("E200", listType = CORRESPONDENCE)
   // Unknown codelist code
@@ -117,6 +121,8 @@ object CodeListCode {
       BC108,
       BC109,
       CL141,
+      CL239,
+      CL380,
       E200
     )
 
