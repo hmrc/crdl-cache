@@ -68,14 +68,14 @@ class CustomsOfficeListsRepositorySpec
     PatienceConfig(timeout = 30.seconds, interval = 100.millis)
 
   def withCustomsOfficeEntries(
-    offices: Seq[CustomsOffice]
-  )(test: ClientSession => Future[Assertion]): Unit = {
+                                offices: Seq[CustomsOffice]
+                              )(test: ClientSession => Future[Assertion]): Unit = {
     repository.collection.insertMany(offices).toFuture.futureValue
     repository.withSessionAndTransaction(test).futureValue
   }
 
   protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
-  private val dateFormat                      = DateTimeFormatter.ofPattern("yyyyMMdd")
+  private val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
 
   val DK003102 = CustomsOffice(
     "DK003102",
@@ -194,26 +194,26 @@ class CustomsOfficeListsRepositorySpec
           DayOfWeek.of(5),
           None,
           None,
-            List(
-              RoleTrafficCompetence("DEP", "R"),
-              RoleTrafficCompetence("INC", "R"),
-              RoleTrafficCompetence("TRA", "R"),
-              RoleTrafficCompetence("EXP", "R"),
-              RoleTrafficCompetence("EIN", "R"),
-              RoleTrafficCompetence("ENT", "R"),
-              RoleTrafficCompetence("EXC", "R"),
-              RoleTrafficCompetence("DES", "R"),
-              RoleTrafficCompetence("GUA", "R"),
-              RoleTrafficCompetence("EXT", "R"),
-              RoleTrafficCompetence("REG", "R"),
-              RoleTrafficCompetence("REC", "R"),
-              RoleTrafficCompetence("IPR", "N/A"),
-              RoleTrafficCompetence("ENQ", "N/A")
-            )
+          List(
+            RoleTrafficCompetence("DEP", "R"),
+            RoleTrafficCompetence("INC", "R"),
+            RoleTrafficCompetence("TRA", "R"),
+            RoleTrafficCompetence("EXP", "R"),
+            RoleTrafficCompetence("EIN", "R"),
+            RoleTrafficCompetence("ENT", "R"),
+            RoleTrafficCompetence("EXC", "R"),
+            RoleTrafficCompetence("DES", "R"),
+            RoleTrafficCompetence("GUA", "R"),
+            RoleTrafficCompetence("EXT", "R"),
+            RoleTrafficCompetence("REG", "R"),
+            RoleTrafficCompetence("REC", "R"),
+            RoleTrafficCompetence("IPR", "N/A"),
+            RoleTrafficCompetence("ENQ", "N/A")
           )
         )
       )
     )
+  )
 
   val newOffice = CustomsOffice(
     "IT223101",
@@ -262,29 +262,29 @@ class CustomsOfficeListsRepositorySpec
           DayOfWeek.of(6),
           None,
           None,
-            List(
-              RoleTrafficCompetence("DEP", "AIR"),
-              RoleTrafficCompetence("INC", "AIR"),
-              RoleTrafficCompetence("TXT", "AIR"),
-              RoleTrafficCompetence("DES", "AIR"),
-              RoleTrafficCompetence("ENQ", "N/A"),
-              RoleTrafficCompetence("ENT", "AIR"),
-              RoleTrafficCompetence("EXC", "N/A"),
-              RoleTrafficCompetence("EXP", "AIR"),
-              RoleTrafficCompetence("EXT", "AIR"),
-              RoleTrafficCompetence("REC", "N/A"),
-              RoleTrafficCompetence("REG", "N/A"),
-              RoleTrafficCompetence("TRA", "AIR"),
-              RoleTrafficCompetence("EIN", "AIR"),
-              RoleTrafficCompetence("PLA", "N/A"),
-              RoleTrafficCompetence("DIS", "N/A"),
-              RoleTrafficCompetence("RFC", "N/A"),
-              RoleTrafficCompetence("IPR", "N/A")
-            )
+          List(
+            RoleTrafficCompetence("DEP", "AIR"),
+            RoleTrafficCompetence("INC", "AIR"),
+            RoleTrafficCompetence("TXT", "AIR"),
+            RoleTrafficCompetence("DES", "AIR"),
+            RoleTrafficCompetence("ENQ", "N/A"),
+            RoleTrafficCompetence("ENT", "AIR"),
+            RoleTrafficCompetence("EXC", "N/A"),
+            RoleTrafficCompetence("EXP", "AIR"),
+            RoleTrafficCompetence("EXT", "AIR"),
+            RoleTrafficCompetence("REC", "N/A"),
+            RoleTrafficCompetence("REG", "N/A"),
+            RoleTrafficCompetence("TRA", "AIR"),
+            RoleTrafficCompetence("EIN", "AIR"),
+            RoleTrafficCompetence("PLA", "N/A"),
+            RoleTrafficCompetence("DIS", "N/A"),
+            RoleTrafficCompetence("RFC", "N/A"),
+            RoleTrafficCompetence("IPR", "N/A")
           )
         )
       )
     )
+  )
 
   val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
 
@@ -434,7 +434,7 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(countryCodes = None, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
       .map(_ must contain(DK003102))
   }
 
@@ -442,7 +442,7 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(countryCodes = None, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
       .map(_ mustNot contain(invalidatedoffice))
   }
 
@@ -450,7 +450,7 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(countryCodes = None, activeAt = Instant.parse("2025-06-05T00:00:00Z"))
       .map(_ mustNot contain(postDatedOffice))
   }
 
@@ -458,7 +458,39 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-04-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(countryCodes = None, activeAt = Instant.parse("2025-04-05T00:00:00Z"))
       .map(_ must contain(invalidatedoffice))
+  }
+
+  it should "apply filtering of offices according to the supplied countryCodes" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(countryCodes = Some(Set("DK")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain(DK003102))
+  }
+
+  it should "not apply filtering of countries when the set of supplied countries is empty" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        countryCodes = Some(Set.empty),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain allElementsOf List(DK003102,newOffice))
+  }
+
+  it should "not return other offices even when matching countryCodes are specified" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        countryCodes = Some(Set("IT")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustNot contain(DK003102))
   }
 }

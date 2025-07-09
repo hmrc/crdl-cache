@@ -133,9 +133,22 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
         }
     }
 
-  def fetchCustomsOfficeLists(activeAt: Instant): Future[Seq[CustomsOffice]] = {
+  def fetchCustomsOfficeLists(
+    countryCodes: Option[Set[String]],
+    activeAt: Instant
+  ): Future[Seq[CustomsOffice]] = {
+    val mandatoryFilters =
+      List(lte("activeFrom", activeAt), or(equal("activeTo", null), gt("activeTo", activeAt)))
+
+    val optionalFilters = countryCodes
+      .map(countryCodes =>
+        if countryCodes.nonEmpty then List(in("countryCode", countryCodes.toSeq*)) else List.empty
+      )
+      .getOrElse(List.empty)
+    val allFilters = mandatoryFilters ++ optionalFilters
+
     collection
-      .find(and(lte("activeFrom", activeAt), or(equal("activeTo", null), gt("activeTo", activeAt))))
+      .find(and(allFilters*))
       .toFuture()
   }
 }

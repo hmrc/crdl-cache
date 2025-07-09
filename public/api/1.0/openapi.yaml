@@ -506,8 +506,25 @@ paths:
       tags:
         - CustomsOffices
       parameters:
+        - name: countryCodes
+          in: query
+          description: |
+            Used to specify the country codes of the offices to return in the response.
+
+            You can provide comma-separated values for country codes, or provide multiple occurrences of the `countryCodes` parameter, or both.
+
+            For example: `?countryCodes=CZ,SK&countryCodes=XI&countryCodes=GB`.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: [ "AD", "IT" ]
+              examples:
+                - [ "AD", "IT" ]
+                - [ "CZ", "SK" ]
         - name: activeAt
-          in: path
+          in: query
           description: The timestamp at which we want to fetch the customs office lists.
           required: false
           schema:
