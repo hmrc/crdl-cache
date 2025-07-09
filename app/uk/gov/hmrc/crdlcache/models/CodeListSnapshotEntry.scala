@@ -20,16 +20,17 @@ import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.crdlcache.config.{CodeListConfig, CorrespondenceListConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.CodeListEntry
+import uk.gov.hmrc.crdlcache.models.dps.codelist.DpsCodeListEntry
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   LanguageDescriptionMissing,
   RequiredDataItemMissing,
   RequiredDataItemsMissing,
   UnknownOperation
 }
+import uk.gov.hmrc.crdlcache.utils.ParserUtils.parseDateToInstant
 
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.Instant
 
 case class CodeListSnapshotEntry(
   key: String,
@@ -50,12 +51,9 @@ object CodeListSnapshotEntry {
     CSRD2.activeDateProperty
   )
 
-  private def parseDate(value: String) =
-    LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
-
   def fromDpsEntry(
     config: ListConfig,
-    dpsEntry: CodeListEntry
+    dpsEntry: DpsCodeListEntry
   ): CodeListSnapshotEntry = {
     val key = dpsEntry
       .getProperty(config.keyProperty)
@@ -78,13 +76,13 @@ object CodeListSnapshotEntry {
     val activeFrom = dpsEntry
       .getProperty(config.origin.activeDateProperty)
       .flatMap(_.dataitem_value)
-      .map(parseDate)
+      .map(parseDateToInstant(_, dateFormat))
       .getOrElse(throw RequiredDataItemsMissing(CodeListOrigin.values.map(_.activeDateProperty)*))
 
     val updatedAt = config.origin.modificationDateProperty
       .flatMap(dpsEntry.getProperty)
       .flatMap(_.dataitem_value)
-      .map(parseDate)
+      .map(parseDateToInstant(_, dateFormat))
 
     val operation = config.origin.operationProperty
       .flatMap(dpsEntry.getProperty)

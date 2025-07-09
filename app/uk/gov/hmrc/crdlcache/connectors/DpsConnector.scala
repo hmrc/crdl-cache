@@ -23,7 +23,7 @@ import org.apache.pekko.stream.scaladsl
 import org.apache.pekko.stream.scaladsl.Source
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode
-import uk.gov.hmrc.crdlcache.models.dps.codeList.CodeListResponse
+import uk.gov.hmrc.crdlcache.models.dps.codelist.CodeListResponse
 import uk.gov.hmrc.crdlcache.models.dps.col.CustomsOfficeListResponse
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.UpstreamErrorResponse.{Upstream4xxResponse, Upstream5xxResponse}

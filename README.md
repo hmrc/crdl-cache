@@ -126,6 +126,106 @@ This endpoint is used to fetch entries of a reference data codelist.
   curl --fail-with-body http://localhost:7252/crdl-cache/lists/BC08 
   ```
 
+### Fetch Customs Office Lists
+
+This endpoint is used to fetch customs office list.
+
+* **URL**
+
+  `/crdl-cache/lists/customs-office`
+
+* **Method:**
+
+  `GET`
+
+* **Query Parameters**
+
+  **Optional:**
+
+    * `activeAt: Instant`
+
+      Used to specify the timestamp at which the office lists are active to return in the response. If omitted the current timestamp is used.
+
+      For example: `?activeAt=2025-06-05T00:00:00Z`.
+
+* **Success Response:**
+    * **Status:** 200 <br/>
+    * **Content:**
+        ```json
+        [{
+          "dedicatedTraderLanguageCode": "IT",
+          "phoneNumber": "0039 0515283611",
+          "emailAddress": "uadm.emilia1@adm.gov.it",
+          "customsOfficeLsd": {
+          "city": "BOLOGNA",
+          "prefixSuffixLevel": "A",
+          "languageCode": "IT",
+          "spaceToAdd": true,
+          "customsOfficeUsualName": "EMILIA 1 BOLOGNA",
+          "prefixSuffixFlag": false,
+          "streetAndNumber": "VIALE PIETRAMELLARA, 1/2"
+          },
+          "customsOfficeTimetable": {
+          "seasonStartDate": "2018-01-01",
+          "seasonName": "ALL YEAR",
+          "seasonCode": 1,
+          "customsOfficeTimetableLine": [
+          {
+          "dayInTheWeekEndDay": 6,
+          "openingHoursTimeFirstPeriodFrom": "0800",
+          "dayInTheWeekBeginDay": 1,
+          "openingHoursTimeFirstPeriodTo": "1800",
+          "customsOfficeRoleTrafficCompetence": [
+               {
+                 "roleName": "EXC",
+                 "trafficType": "R"
+               },
+               {
+                 "roleName": "REG",
+                 "trafficType": "N/A"
+               }
+             ]
+           }
+          ],
+          "seasonEndDate": "2099-12-31"
+         },
+         "postalCode": "40121",
+         "activeFrom": "2025-05-01T00:00:00Z",
+         "customsOfficeSpecificNotesCodes": [],
+         "traderDedicated": false,
+         "nctsEntryDate": "2025-05-01",
+         "geoInfoCode": "Q",
+         "referenceNumberHigherAuthority": "ITP00002",
+         "countryCode": "IT",
+         "dedicatedTraderName": "TIN",
+         "faxNumber": "0039 0515283622",
+         "referenceNumber": "IT223100"
+         }]
+        ```
+
+* **Error Response:**
+
+    * **Status:** 400
+
+    * **Description:**
+
+      This error is returned when an invalid `activeAt` timestamp is used.
+
+      Unfortunately the [JsonErrorHandler](https://github.com/hmrc/bootstrap-play/blob/466657a13dec046a94ace9d3138dde33bead82e3/bootstrap-backend-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/backend/http/JsonErrorHandler.scala) of [bootstrap-play](https://github.com/hmrc/bootstrap-play) unconditionally redacts anything which looks like a parameter parsing error.
+
+      We can implement our own error handler if this proves excessively unhelpful to consuming services.
+
+    * **Content:**
+      ```json
+      {"status": 400, "message": "bad request, cause: REDACTED"}
+      ```
+
+* **Sample Request:**
+
+  ```shell
+  curl --fail-with-body http://localhost:7252/crdl-cache/lists/customs-office 
+  ```
+
 ## Development
 
 ### Prerequisites
