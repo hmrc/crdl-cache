@@ -29,14 +29,10 @@ import play.api.http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.dps.*
+import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
+import uk.gov.hmrc.crdlcache.models.dps.codelist.*
+import uk.gov.hmrc.crdlcache.models.dps.col.*
 import RelationType.{Next, Prev, Self}
-import uk.gov.hmrc.crdlcache.models.dps.codelist.{
-  CodeListResponse,
-  DataItem,
-  DpsCodeListEntry,
-  DpsCodeListSnapshot,
-  LanguageDescription
-}
 import uk.gov.hmrc.crdlcache.models.dps.col.{
   CustomsOfficeListResponse,
   DpsCustomsOfficeTimetable,
@@ -83,10 +79,12 @@ class DpsConnectorSpec
       "microservice.services.dps-api.port"                 -> wireMockPort,
       "microservice.services.dps-api.clientId"             -> clientId,
       "microservice.services.dps-api.clientSecret"         -> clientSecret,
+      "last-updated-date.default"                          -> "2025-05-29",
       "import-codelists.schedule"                          -> "* * * * * ?",
       "import-offices.schedule"                            -> "* * * * * ?",
-      "import-codelists.last-updated-date.default"         -> "2025-05-29",
+      "import-correspondence-lists.schedule"               -> "* * * * * ?",
       "import-codelists.codelists"                         -> List.empty,
+      "import-correspondence-lists.correspondence-lists"   -> List.empty,
       "http-verbs.retries.intervals"                       -> List("1.millis")
     )
   )
