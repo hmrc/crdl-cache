@@ -40,8 +40,14 @@ import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{
 }
 import uk.gov.hmrc.crdlcache.models.Operation.Update
 import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
-import uk.gov.hmrc.crdlcache.models.dps.codeList.{CodeListResponse, DataItem, LanguageDescription}
-import uk.gov.hmrc.crdlcache.models.dps.{Relation, codeList}
+import uk.gov.hmrc.crdlcache.models.dps.codelist.{
+  CodeListResponse,
+  DataItem,
+  DpsCodeListEntry,
+  DpsCodeListSnapshot,
+  LanguageDescription
+}
+import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -84,58 +90,58 @@ class ImportCorrespondenceListsJobSpec
 
   private val snapshotsPage1 = CodeListResponse(
     List(
-      codeList.CodeListSnapshot(
+      DpsCodeListSnapshot(
         E200,
         "CorrespondenceCnCodeExciseProduct",
         1,
         List(
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27101944")),
-              codeList.DataItem("ExciseProductCode", Some("E430")),
-              codeList.DataItem("Action_Operation", Some("C")),
-              codeList.DataItem("Action_ActivationDate", Some("01-01-2025")),
-              codeList.DataItem("Action_ActionIdentification", Some("433")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("30-12-2024"))
+              codelist.DataItem("CnCode", Some("27101944")),
+              codelist.DataItem("ExciseProductCode", Some("E430")),
+              codelist.DataItem("Action_Operation", Some("C")),
+              codelist.DataItem("Action_ActivationDate", Some("01-01-2025")),
+              codelist.DataItem("Action_ActionIdentification", Some("433")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("30-12-2024"))
             ),
             List(LanguageDescription("en", "No english language description available"))
           ),
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27101944")),
-              codeList.DataItem("ExciseProductCode", Some("E440")),
-              codeList.DataItem("Action_Operation", Some("C")),
-              codeList.DataItem("Action_ActivationDate", Some("01-01-2025")),
-              codeList.DataItem("Action_ActionIdentification", Some("437")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("30-12-2024"))
+              codelist.DataItem("CnCode", Some("27101944")),
+              codelist.DataItem("ExciseProductCode", Some("E440")),
+              codelist.DataItem("Action_Operation", Some("C")),
+              codelist.DataItem("Action_ActivationDate", Some("01-01-2025")),
+              codelist.DataItem("Action_ActionIdentification", Some("437")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("30-12-2024"))
             ),
-            List(codeList.LanguageDescription("en", "No english language description available"))
+            List(codelist.LanguageDescription("en", "No english language description available"))
           ),
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27102019")),
-              codeList.DataItem("ExciseProductCode", Some("E430")),
-              codeList.DataItem("Action_Operation", Some("U")),
-              codeList.DataItem("Action_ActivationDate", Some("15-11-2013")),
-              codeList.DataItem("Action_ActionIdentification", Some("432")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("14-11-2013"))
+              codelist.DataItem("CnCode", Some("27102019")),
+              codelist.DataItem("ExciseProductCode", Some("E430")),
+              codelist.DataItem("Action_Operation", Some("U")),
+              codelist.DataItem("Action_ActivationDate", Some("15-11-2013")),
+              codelist.DataItem("Action_ActionIdentification", Some("432")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("14-11-2013"))
             ),
             List(LanguageDescription("en", "No english language description available"))
           ),
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27102019")),
-              codeList.DataItem("ExciseProductCode", Some("E440")),
-              codeList.DataItem("Action_Operation", Some("U")),
-              codeList.DataItem("Action_ActivationDate", Some("15-11-2013")),
-              codeList.DataItem("Action_ActionIdentification", Some("437")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("14-11-2013"))
+              codelist.DataItem("CnCode", Some("27102019")),
+              codelist.DataItem("ExciseProductCode", Some("E440")),
+              codelist.DataItem("Action_Operation", Some("U")),
+              codelist.DataItem("Action_ActivationDate", Some("15-11-2013")),
+              codelist.DataItem("Action_ActionIdentification", Some("437")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("14-11-2013"))
             ),
-            List(codeList.LanguageDescription("en", "No english language description available"))
+            List(codelist.LanguageDescription("en", "No english language description available"))
           )
         )
       )
@@ -152,46 +158,46 @@ class ImportCorrespondenceListsJobSpec
     )
   )
 
-  private val snapshotsPage2 = codeList.CodeListResponse(
+  private val snapshotsPage2 = codelist.CodeListResponse(
     List(
-      codeList.CodeListSnapshot(
+      DpsCodeListSnapshot(
         E200,
         "CorrespondenceCnCodeExciseProduct",
         2,
         List(
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27101944")),
-              codeList.DataItem("ExciseProductCode", Some("E430")),
-              codeList.DataItem("Action_Operation", Some("I")),
-              codeList.DataItem("Action_ActivationDate", Some("02-01-2025")),
-              codeList.DataItem("Action_ActionIdentification", Some("2412")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("01-01-2025"))
+              codelist.DataItem("CnCode", Some("27101944")),
+              codelist.DataItem("ExciseProductCode", Some("E430")),
+              codelist.DataItem("Action_Operation", Some("I")),
+              codelist.DataItem("Action_ActivationDate", Some("02-01-2025")),
+              codelist.DataItem("Action_ActionIdentification", Some("2412")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("01-01-2025"))
             ),
             List(LanguageDescription("en", "No english language description available"))
           ),
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27101944")),
-              codeList.DataItem("ExciseProductCode", Some("E440")),
-              codeList.DataItem("Action_Operation", Some("U")),
-              codeList.DataItem("Action_ActivationDate", Some("01-01-2025")),
-              codeList.DataItem("Action_ActionIdentification", Some("2413")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("30-12-2024"))
+              codelist.DataItem("CnCode", Some("27101944")),
+              codelist.DataItem("ExciseProductCode", Some("E440")),
+              codelist.DataItem("Action_Operation", Some("U")),
+              codelist.DataItem("Action_ActivationDate", Some("01-01-2025")),
+              codelist.DataItem("Action_ActionIdentification", Some("2413")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("30-12-2024"))
             ),
-            List(codeList.LanguageDescription("en", "No english language description available"))
+            List(codelist.LanguageDescription("en", "No english language description available"))
           ),
-          codeList.CodeListEntry(
+          DpsCodeListEntry(
             List(
-              codeList.DataItem("CnCode", Some("27102019")),
-              codeList.DataItem("ExciseProductCode", Some("E440")),
-              codeList.DataItem("Action_Operation", Some("U")),
-              codeList.DataItem("Action_ActivationDate", Some("15-11-2013")),
-              codeList.DataItem("Action_ActionIdentification", Some("437")),
-              codeList.DataItem("Action_ResponsibleDataManager", None),
-              codeList.DataItem("Action_ModificationDateAndTime", Some("14-11-2013"))
+              codelist.DataItem("CnCode", Some("27102019")),
+              codelist.DataItem("ExciseProductCode", Some("E440")),
+              codelist.DataItem("Action_Operation", Some("U")),
+              codelist.DataItem("Action_ActivationDate", Some("15-11-2013")),
+              codelist.DataItem("Action_ActionIdentification", Some("437")),
+              codelist.DataItem("Action_ResponsibleDataManager", None),
+              codelist.DataItem("Action_ModificationDateAndTime", Some("14-11-2013"))
             ),
             List(LanguageDescription("en", "No english language description available"))
           )

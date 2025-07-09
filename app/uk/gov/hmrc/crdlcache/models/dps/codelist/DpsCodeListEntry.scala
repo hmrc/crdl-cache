@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.dps.codelist
 
 import play.api.libs.json.{Json, Reads}
 
-case class CodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
+case class DpsCodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
   def getProperty(itemName: String): Option[DataItem] =
     dataitem.find(item => item.dataitem_name == itemName)
 }
 
-object CodeListEntry {
-  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
+object DpsCodeListEntry {
+  given Reads[DpsCodeListEntry] = Json.reads[DpsCodeListEntry]
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.crdlcache.models.dps.col
 import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.crdlcache.models.dps.Relation
 
-case class CustomsOfficeListResponse(elements: List[CustomsOffice], links: List[Relation])
+case class CustomsOfficeListResponse(elements: List[DpsCustomsOffice], links: List[Relation])
 
 object CustomsOfficeListResponse {
   given Reads[CustomsOfficeListResponse] = Json.reads[CustomsOfficeListResponse]
