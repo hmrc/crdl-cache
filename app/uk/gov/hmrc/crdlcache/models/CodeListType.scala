@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.config
+package uk.gov.hmrc.crdlcache.models
 
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
-
-case class CodeListConfig(code: CodeListCode, origin: CodeListOrigin, keyProperty: String)
-  extends ListConfig
+enum CodeListType {
+  case STANDARD, CORRESPONDENCE
+}
