@@ -120,9 +120,9 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       "customsOfficeTimetableLine" -> Json.arr(
         Json.obj(
           "dayInTheWeekEndDay"              -> 5,
-          "openingHoursTimeFirstPeriodFrom" -> "0800",
+          "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
           "dayInTheWeekBeginDay"            -> 1,
-          "openingHoursTimeFirstPeriodTo"   -> "1600",
+          "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
           "customsOfficeRoleTrafficCompetence" -> Json.arr(
             Json.obj(
               "roleName"    -> "EXL",

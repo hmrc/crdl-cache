@@ -74,7 +74,7 @@ class CustomsOfficeListsRepositorySpec
     repository.withSessionAndTransaction(test).futureValue
   }
 
-  protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+  protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
   private val dateFormat                      = DateTimeFormatter.ofPattern("yyyyMMdd")
 
   val DK003102 = CustomsOffice(
@@ -119,8 +119,8 @@ class CustomsOfficeListsRepositorySpec
       List(
         TimetableLine(
           DayOfWeek.of(1),
-          LocalTime.parse("0800", timeFormat),
-          LocalTime.parse("1600", timeFormat),
+          LocalTime.parse("08:00", timeFormat),
+          LocalTime.parse("16:00", timeFormat),
           DayOfWeek.of(5),
           None,
           None,
@@ -189,8 +189,8 @@ class CustomsOfficeListsRepositorySpec
       List(
         TimetableLine(
           DayOfWeek.of(1),
-          LocalTime.parse("0800", timeFormat),
-          LocalTime.parse("1800", timeFormat),
+          LocalTime.parse("08:00", timeFormat),
+          LocalTime.parse("18:00", timeFormat),
           DayOfWeek.of(5),
           None,
           None,
@@ -257,8 +257,8 @@ class CustomsOfficeListsRepositorySpec
       List(
         TimetableLine(
           DayOfWeek.of(1),
-          LocalTime.parse("0000", timeFormat),
-          LocalTime.parse("2359", timeFormat),
+          LocalTime.parse("00:00", timeFormat),
+          LocalTime.parse("23:59", timeFormat),
           DayOfWeek.of(6),
           None,
           None,

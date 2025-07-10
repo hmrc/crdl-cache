@@ -76,7 +76,7 @@ class CustomsOfficeListsControllerSpec
       )
       .build()
   private val dateFormat                      = DateTimeFormatter.ofPattern("yyyyMMdd")
-  protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+  protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
 
   private val office = List(
     CustomsOffice(
@@ -121,8 +121,8 @@ class CustomsOfficeListsControllerSpec
         List(
           TimetableLine(
             DayOfWeek.of(1),
-            LocalTime.parse("0800", timeFormat),
-            LocalTime.parse("1600", timeFormat),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("16:00", timeFormat),
             DayOfWeek.of(5),
             None,
             None,
@@ -187,9 +187,9 @@ class CustomsOfficeListsControllerSpec
       "customsOfficeTimetableLine" -> Json.arr(
         Json.obj(
           "dayInTheWeekEndDay"              -> 5,
-          "openingHoursTimeFirstPeriodFrom" -> "0800",
+          "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
           "dayInTheWeekBeginDay"            -> 1,
-          "openingHoursTimeFirstPeriodTo"   -> "1600",
+          "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
           "customsOfficeRoleTrafficCompetence" -> Json.arr(
             Json.obj(
               "roleName"    -> "EXL",

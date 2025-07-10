@@ -31,14 +31,14 @@ class TimeTableLineSpec extends AnyFlatSpec with Matchers with TestData {
       openinghourstimesecondperiodfrom = Some("0900"),
       openinghourstimesecondperiodto = Some("1700")
     )
-    val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+    val timeFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
     val expectedTimeTableLine = TimetableLine(
       DayOfWeek.of(1),
-      LocalTime.parse("0800", timeFormat),
-      LocalTime.parse("1600", timeFormat),
+      LocalTime.parse("08:00", timeFormat),
+      LocalTime.parse("16:00", timeFormat),
       DayOfWeek.of(5),
-      Some(LocalTime.parse("0900", timeFormat)),
-      Some(LocalTime.parse("1700", timeFormat)),
+      Some(LocalTime.parse("09:00", timeFormat)),
+      Some(LocalTime.parse("17:00", timeFormat)),
       List(
         RoleTrafficCompetence("EXL", "P"),
         RoleTrafficCompetence("EXL", "R"),
