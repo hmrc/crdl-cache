@@ -21,9 +21,10 @@ import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeTimetable.fromDpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOffice
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
+import uk.gov.hmrc.crdlcache.utils.ParserUtils.{parseDate, parseDateToInstant}
 
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate, ZoneOffset}
+import java.time.{Instant, LocalDate}
 
 case class CustomsOffice(
   referenceNumber: String,
@@ -54,7 +55,33 @@ case class CustomsOffice(
 )
 
 object CustomsOffice {
-  given Writes[CustomsOffice] = Json.writes[CustomsOffice]
+  given Writes[CustomsOffice] = Writes { office =>
+    Json.obj(
+      "referenceNumber"                -> office.referenceNumber,
+      "referenceNumberMainOffice"      -> office.referenceNumberMainOffice,
+      "referenceNumberHigherAuthority" -> office.referenceNumberHigherAuthority,
+      "referenceNumberCompetentAuthorityOfEnquiry" -> office.referenceNumberCompetentAuthorityOfEnquiry,
+      "referenceNumberCompetentAuthorityOfRecovery" -> office.referenceNumberCompetentAuthorityOfRecovery,
+      "referenceNumberTakeover"         -> office.referenceNumberTakeover,
+      "countryCode"                     -> office.countryCode,
+      "emailAddress"                    -> office.emailAddress,
+      "unLocodeId"                      -> office.unLocodeId,
+      "nctsEntryDate"                   -> office.nctsEntryDate,
+      "nearestOffice"                   -> office.nearestOffice,
+      "postalCode"                      -> office.postalCode,
+      "phoneNumber"                     -> office.phoneNumber,
+      "faxNumber"                       -> office.faxNumber,
+      "telexNumber"                     -> office.telexNumber,
+      "geoInfoCode"                     -> office.geoInfoCode,
+      "regionCode"                      -> office.regionCode,
+      "traderDedicated"                 -> office.traderDedicated,
+      "dedicatedTraderLanguageCode"     -> office.dedicatedTraderLanguageCode,
+      "dedicatedTraderName"             -> office.dedicatedTraderName,
+      "customsOfficeSpecificNotesCodes" -> office.customsOfficeSpecificNotesCodes,
+      "customsOfficeLsd"                -> office.customsOfficeLsd,
+      "customsOfficeTimetable"          -> office.customsOfficeTimetable
+    )
+  }
 
   val mongoFormat: Format[CustomsOffice] = { // Use the Mongo Extended JSON format for dates
     import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
@@ -64,13 +91,10 @@ object CustomsOffice {
   private val ukLocalDate  = DateTimeFormatter.ofPattern("dd-MM-yyyy")
   private val basicIsoDate = DateTimeFormatter.BASIC_ISO_DATE
 
-  private def parseDate(value: String, dateFormat: DateTimeFormatter) =
-    LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
-
   def fromDpsCustomOfficeList(dpsCustomOfficeList: DpsCustomsOffice): CustomsOffice = {
     CustomsOffice(
       dpsCustomOfficeList.referencenumber,
-      parseDate(dpsCustomOfficeList.rdentrystatus.activefrom, ukLocalDate),
+      parseDateToInstant(dpsCustomOfficeList.rdentrystatus.activefrom, ukLocalDate),
       None,
       dpsCustomOfficeList.referencenumbermainoffice,
       dpsCustomOfficeList.referencenumberhigherauthority,
@@ -80,7 +104,7 @@ object CustomsOffice {
       dpsCustomOfficeList.countrycode,
       dpsCustomOfficeList.emailaddress,
       dpsCustomOfficeList.unlocodeid,
-      dpsCustomOfficeList.nctsentrydate.map(LocalDate.parse(_, basicIsoDate)),
+      dpsCustomOfficeList.nctsentrydate.map(parseDate(_, basicIsoDate)),
       dpsCustomOfficeList.nearestoffice,
       dpsCustomOfficeList.postalcode,
       dpsCustomOfficeList.phonenumber,
@@ -95,7 +119,9 @@ object CustomsOffice {
         _.specificnotescode
       ),
       fromDpsCustomsOfficeDetail(
-        dpsCustomOfficeList.customsofficelsd.headOption
+        dpsCustomOfficeList.customsofficelsd
+          .find(_.languagecode.equalsIgnoreCase("EN"))
+          .orElse(dpsCustomOfficeList.customsofficelsd.headOption)
           .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
       ),
       fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate)

@@ -132,4 +132,10 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
           }
         }
     }
+
+  def fetchCustomsOfficeLists(activeAt: Instant): Future[Seq[CustomsOffice]] = {
+    collection
+      .find(and(lte("activeFrom", activeAt), or(equal("activeTo", null), gt("activeTo", activeAt))))
+      .toFuture()
+  }
 }

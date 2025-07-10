@@ -20,7 +20,7 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervision}
 import org.apache.pekko.stream.scaladsl.Sink
 import org.mongodb.scala.ClientSession
-import org.quartz.{Job, JobExecutionContext}
+import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
@@ -38,6 +38,7 @@ import javax.inject.Inject
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.*
 
+@DisallowConcurrentExecution
 class ImportCustomsOfficesListJob @Inject() (
   val mongoComponent: MongoComponent,
   val lockRepository: MongoLockRepository,

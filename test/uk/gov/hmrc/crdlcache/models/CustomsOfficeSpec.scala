@@ -19,15 +19,42 @@ package uk.gov.hmrc.crdlcache.models
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
+import uk.gov.hmrc.crdlcache.models.dps.col.{DpsCustomsOfficeDetail, RDEntryStatus}
+import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
+  CustomsOfficeDetailMissing,
+  InvalidDateFormat
+}
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
 
 class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
   val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
-  val inputOffice                   = DK003102
-  val dateFormat                    = DateTimeFormatter.ofPattern("yyyyMMdd")
+  val inputOffice = DK003102.copy(customsofficelsd =
+    List(
+      DpsCustomsOfficeDetail(
+        "Hirtshals Toldekspedition",
+        "DA",
+        "Hirtshals",
+        "0",
+        None,
+        None,
+        "0",
+        "Dalsagervej 7"
+      ),
+      DpsCustomsOfficeDetail(
+        "Hirtshals",
+        "en",
+        "Hirtshals",
+        "0",
+        None,
+        None,
+        "1",
+        "Test 7"
+      )
+    )
+  )
+  val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
   val expectedSnapshot = CustomsOffice(
     "DK003102",
     Instant.parse("2025-03-22T00:00:00Z"),
@@ -53,14 +80,14 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
     None,
     List("SN0009"),
     CustomsOfficeDetail(
-      "Hirtshals Toldekspedition",
-      "DA",
+      "Hirtshals",
+      "en",
       "Hirtshals",
       false,
       None,
       None,
-      false,
-      "Dalsagervej 7"
+      true,
+      "Test 7"
     ),
     CustomsOfficeTimetable(
       1,
@@ -69,31 +96,29 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       LocalDate.parse("20991231", dateFormat),
       List(
         TimetableLine(
-          Some(DayOfWeek.of(1)), // temporary change
-          Some(LocalTime.parse("0800", timeFormat)),
-          Some(LocalTime.parse("1600", timeFormat)),
-          Some(DayOfWeek.of(5)),
+          DayOfWeek.of(1),
+          LocalTime.parse("0800", timeFormat),
+          LocalTime.parse("1600", timeFormat),
+          DayOfWeek.of(5),
           None,
           None,
-          Some(
-            List(
-              RoleTrafficCompetence("EXL", "P"),
-              RoleTrafficCompetence("EXL", "R"),
-              RoleTrafficCompetence("EXP", "P"),
-              RoleTrafficCompetence("EXP", "R"),
-              RoleTrafficCompetence("EXT", "P"),
-              RoleTrafficCompetence("EXT", "R"),
-              RoleTrafficCompetence("PLA", "R"),
-              RoleTrafficCompetence("RFC", "R"),
-              RoleTrafficCompetence("DIS", "N/A"),
-              RoleTrafficCompetence("IPR", "N/A"),
-              RoleTrafficCompetence("ENQ", "P"),
-              RoleTrafficCompetence("ENQ", "R"),
-              RoleTrafficCompetence("ENQ", "N/A"),
-              RoleTrafficCompetence("REC", "P"),
-              RoleTrafficCompetence("REC", "R"),
-              RoleTrafficCompetence("REC", "N/A")
-            )
+          List(
+            RoleTrafficCompetence("EXL", "P"),
+            RoleTrafficCompetence("EXL", "R"),
+            RoleTrafficCompetence("EXP", "P"),
+            RoleTrafficCompetence("EXP", "R"),
+            RoleTrafficCompetence("EXT", "P"),
+            RoleTrafficCompetence("EXT", "R"),
+            RoleTrafficCompetence("PLA", "R"),
+            RoleTrafficCompetence("RFC", "R"),
+            RoleTrafficCompetence("DIS", "N/A"),
+            RoleTrafficCompetence("IPR", "N/A"),
+            RoleTrafficCompetence("ENQ", "P"),
+            RoleTrafficCompetence("ENQ", "R"),
+            RoleTrafficCompetence("ENQ", "N/A"),
+            RoleTrafficCompetence("REC", "P"),
+            RoleTrafficCompetence("REC", "R"),
+            RoleTrafficCompetence("REC", "N/A")
           )
         )
       )
@@ -105,11 +130,11 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
     "emailAddress" -> "test@dk",
     "customsOfficeLsd" -> Json.obj(
       "city"                   -> "Hirtshals",
-      "languageCode"           -> "DA",
-      "spaceToAdd"             -> false,
-      "customsOfficeUsualName" -> "Hirtshals Toldekspedition",
+      "languageCode"           -> "en",
+      "spaceToAdd"             -> true,
+      "customsOfficeUsualName" -> "Hirtshals",
       "prefixSuffixFlag"       -> false,
-      "streetAndNumber"        -> "Dalsagervej 7"
+      "streetAndNumber"        -> "Test 7"
     ),
     "customsOfficeTimetable" -> Json.obj(
       "seasonCode"      -> 1,
@@ -118,9 +143,9 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       "customsOfficeTimetableLine" -> Json.arr(
         Json.obj(
           "dayInTheWeekEndDay"              -> 5,
-          "openingHoursTimeFirstPeriodFrom" -> "0800",
+          "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
           "dayInTheWeekBeginDay"            -> 1,
-          "openingHoursTimeFirstPeriodTo"   -> "1600",
+          "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
           "customsOfficeRoleTrafficCompetence" -> Json.arr(
             Json.obj(
               "roleName"    -> "EXL",
@@ -220,5 +245,14 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
 
   it should "deserialize all properties from Mongo Extended JSON" in {
     Json.fromJson[CustomsOffice](mongoJson)(CustomsOffice.mongoFormat).get mustBe expectedSnapshot
+  }
+
+  it should "throw InvalidDateFormat error when an invalid date is provided the input" in {
+    val invalidDateFormat =
+      the[InvalidDateFormat] thrownBy
+        CustomsOffice.fromDpsCustomOfficeList(
+          inputOffice.copy(rdentrystatus = RDEntryStatus("valid", "xyz"))
+        )
+    invalidDateFormat.invalidDate mustBe "xyz"
   }
 }

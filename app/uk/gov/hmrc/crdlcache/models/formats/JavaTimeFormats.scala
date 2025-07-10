@@ -22,7 +22,8 @@ import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, LocalTime}
 
 trait JavaTimeFormats {
-  protected val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+  protected val basicTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+  protected val timeFormat: DateTimeFormatter      = DateTimeFormatter.ISO_LOCAL_TIME
 
   given Format[DayOfWeek] = Format.of[Int].bimap(DayOfWeek.of, _.getValue)
 

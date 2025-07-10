@@ -19,6 +19,7 @@ package uk.gov.hmrc.crdlcache.models
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.TimetableLine.fromDpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOfficeTimetable
+import uk.gov.hmrc.crdlcache.utils.ParserUtils.parseDate
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -40,9 +41,9 @@ object CustomsOfficeTimetable {
     CustomsOfficeTimetable(
       dpsCustomsOfficeTimetable.seasoncode.toInt,
       dpsCustomsOfficeTimetable.seasonname,
-      LocalDate.parse(dpsCustomsOfficeTimetable.seasonstartdate, dateFormat),
-      LocalDate.parse(dpsCustomsOfficeTimetable.seasonenddate, dateFormat),
-      dpsCustomsOfficeTimetable.customsofficetimetableline.map(fromDpsTimetableLine)
+      parseDate(dpsCustomsOfficeTimetable.seasonstartdate, dateFormat),
+      parseDate(dpsCustomsOfficeTimetable.seasonenddate, dateFormat),
+      dpsCustomsOfficeTimetable.customsofficetimetableline.flatMap(fromDpsTimetableLine)
     )
   }
 }

@@ -43,4 +43,13 @@ enum ImportError(val message: String, val cause: Throwable = null)
     extends ImportError(
       s"CustomsOfficeDetail was missing from customs office data from referenceNumber: '$referenceNumber'"
     )
+
+  case InvalidDateFormat(invalidDate: String)
+    extends ImportError(s"An error occurred while parsing the date value: $invalidDate")
+
+  case InvalidTimeFormat(invalidTime: String)
+    extends ImportError(s"An error occurred while parsing time value: $invalidTime")
+
+  case InvalidDayFormat(invalidDay: String)
+    extends ImportError(s"An error occurred while parsing day value: $invalidDay")
 }
