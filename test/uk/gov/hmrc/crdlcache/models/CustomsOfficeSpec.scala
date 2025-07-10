@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.models
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.models.dps.col.RDEntryStatus
+import uk.gov.hmrc.crdlcache.models.dps.col.{DpsCustomsOfficeDetail, RDEntryStatus}
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   CustomsOfficeDetailMissing,
   InvalidDateFormat
@@ -30,8 +30,31 @@ import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
 
 class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
   val timeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
-  val inputOffice                   = DK003102
-  val dateFormat                    = DateTimeFormatter.ofPattern("yyyyMMdd")
+  val inputOffice = DK003102.copy(customsofficelsd =
+    List(
+      DpsCustomsOfficeDetail(
+        "Hirtshals Toldekspedition",
+        "DA",
+        "Hirtshals",
+        "0",
+        None,
+        None,
+        "0",
+        "Dalsagervej 7"
+      ),
+      DpsCustomsOfficeDetail(
+        "Hirtshals",
+        "en",
+        "Hirtshals",
+        "0",
+        None,
+        None,
+        "1",
+        "Test 7"
+      )
+    )
+  )
+  val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
   val expectedSnapshot = CustomsOffice(
     "DK003102",
     Instant.parse("2025-03-22T00:00:00Z"),
@@ -57,14 +80,14 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
     None,
     List("SN0009"),
     CustomsOfficeDetail(
-      "Hirtshals Toldekspedition",
-      "DA",
+      "Hirtshals",
+      "en",
       "Hirtshals",
       false,
       None,
       None,
-      false,
-      "Dalsagervej 7"
+      true,
+      "Test 7"
     ),
     CustomsOfficeTimetable(
       1,
@@ -107,11 +130,11 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
     "emailAddress" -> "test@dk",
     "customsOfficeLsd" -> Json.obj(
       "city"                   -> "Hirtshals",
-      "languageCode"           -> "DA",
-      "spaceToAdd"             -> false,
-      "customsOfficeUsualName" -> "Hirtshals Toldekspedition",
+      "languageCode"           -> "en",
+      "spaceToAdd"             -> true,
+      "customsOfficeUsualName" -> "Hirtshals",
       "prefixSuffixFlag"       -> false,
-      "streetAndNumber"        -> "Dalsagervej 7"
+      "streetAndNumber"        -> "Test 7"
     ),
     "customsOfficeTimetable" -> Json.obj(
       "seasonCode"      -> 1,

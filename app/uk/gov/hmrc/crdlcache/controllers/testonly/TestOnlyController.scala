@@ -64,6 +64,10 @@ class TestOnlyController @Inject() (
     }
   }
 
+  def officesImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.customsOfficeImportStatus()))
+  }
+
   def deleteCustomsOfficeLists(): Action[AnyContent] = Action.async {
     customsOfficeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
       case result if result.wasAcknowledged() => Ok

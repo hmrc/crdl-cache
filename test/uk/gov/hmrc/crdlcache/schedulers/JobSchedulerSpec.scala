@@ -71,4 +71,20 @@ class JobSchedulerSpec
     // It should return to normal once the job ends
     eventually { jobScheduler.codeListImportStatus() mustBe JobStatus(TriggerState.NORMAL) }
   }
+
+  "JobScheduler.customsOfficeImportStatus" should "return trigger status NORMAL when the job is not running" in {
+    jobScheduler.customsOfficeImportStatus() mustBe JobStatus(TriggerState.NORMAL)
+  }
+
+  it should "return the status BLOCKED when the job is running" in {
+    jobScheduler.startCustomsOfficeListImport()
+    // Trigger state should go to blocked while the job is running
+    eventually {
+      jobScheduler.customsOfficeImportStatus() mustBe JobStatus(TriggerState.BLOCKED)
+    }
+    // It should return to normal once the job ends
+    eventually {
+      jobScheduler.customsOfficeImportStatus() mustBe JobStatus(TriggerState.NORMAL)
+    }
+  }
 }

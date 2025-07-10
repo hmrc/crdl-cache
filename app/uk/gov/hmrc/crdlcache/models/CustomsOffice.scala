@@ -119,7 +119,9 @@ object CustomsOffice {
         _.specificnotescode
       ),
       fromDpsCustomsOfficeDetail(
-        dpsCustomOfficeList.customsofficelsd.headOption
+        dpsCustomOfficeList.customsofficelsd
+          .find(_.languagecode.equalsIgnoreCase("EN"))
+          .orElse(dpsCustomOfficeList.customsofficelsd.headOption)
           .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
       ),
       fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate)
