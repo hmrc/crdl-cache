@@ -262,7 +262,7 @@ class CustomsOfficeListsControllerSpec
   )
 
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
-    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.successful(office))
 
     val response = httpClientV2
@@ -274,7 +274,7 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 200 OK when there are no offices to return" in {
-    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
@@ -297,9 +297,85 @@ class CustomsOfficeListsControllerSpec
     response.status mustBe Status.BAD_REQUEST
   }
 
+  it should "parse comma-separated countryCodes and roles from a query parameter when there is only one country and role" in {
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(Some(Set("GB"))),
+        equalTo(Some(Set("AUT"))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?countryCodes=GB&roles=AUT")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated countryCodes and roles from a query parameter when there are multiple countries and roles" in {
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(Some(Set("GB", "XI"))),
+        equalTo(Some(Set("AUT", "CCA"))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?countryCodes=GB,XI&roles=AUT,CCA")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated countryCodes and roles when there are multiple declarations of the query parameter" in {
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(Some(Set("GB", "XI", "AW", "BL"))),
+        equalTo(Some(Set("AUT", "CCA", "ACE", "RSS"))),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?countryCodes=GB,XI&countryCodes=AW,BL&roles=AUT,CCA&roles=ACE,RSS")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
+  it should "parse comma-separated countries and roles when there is no value declared for the query parameter" in {
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(Some(Set.empty)),
+        equalTo(Some(Set.empty)),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(List.empty))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?countryCodes=&roles=")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
+  }
+
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
 
-    when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
