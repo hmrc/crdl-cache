@@ -73,7 +73,7 @@ class JobScheduler @Inject() (
   private def getJobStatus(trigger: Trigger): JobStatus =
     JobStatus(quartz.getTriggerState(trigger.getKey))
 
-  val customsOfficesListJob =
+  val customsOfficesJobTrigger =
     newTrigger()
       .forJob(customsOfficeListJobDetail)
       .withSchedule(customsOfficeListSchedule)
@@ -81,6 +81,10 @@ class JobScheduler @Inject() (
 
   def startCodeListImport(): Unit = {
     quartz.triggerJob(codeListsJobDetail.getKey)
+  }
+
+  def startCustomsOfficeListImport(): Unit = {
+    quartz.triggerJob(customsOfficeListJobDetail.getKey)
   }
 
   def codeListImportStatus(): JobStatus = {
@@ -95,8 +99,8 @@ class JobScheduler @Inject() (
     getJobStatus(correspondenceListsJobTrigger)
   }
 
-  def startCustomsOfficeListImport(): Unit = {
-    quartz.triggerJob(customsOfficeListJobDetail.getKey)
+  def customsOfficeImportStatus(): JobStatus = {
+    getJobStatus(customsOfficesJobTrigger)
   }
 
   private def startScheduler(): Unit = {
@@ -108,8 +112,7 @@ class JobScheduler @Inject() (
 
     quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
     quartz.scheduleJob(correspondenceListsJobDetail, correspondenceListsJobTrigger)
-
-    quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesListJob)
+    quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesJobTrigger)
     quartz.start()
   }
 

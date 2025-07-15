@@ -32,17 +32,6 @@ import uk.gov.hmrc.crdlcache.models.dps.*
 import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.*
 import uk.gov.hmrc.crdlcache.models.dps.col.*
-import RelationType.{Next, Prev, Self}
-import uk.gov.hmrc.crdlcache.models.dps.col.{
-  CustomsOfficeListResponse,
-  DpsCustomsOfficeTimetable,
-  DpsCustomsOffice,
-  DpsCustomsOfficeDetail,
-  DpsRoleTrafficCompetence,
-  DpsTimetableLine,
-  RDEntryStatus,
-  SpecificNotes
-}
 import uk.gov.hmrc.http.test.{HttpClientV2Support, WireMockSupport}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 

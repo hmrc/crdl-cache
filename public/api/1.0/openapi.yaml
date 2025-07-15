@@ -151,7 +151,6 @@ components:
           $ref: "#/components/schemas/customsOfficeTimetable"
       examples:
         - referenceNumber: MK002041
-          activeFrom: 2024-11-21T00:00:00Z
           referenceNumberMainOffice: MK002000
           referenceNumberHigherAuthority: MK002000
           referenceNumberCompetentAuthorityOfEnquiry: MK009000
@@ -546,7 +545,6 @@ paths:
                   $ref: "#/components/schemas/CustomsOffice"
                 examples:
                   - - referenceNumber: IT223100
-                      activeFrom: 2025-05-01T00:00:00Z
                       activeTo: 2027-05-29T00:00:00Z
                       referenceNumberHigherAuthority: ITP00002
                       countryCode: IT
@@ -558,6 +556,7 @@ paths:
                       geoInfoCode: Q
                       traderDedicated: false
                       dedicatedTraderLanguageCode: IT
+                      dedicatedTraderName: TIN
                       customsOfficeSpecificNotesCodes: []
                       customsOfficeLsd:
                         customsOfficeUsualName: EMILIA 1 BOLOGNA
@@ -565,6 +564,7 @@ paths:
                         city: BOLOGNA
                         prefixSuffixFlag: false
                         prefixSuffixLevel: A
+                        prefixSuffixName: Zollstelle
                         spaceToAdd: true
                         streetAndNumber: VIALE PIETRAMELLARA, 1/2
                       customsOfficeTimetable:
@@ -581,7 +581,6 @@ paths:
                              - roleName: EXC
                                trafficType: R
                     - referenceNumber: LV000724
-                      activeFrom: 2024-06-07T00:00:00Z
                       referenceNumberMainOffice: LV002600
                       referenceNumberHigherAuthority: LV009999
                       referenceNumberCompetentAuthorityOfEnquiry: LV000724

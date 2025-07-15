@@ -49,11 +49,11 @@ object TimetableLine extends JavaTimeFormats {
     } yield {
       TimetableLine(
         parseDayOfWeek(beginDay),
-        parseTime(firstPeriodOpenFrom, timeFormat),
-        parseTime(firstPeriodOpenTo, timeFormat),
+        parseTime(firstPeriodOpenFrom, basicTimeFormat),
+        parseTime(firstPeriodOpenTo, basicTimeFormat),
         parseDayOfWeek(endDay),
-        secondPeriodOpenFrom.map(parseTime(_, timeFormat)),
-        secondPeriodOpenTo.map(parseTime(_, timeFormat)),
+        secondPeriodOpenFrom.map(parseTime(_, basicTimeFormat)),
+        secondPeriodOpenTo.map(parseTime(_, basicTimeFormat)),
         roleTraffic.map(fromDpsRoleTrafficCompetence)
       )
     }
