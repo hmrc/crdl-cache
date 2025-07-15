@@ -18,7 +18,7 @@ package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
 
-case class CustomsOffice(
+case class DpsCustomsOffice(
   rdentrystatus: RDEntryStatus,
   referencenumber: String,
   referencenumbermainoffice: Option[String],
@@ -32,7 +32,7 @@ case class CustomsOffice(
   nctsentrydate: Option[String],
   nearestoffice: Option[String],
   postalcode: String,
-  phonenumber: String,
+  phonenumber: Option[String],
   faxnumber: Option[String],
   telexnumber: Option[String],
   geoinfocode: Option[String],
@@ -41,10 +41,10 @@ case class CustomsOffice(
   dedicatedtraderlanguagecode: Option[String],
   dedicatedtradername: Option[String],
   customsofficespecificnotes: List[SpecificNotes],
-  customsofficelsd: List[CustomsOfficeDetail],
-  customsofficetimetable: CustomsOfficeTimetable
+  customsofficelsd: List[DpsCustomsOfficeDetail],
+  customsofficetimetable: DpsCustomsOfficeTimetable
 )
 
-object CustomsOffice {
-  given Reads[CustomsOffice] = Json.reads[CustomsOffice]
+object DpsCustomsOffice {
+  given Reads[DpsCustomsOffice] = Json.reads[DpsCustomsOffice]
 }

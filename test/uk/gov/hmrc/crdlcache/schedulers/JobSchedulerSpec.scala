@@ -55,6 +55,7 @@ class JobSchedulerSpec
 
     when(appConfig.importCodeListsSchedule).thenReturn("0 0 4 * * ? 2099")
     when(appConfig.importCorrespondenceListsSchedule).thenReturn("0 0 4 * * ? 2099")
+    when(appConfig.importOfficesSchedule).thenReturn("0 0 4 * * ? 2099")
     when(jobFactory.newJob(any(), any())).thenReturn(_ => Thread.sleep(50))
 
     jobScheduler = new JobScheduler(lifecycle, schedulerFactory, jobFactory, appConfig)
@@ -89,6 +90,22 @@ class JobSchedulerSpec
     // It should return to normal once the job ends
     eventually {
       jobScheduler.correspondenceListImportStatus() mustBe JobStatus(TriggerState.NORMAL)
+    }
+  }
+
+  "JobScheduler.customsOfficeImportStatus" should "return trigger status NORMAL when the job is not running" in {
+    jobScheduler.customsOfficeImportStatus() mustBe JobStatus(TriggerState.NORMAL)
+  }
+
+  it should "return the status BLOCKED when the job is running" in {
+    jobScheduler.startCustomsOfficeListImport()
+    // Trigger state should go to blocked while the job is running
+    eventually {
+      jobScheduler.customsOfficeImportStatus() mustBe JobStatus(TriggerState.BLOCKED)
+    }
+    // It should return to normal once the job ends
+    eventually {
+      jobScheduler.customsOfficeImportStatus() mustBe JobStatus(TriggerState.NORMAL)
     }
   }
 }

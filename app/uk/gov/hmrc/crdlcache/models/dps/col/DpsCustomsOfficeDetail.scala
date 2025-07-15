@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
 
-case class LanguageDescription(lang_code: String, lang_desc: String)
+case class DpsCustomsOfficeDetail(
+  customsofficeusualname: String,
+  languagecode: String,
+  city: String,
+  prefixsuffixflag: String,
+  prefixsuffixlevel: Option[String],
+  prefixsuffixname: Option[String],
+  spacetoadd: String,
+  streetandnumber: String
+)
 
-object LanguageDescription {
-  given Reads[LanguageDescription] = Json.reads[LanguageDescription]
+object DpsCustomsOfficeDetail {
+  given Reads[DpsCustomsOfficeDetail] = Json.reads[DpsCustomsOfficeDetail]
 }

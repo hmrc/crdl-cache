@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.dps.col
 
 import play.api.libs.json.{Json, Reads}
-import uk.gov.hmrc.crdlcache.models.CodeListCode
-
-case class CodeListSnapshot(
-  code_list_code: CodeListCode,
-  code_list_name: String,
-  snapshotversion: Int,
-  rdentry: List[CodeListEntry]
+case class DpsCustomsOfficeTimetable(
+  seasoncode: String,
+  seasonname: Option[String],
+  seasonstartdate: String,
+  seasonenddate: String,
+  customsofficetimetableline: List[DpsTimetableLine]
 )
 
-object CodeListSnapshot {
-  given Reads[CodeListSnapshot] = Json.reads[CodeListSnapshot]
+object DpsCustomsOfficeTimetable {
+  given Reads[DpsCustomsOfficeTimetable] = Json.reads[DpsCustomsOfficeTimetable]
 }

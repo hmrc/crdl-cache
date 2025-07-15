@@ -23,7 +23,8 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.repositories.{
   CorrespondenceListsRepository,
   LastUpdatedRepository,
-  StandardCodeListsRepository
+  StandardCodeListsRepository,
+  CustomsOfficeListsRepository
 }
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -37,7 +38,8 @@ class TestOnlyController @Inject() (
   jobScheduler: JobScheduler,
   lastUpdatedRepository: LastUpdatedRepository,
   codeListsRepository: StandardCodeListsRepository,
-  correspondenceListsRepository: CorrespondenceListsRepository
+  correspondenceListsRepository: CorrespondenceListsRepository,
+  customsOfficeListsRepository: CustomsOfficeListsRepository
 )(using ec: ExecutionContext)
   extends BackendController(cc) {
 
@@ -79,4 +81,21 @@ class TestOnlyController @Inject() (
       case _                                  => InternalServerError
     }
   }
+
+  def officesImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.customsOfficeImportStatus()))
+  }
+
+  def deleteCustomsOfficeLists(): Action[AnyContent] = Action.async {
+    customsOfficeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
+      case result if result.wasAcknowledged() => Ok
+      case _                                  => InternalServerError
+    }
+  }
+
+  def importCustomsOfficeLists(): Action[AnyContent] = Action {
+    jobScheduler.startCustomsOfficeListImport()
+    Accepted
+  }
+
 }

@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models.dps.codeList
+package uk.gov.hmrc.crdlcache.models.formats
 
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.Format
 
-case class CodeListEntry(dataitem: List[DataItem], language: List[LanguageDescription]) {
-  def getProperty(itemName: String): Option[DataItem] =
-    dataitem.find(item => item.dataitem_name == itemName)
-}
+import java.time.format.DateTimeFormatter
+import java.time.{DayOfWeek, LocalTime}
 
-object CodeListEntry {
-  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
+trait JavaTimeFormats {
+  protected val basicTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("HHmm")
+  protected val timeFormat: DateTimeFormatter      = DateTimeFormatter.ISO_LOCAL_TIME
+
+  given Format[DayOfWeek] = Format.of[Int].bimap(DayOfWeek.of, _.getValue)
+
+  given Format[LocalTime] =
+    Format.of[String].bimap(LocalTime.parse(_, timeFormat), timeFormat.format)
+
 }

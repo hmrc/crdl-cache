@@ -25,6 +25,14 @@ tags:
       
       For example, entries in the excise products codelist (BC36) contain properties describing the excise product category
       they belong to, and applicability flags describing which kinds of excise information apply to that particular product.
+  - name: CustomsOffices
+    x-displayName: Customs Offices
+    description: |
+      These endpoints provide operations for working with customs office lists.
+      
+      Customs office lists provide information about offices like their address, contact details, schedule, etc. Each customs office has a unique reference number.
+    
+      Most of the fields are optional for the response, only a few are mandatory like referenceNumber, activeFrom, countryCode, postalCode, traderDedicated, customsOfficeDetails and CustomsOfficeTimetable details.
 
 components:
   schemas:
@@ -57,7 +65,259 @@ components:
           value: Bermuda
           properties:
             actionIdentification: "824"
-  
+    CustomsOffice:
+      type: object
+      x-tags:
+        - CustomsOffices
+      required:
+        - referenceNumber
+        - activeFrom
+        - countryCode
+        - postalCode
+        - traderDedicated
+        - customsOfficeSpecificNotesCodes
+        - customsOfficeLsd
+        - customsOfficeTimetable
+      additionalProperties: false
+      properties:
+        referenceNumber:
+          type: string
+          description: The unique reference number for a customs office.
+        referenceNumberMainOffice:
+          type: string
+          description: The reference number of the main office. This is relevant when this office is subordinate to another office.
+        referenceNumberHigherAuthority:
+          type: string
+          description: The reference number of another office which has authority over this office. This office should have the Higher Authority (AUT) role.
+        referenceNumberCompetentAuthorityOfEnquiry:
+          type: string
+          description: The reference number of another office which takes the role of Competent Authority of Enquiry (ENQ) on behalf of this office.
+        referenceNumberCompetentAuthorityOfRecovery:
+          type: string
+          description: The reference number of another office which takes the role of Competent Authority of Recovery (REC) on behalf of this office.
+        referenceNumberTakeover:
+          type: string
+          description: The reference number of another office which takes over from this office in the event that it is unable to perform transit operations.
+        countryCode:
+          type: string
+          description: The country code for the customs office. This should reference entries of the "CountryCodesCustomsOfficeLists" (CL070) codelist.
+        emailAddress:
+          type: string
+          description: The email address of the office.
+        unLocodeId:
+          type: string
+          description: The UN/LOCODE used to identify the country and territory of the customs office. This should reference entries of the "UnLocode" (CL144) codelist.
+        nctsEntryDate:
+          type: date
+          description: Date of entry into NCTS.
+        nearestOffice:
+          type: string
+          description:  Reference number of the nearest customs office. This property is required when the customs office is located on the frontier according to its `geoInfoCode`.
+        postalCode:
+          type: string
+          description: The postal code for the customs office.
+        phoneNumber:
+          type: string
+          description: Contact number.
+        faxNumber:
+          type: string
+          description: Fax number.
+        telexNumber:
+          type: string
+          description: Telex number.
+        geoInfoCode:
+          type: string
+          description: Geo information code. This code identifies the geographical location of the office, and whether the office is on the frontier with another location. It should reference entries of the "GeoInfoCodes" (CL015) codelist.
+        regionCode:
+          type: string
+          description: Code indicating the region within a country where the office is located. This should reference entries of the "CountryRegion" (CL142) codelist.
+        traderDedicated:
+          type: boolean
+          description: Boolean flag for whether there is a dedicated trader.
+        dedicatedTraderLanguageCode:
+          type: string
+          description: Dedicated trader language code. This should reference entries of the "LanguageCodes" (CL012) codelist.
+        dedicatedTraderName:
+          type: string
+          description: Dedicated trader name.
+        customsOfficeSpecificNotesCodes:
+          type: array
+          items:
+            type: string
+          description: A list of specific notes codes. They should reference entries of the "SpecificNotesCode" (CL067) codelist.
+        customsOfficeLsd:
+          $ref: "#/components/schemas/customsOfficeLsd"
+        customsOfficeTimetable:
+          $ref: "#/components/schemas/customsOfficeTimetable"
+      examples:
+        - referenceNumber: MK002041
+          referenceNumberMainOffice: MK002000
+          referenceNumberHigherAuthority: MK002000
+          referenceNumberCompetentAuthorityOfEnquiry: MK009000
+          referenceNumberCompetentAuthorityOfRecovery: MK009000
+          referenceNumberTakeover: MK002031
+          countryCode: MK
+          emailAddress: test@customs.gov.mk
+          unLocodeId: PLN
+          nctsEntryDate: 2015-07-01
+          nearestOffice: MK002031
+          postalCode: "40121"
+          phoneNumber: "0038931800060"
+          faxNumber: "0038931800061"
+          geoInfoCode: MK/RS
+          traderDedicated: false
+          customsOfficeSpecificNotesCodes: []
+          customsOfficeLsd:
+            customsOfficeUsualName: Customs Office Pelince
+            languageCode: EN
+            city: Pelince
+            prefixSuffixFlag: false
+            prefixSuffixLevel: A
+            spaceToAdd: false
+            streetAndNumber:  BP Pelince
+          customsOfficeTimetable:
+            seasonCode: 1
+            seasonName: ALL YEAR
+            seasonStartDate: 2019-01-01
+            seasonEndDate: 2019-12-31
+            customsOfficeTimetableLine:
+              - dayInTheWeekBeginDay: 1
+                openingHoursTimeFirstPeriodFrom: "0001"
+                openingHoursTimeFirstPeriodTo: "2359"
+                dayInTheWeekEndDay: 7
+                customsOfficeRoleTrafficCompetence:
+                 - roleName: TRA
+                   trafficType: R
+    customsOfficeLsd:
+      type: object
+      x-tags:
+        - customsOfficeLsd
+      required:
+        - customsOfficeUsualName
+        - languageCode
+        - city
+        - prefixSuffixFlag
+        - spaceToAdd
+        - streetAndNumber
+      additionalProperties: false
+      properties:
+        customsOfficeUsualName:
+          type: string
+          description: The customs office name.
+        languageCode:
+          type: string
+          description: The language code in which the details are described. This should reference entries of the "LanguageCodes" (CL012) codelist.
+        city:
+          type: string
+          description: The city name.
+        prefixSuffixFlag:
+          type: boolean
+          description: A flag to identify whether it has a prefix or suffix.
+        prefixSuffixLevel:
+          type: string
+          description: The position where affix are added to the office detail to modify it's meaning. This should reference entries of the "PrefixSuffixLevel" (CL053) codelist.
+        prefixSuffixName:
+          type: string
+          description: The actual prefix or suffix.
+        spaceToAdd:
+          type: boolean
+          description: A flag to determine whether there needs to be a space added.
+        streetAndNumber:
+          type: string
+          description: The street name and number of the office.
+    customsOfficeTimetable:
+      type: object
+      x-tags:
+        - customsOfficeTimetable
+      required:
+        - seasonCode
+        - seasonStartDate
+        - seasonEndDate
+        - customsOfficeTimetableLine
+      additionalProperties: false
+      properties:
+        seasonCode:
+          type: integer
+          minimum: 1
+          maximum: 9
+          description: Numeric season code. Each entry must have a unique season code.
+        seasonName:
+          type: string
+          description: The office availability season name.
+        seasonStartDate:
+          type: date
+          description: The season start date.
+        seasonEndDate:
+          type: date
+          description: The season end date.
+        customsOfficeTimetableLine:
+          $ref: "#/components/schemas/customsOfficeTimetableLine"
+    customsOfficeTimetableLine:
+      type: object
+      x-tags:
+        - customsOfficeTimetableLine
+      required:
+        - dayInTheWeekBeginDay
+        - openingHoursTimeFirstPeriodFrom
+        - openingHoursTimeFirstPeriodTo
+        - dayInTheWeekEndDay
+        - customsOfficeRoleTrafficCompetence
+      additionalProperties: false
+      properties:
+        dayInTheWeekBeginDay:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: |
+            The day in the week when the office begins operating.
+
+            This should reference entries of the "DayInTheWeek" (CL105) codelist.
+
+            NCTS uses ISO weekday numbering where weekdays are represented as numbers from 1-7, starting on Monday and ending on Sunday.
+        openingHoursTimeFirstPeriodFrom:
+          type: string
+          format: time
+          description: The time at which the office opens.
+        openingHoursTimeFirstPeriodTo:
+          type: string
+          format: time
+          description: The time at which the office closes.
+        dayInTheWeekEndDay:
+          type: integer
+          minimum: 1
+          maximum: 7
+          description: |
+            The day in the week when the office stops operating.
+
+            This should reference entries of the "DayInTheWeek" (CL105) codelist.
+
+            NCTS uses ISO weekday numbering where weekdays are represented as numbers from 1-7, starting on Monday and ending on Sunday.
+        openingHoursTimeSecondPeriodFrom:
+          type: string
+          format: time
+          description: The second period start time.
+        openingHoursTimeSecondPeriodTo:
+          type: string
+          format: time
+          description: The second period end time.
+        customsOfficeRoleTrafficCompetence:
+          $ref: "#/components/schemas/customsOfficeRoleTrafficCompetence"
+    customsOfficeRoleTrafficCompetence:
+      type: object
+      x-tags:
+        - customsOfficeRoleTrafficCompetence
+      required:
+        - roleName
+        - trafficType
+      additionalProperties: false
+      properties:
+        roleName:
+          type: string
+          description: Customs office role code. This should reference entries of the "Role" (CL056) codelist.
+        trafficType:
+        type: string
+        description: The type of traffic that this customs office can process. This should reference entries of the "TrafficType" (CL020) codelist.
+
   responses:
     badRequest:
       x-summary: Bad Request
@@ -235,6 +495,115 @@ paths:
                         degreePlatoApplicabilityFlag: false
                         densityApplicabilityFlag: false
 
+        400:
+          $ref: "#/components/responses/badRequest"
+  /offices:
+    get:
+      summary: Fetch Customs Office Lists
+      description: |
+        This endpoint is used to fetch customs office lists.
+      tags:
+        - CustomsOffices
+      parameters:
+        - name: activeAt
+          in: path
+          description: The timestamp at which we want to fetch the customs office lists.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: 2025-06-05T00:00:00Z
+            examples:
+              - 2025-06-05T00:00:00Z
+              - 2026-06-05T12:34:56Z
+              - 2025-12-23T34:45:56Z
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomsOffice"
+                examples:
+                  - - referenceNumber: IT223100
+                      activeTo: 2027-05-29T00:00:00Z
+                      referenceNumberHigherAuthority: ITP00002
+                      countryCode: IT
+                      emailAddress: test@adm.gov.it
+                      nctsEntryDate : 2025-05-01
+                      postalCode: "40121"
+                      phoneNumber: 0039 0515283611
+                      faxNumber: 0039 0515283622
+                      geoInfoCode: Q
+                      traderDedicated: false
+                      dedicatedTraderLanguageCode: IT
+                      dedicatedTraderName: TIN
+                      customsOfficeSpecificNotesCodes: []
+                      customsOfficeLsd:
+                        customsOfficeUsualName: EMILIA 1 BOLOGNA
+                        languageCode: IT
+                        city: BOLOGNA
+                        prefixSuffixFlag: false
+                        prefixSuffixLevel: A
+                        prefixSuffixName: Zollstelle
+                        spaceToAdd: true
+                        streetAndNumber: VIALE PIETRAMELLARA, 1/2
+                      customsOfficeTimetable:
+                        seasonCode: 1
+                        seasonName: ALL YEAR
+                        seasonStartDate: 2018-01-01
+                        seasonEndDate: 2099-12-31
+                        customsOfficeTimetableLine:
+                          - dayInTheWeekBeginDay: 1
+                            openingHoursTimeFirstPeriodFrom: "0800"
+                            openingHoursTimeFirstPeriodTo: "1800"
+                            dayInTheWeekEndDay: 6
+                            customsOfficeRoleTrafficCompetence:
+                             - roleName: EXC
+                               trafficType: R
+                    - referenceNumber: LV000724
+                      referenceNumberMainOffice: LV002600
+                      referenceNumberHigherAuthority: LV009999
+                      referenceNumberCompetentAuthorityOfEnquiry: LV000724
+                      referenceNumberCompetentAuthorityOfRecovery: LV009999
+                      countryCode: LV
+                      emailAddress: test@vid.gov.lv
+                      nctsEntryDate: 2004-05-01
+                      postalCode: LV-5717
+                      phoneNumber: +371 67123127
+                      telexNumber: "3726762999"
+                      geoInfoCode: LV/RU
+                      regionCode: CFU
+                      traderDedicated: false
+                      customsOfficeSpecificNotesCodes:
+                        - SN0033
+                        - SN0032
+                      customsOfficeLsd:
+                        customsOfficeUsualName: KĀRSAVAS MKP"
+                        languageCode: LV
+                        city: Kārsavas nov.
+                        prefixSuffixFlag: false
+                        spaceToAdd: true
+                        streetAndNumber: Bozova, Malnavas pag.
+                      customsOfficeTimetable:
+                        seasonCode: 1
+                        seasonName: all year
+                        seasonStartDate: 2018-01-01
+                        seasonEndDate: 2099-12-31
+                        customsOfficeTimetableLine:
+                          - dayInTheWeekBeginDay: 1
+                            openingHoursTimeFirstPeriodFrom: "0800"
+                            openingHoursTimeFirstPeriodTo: "1200"
+                            dayInTheWeekEndDay: 7
+                            openingHoursTimeSecondPeriodFrom: "1330"
+                            openingHoursTimeSecondPeriodTo: "1730"
+                            customsOfficeRoleTrafficCompetence:
+                              - roleName: DEP
+                                trafficType: V
+                              - roleName: PCI
+                                trafficType: V
         400:
           $ref: "#/components/responses/badRequest"
 

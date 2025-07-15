@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models
+package uk.gov.hmrc.crdlcache.models.dps.codelist
 
-enum CodeListType {
-  case STANDARD, CORRESPONDENCE
+import play.api.libs.json.{Json, Reads}
+import uk.gov.hmrc.crdlcache.models.CodeListCode
+
+case class DpsCodeListSnapshot(
+  code_list_code: CodeListCode,
+  code_list_name: String,
+  snapshotversion: Int,
+  rdentry: List[DpsCodeListEntry]
+)
+
+object DpsCodeListSnapshot {
+  given Reads[DpsCodeListSnapshot] = Json.reads[DpsCodeListSnapshot]
 }
