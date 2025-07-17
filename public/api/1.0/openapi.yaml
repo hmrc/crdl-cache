@@ -311,7 +311,7 @@ components:
     customsOfficeRoleTrafficCompetence:
       type: object
       description: |
-        A lis of the customs office roles and traffic types.
+        A list of the customs office roles and traffic types.
       x-tags:
         - customsOfficeRoleTrafficCompetence
       required:
