@@ -522,6 +522,23 @@ paths:
               examples:
                 - [ "AD", "IT" ]
                 - [ "CZ", "SK" ]
+        - name: roles
+          in: query
+          description: |
+            Used to specify the roles of the offices to return in the response.
+
+            You can provide comma-separated values for roles, or provide multiple occurrences of the `roles` parameter, or both.
+
+            For example: `?roles=ACE,RSS&roles=AUT&roles=CCA`.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: [ "ACE", "RSS" ]
+              examples:
+                - [ "AUT", "CCA" ]
+                - [ "REG", "EXC" ]
         - name: activeAt
           in: query
           description: The timestamp at which we want to fetch the customs office lists.

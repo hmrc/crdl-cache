@@ -34,10 +34,11 @@ class CustomsOfficeListsController @Inject() (
   extends BackendController(cc) {
   def fetchCustomsOfficeLists(
     countryCodes: Option[Set[String]],
+    roles: Option[Set[String]],
     activeAt: Option[Instant]
   ): Action[AnyContent] = Action.async { _ =>
     customsOfficeListsRepository
-      .fetchCustomsOfficeLists(countryCodes, activeAt.getOrElse(clock.instant()))
+      .fetchCustomsOfficeLists(countryCodes, roles, activeAt.getOrElse(clock.instant()))
       .map { customsOfficeLists =>
         Ok(Json.toJson(customsOfficeLists))
       }
