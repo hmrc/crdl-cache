@@ -190,6 +190,8 @@ components:
                    trafficType: R
     customsOfficeLsd:
       type: object
+      description: |
+        The customs office name, language code and address details.
       x-tags:
         - customsOfficeLsd
       required:
@@ -227,6 +229,8 @@ components:
           description: The street name and number of the office.
     customsOfficeTimetable:
       type: object
+      description: |
+        The customs office timetable details.
       x-tags:
         - customsOfficeTimetable
       required:
@@ -253,6 +257,8 @@ components:
         customsOfficeTimetableLine:
           $ref: "#/components/schemas/customsOfficeTimetableLine"
     customsOfficeTimetableLine:
+      description: |
+        A list of customs office timetable lines.
       type: object
       x-tags:
         - customsOfficeTimetableLine
@@ -304,6 +310,8 @@ components:
           $ref: "#/components/schemas/customsOfficeRoleTrafficCompetence"
     customsOfficeRoleTrafficCompetence:
       type: object
+      description: |
+        A lis of the customs office roles and traffic types.
       x-tags:
         - customsOfficeRoleTrafficCompetence
       required:
@@ -315,8 +323,8 @@ components:
           type: string
           description: Customs office role code. This should reference entries of the "Role" (CL056) codelist.
         trafficType:
-        type: string
-        description: The type of traffic that this customs office can process. This should reference entries of the "TrafficType" (CL020) codelist.
+          type: string
+          description: The type of traffic that this customs office can process. This should reference entries of the "TrafficType" (CL020) codelist.
 
   responses:
     badRequest:
@@ -505,6 +513,23 @@ paths:
       tags:
         - CustomsOffices
       parameters:
+        - name: referenceNumbers
+          in: query
+          description: |
+            Used to specify the reference numbers of the offices to return in the response.
+
+            You can provide comma-separated values for reference numbers, or provide multiple occurrences of the `referenceNumbers` parameter, or both.
+
+            For example: `?referenceNumbers=IT314102,DK314102&referenceNumbers=DE005055&referenceNumbers=GB005055`.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: [ "IT314102", "DE005055" ]
+              examples:
+                - [ "DK314102", "GB005055" ]
+                - [ "IT223101", "IT223100" ]
         - name: countryCodes
           in: query
           description: |
@@ -522,6 +547,23 @@ paths:
               examples:
                 - [ "AD", "IT" ]
                 - [ "CZ", "SK" ]
+        - name: roles
+          in: query
+          description: |
+            Used to specify the roles of the offices to return in the response.
+
+            You can provide comma-separated values for roles, or provide multiple occurrences of the `roles` parameter, or both.
+
+            For example: `?roles=ACE,RSS&roles=AUT&roles=CCA`.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              example: [ "ACE", "RSS" ]
+              examples:
+                - [ "AUT", "CCA" ]
+                - [ "REG", "EXC" ]
         - name: activeAt
           in: query
           description: The timestamp at which we want to fetch the customs office lists.
