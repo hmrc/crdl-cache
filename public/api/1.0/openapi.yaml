@@ -564,18 +564,19 @@ paths:
               examples:
                 - [ "AUT", "CCA" ]
                 - [ "REG", "EXC" ]
-        - name: activeAt
-          in: query
-          description: The timestamp at which we want to fetch the customs office lists.
-          required: false
-          schema:
-            type: string
-            format: date-time
-            example: 2025-06-05T00:00:00Z
-            examples:
-              - 2025-06-05T00:00:00Z
-              - 2026-06-05T12:34:56Z
-              - 2025-12-23T34:45:56Z
+        # The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
+        #- name: activeAt
+        #  in: query
+        #  description: The timestamp at which we want to fetch the customs office lists.
+        #  required: false
+        #  schema:
+        #    type: string
+        #    format: date-time
+        #    example: 2025-06-05T00:00:00Z
+        #    examples:
+        #      - 2025-06-05T00:00:00Z
+        #      - 2026-06-05T12:34:56Z
+        #      - 2025-12-23T34:45:56Z
       responses:
         200:
           description: OK
