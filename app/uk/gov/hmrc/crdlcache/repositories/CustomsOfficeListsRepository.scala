@@ -134,12 +134,20 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     }
 
   def fetchCustomsOfficeLists(
+    referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
     activeAt: Instant
   ): Future[Seq[CustomsOffice]] = {
     val mandatoryFilters =
       List(lte("activeFrom", activeAt), or(equal("activeTo", null), gt("activeTo", activeAt)))
+
+    val referenceNumberFilters = referenceNumbers
+      .map(referenceNumbers =>
+        if referenceNumbers.nonEmpty then List(in("referenceNumber", referenceNumbers.toSeq*))
+        else List.empty
+      )
+      .getOrElse(List.empty)
 
     val countryCodeFilters = countryCodes
       .map(countryCodes =>
@@ -160,7 +168,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       )
       .getOrElse(List.empty)
 
-    val allFilters = mandatoryFilters ++ countryCodeFilters ++ roleFilters
+    val allFilters = mandatoryFilters ++ referenceNumberFilters ++ countryCodeFilters ++ roleFilters
 
     collection
       .find(and(allFilters*))

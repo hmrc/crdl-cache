@@ -457,6 +457,7 @@ class CustomsOfficeListsRepositorySpec
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = None,
         roles = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -469,6 +470,7 @@ class CustomsOfficeListsRepositorySpec
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = None,
         roles = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -481,6 +483,7 @@ class CustomsOfficeListsRepositorySpec
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = None,
         roles = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -493,18 +496,33 @@ class CustomsOfficeListsRepositorySpec
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = None,
         roles = None,
         activeAt = Instant.parse("2025-04-05T00:00:00Z")
       )
       .map(_ must contain(invalidatedoffice))
   }
-
+  
+  it should "apply filtering of offices according to the supplied referenceNumbers" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set("IT223101")),
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustBe List(newOffice))
+  }
+  
   it should "apply filtering of offices according to the supplied countryCodes" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = Some(Set("DK")),
         roles = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -517,6 +535,7 @@ class CustomsOfficeListsRepositorySpec
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = None,
         roles = Some(Set("EXL")),
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -524,11 +543,12 @@ class CustomsOfficeListsRepositorySpec
       .map(_ mustBe List(DK003102))
   }
 
-  it should "not apply filtering of countries and roles when the set of supplied countries and roles is empty" in withCustomsOfficeEntries(
+  it should "not apply filtering of referenceNumbers, countries and roles when the set of supplied referenceNumbers, countries and roles is empty" in withCustomsOfficeEntries(
     customsOffices :+ newOffice
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set.empty),
         countryCodes = Some(Set.empty),
         roles = Some(Set.empty),
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -536,11 +556,25 @@ class CustomsOfficeListsRepositorySpec
       .map(_ must contain allElementsOf List(DK003102, newOffice))
   }
 
+  it should "not return other offices even when matching referenceNumbers are specified" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set("IT223101")),
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustNot contain(DK003102))
+  }
+
   it should "not return other offices even when matching countryCodes are specified" in withCustomsOfficeEntries(
     customsOffices :+ newOffice
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = Some(Set("IT")),
         roles = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
@@ -553,6 +587,7 @@ class CustomsOfficeListsRepositorySpec
   ) { _ =>
     repository
       .fetchCustomsOfficeLists(
+        referenceNumbers = None,
         countryCodes = None,
         roles = Some(Set("EIN")),
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
