@@ -37,13 +37,15 @@ object CustomsOfficeTimetable {
   def fromDpsCustomsOfficeTimetable(
     dpsCustomsOfficeTimetable: DpsCustomsOfficeTimetable,
     dateFormat: DateTimeFormatter
-  ): CustomsOfficeTimetable = {
-    CustomsOfficeTimetable(
-      dpsCustomsOfficeTimetable.seasoncode.toInt,
-      dpsCustomsOfficeTimetable.seasonname,
-      parseDate(dpsCustomsOfficeTimetable.seasonstartdate, dateFormat),
-      parseDate(dpsCustomsOfficeTimetable.seasonenddate, dateFormat),
-      dpsCustomsOfficeTimetable.customsofficetimetableline.flatMap(fromDpsTimetableLine)
+  ): List[CustomsOfficeTimetable] = {
+    List(
+      CustomsOfficeTimetable(
+        dpsCustomsOfficeTimetable.seasoncode.toInt,
+        dpsCustomsOfficeTimetable.seasonname,
+        parseDate(dpsCustomsOfficeTimetable.seasonstartdate, dateFormat),
+        parseDate(dpsCustomsOfficeTimetable.seasonenddate, dateFormat),
+        dpsCustomsOfficeTimetable.customsofficetimetableline.flatMap(fromDpsTimetableLine)
+      )
     )
   }
 }

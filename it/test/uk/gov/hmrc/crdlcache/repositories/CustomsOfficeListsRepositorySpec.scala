@@ -111,36 +111,38 @@ class CustomsOfficeListsRepositorySpec
       false,
       "Dalsagervej 7"
     ),
-    CustomsOfficeTimetable(
-      1,
-      None,
-      LocalDate.parse("20180101", dateFormat),
-      LocalDate.parse("20991231", dateFormat),
-      List(
-        TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("08:00", timeFormat),
-          LocalTime.parse("16:00", timeFormat),
-          DayOfWeek.of(5),
-          None,
-          None,
-          List(
-            RoleTrafficCompetence("EXL", "P"),
-            RoleTrafficCompetence("EXL", "R"),
-            RoleTrafficCompetence("EXP", "P"),
-            RoleTrafficCompetence("EXP", "R"),
-            RoleTrafficCompetence("EXT", "P"),
-            RoleTrafficCompetence("EXT", "R"),
-            RoleTrafficCompetence("PLA", "R"),
-            RoleTrafficCompetence("RFC", "R"),
-            RoleTrafficCompetence("DIS", "N/A"),
-            RoleTrafficCompetence("IPR", "N/A"),
-            RoleTrafficCompetence("ENQ", "P"),
-            RoleTrafficCompetence("ENQ", "R"),
-            RoleTrafficCompetence("ENQ", "N/A"),
-            RoleTrafficCompetence("REC", "P"),
-            RoleTrafficCompetence("REC", "R"),
-            RoleTrafficCompetence("REC", "N/A")
+    List(
+      CustomsOfficeTimetable(
+        1,
+        None,
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("16:00", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
           )
         )
       )
@@ -181,6 +183,7 @@ class CustomsOfficeListsRepositorySpec
       true,
       "Prima Strada, 5"
     ),
+    List(
     CustomsOfficeTimetable(
       1,
       Some("ALL YEAR"),
@@ -213,6 +216,7 @@ class CustomsOfficeListsRepositorySpec
         )
       )
     )
+  )
   )
 
   val newOffice = CustomsOffice(
@@ -249,7 +253,7 @@ class CustomsOfficeListsRepositorySpec
       true,
       "VIA DELL'AEROPORTO, 1"
     ),
-    CustomsOfficeTimetable(
+    List(CustomsOfficeTimetable(
       1,
       Some("ALL YEAR"),
       LocalDate.parse("20180101", dateFormat),
@@ -284,12 +288,12 @@ class CustomsOfficeListsRepositorySpec
         )
       )
     )
-  )
+  ))
 
   val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
 
   val officeWithACERole = newOffice.copy(
-    customsOfficeTimetable = CustomsOfficeTimetable(
+    customsOfficeTimetable = List(CustomsOfficeTimetable(
       1,
       Some("ALL YEAR"),
       LocalDate.parse("20180101", dateFormat),
@@ -309,7 +313,7 @@ class CustomsOfficeListsRepositorySpec
       )
     )
   )
-
+  )
   private val customsOffices = Seq(DK003102, invalidatedoffice, postDatedOffice)
 
   "CustomsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers" should "return active offices present in the database" in withCustomsOfficeEntries(
@@ -503,7 +507,7 @@ class CustomsOfficeListsRepositorySpec
       )
       .map(_ must contain(invalidatedoffice))
   }
-  
+
   it should "apply filtering of offices according to the supplied referenceNumbers" in withCustomsOfficeEntries(
     customsOffices :+ newOffice
   ) { _ =>
@@ -516,7 +520,7 @@ class CustomsOfficeListsRepositorySpec
       )
       .map(_ mustBe List(newOffice))
   }
-  
+
   it should "apply filtering of offices according to the supplied countryCodes" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
