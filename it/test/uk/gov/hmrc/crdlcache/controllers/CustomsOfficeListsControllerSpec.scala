@@ -113,36 +113,38 @@ class CustomsOfficeListsControllerSpec
         false,
         "Dalsagervej 7"
       ),
-      CustomsOfficeTimetable(
-        1,
-        None,
-        LocalDate.parse("20180101", dateFormat),
-        LocalDate.parse("20991231", dateFormat),
-        List(
-          TimetableLine(
-            DayOfWeek.of(1),
-            LocalTime.parse("08:00", timeFormat),
-            LocalTime.parse("16:00", timeFormat),
-            DayOfWeek.of(5),
-            None,
-            None,
-            List(
-              RoleTrafficCompetence("EXL", "P"),
-              RoleTrafficCompetence("EXL", "R"),
-              RoleTrafficCompetence("EXP", "P"),
-              RoleTrafficCompetence("EXP", "R"),
-              RoleTrafficCompetence("EXT", "P"),
-              RoleTrafficCompetence("EXT", "R"),
-              RoleTrafficCompetence("PLA", "R"),
-              RoleTrafficCompetence("RFC", "R"),
-              RoleTrafficCompetence("DIS", "N/A"),
-              RoleTrafficCompetence("IPR", "N/A"),
-              RoleTrafficCompetence("ENQ", "P"),
-              RoleTrafficCompetence("ENQ", "R"),
-              RoleTrafficCompetence("ENQ", "N/A"),
-              RoleTrafficCompetence("REC", "P"),
-              RoleTrafficCompetence("REC", "R"),
-              RoleTrafficCompetence("REC", "N/A")
+      List(
+        CustomsOfficeTimetable(
+          1,
+          None,
+          LocalDate.parse("20180101", dateFormat),
+          LocalDate.parse("20991231", dateFormat),
+          List(
+            TimetableLine(
+              DayOfWeek.of(1),
+              LocalTime.parse("08:00", timeFormat),
+              LocalTime.parse("16:00", timeFormat),
+              DayOfWeek.of(5),
+              None,
+              None,
+              List(
+                RoleTrafficCompetence("EXL", "P"),
+                RoleTrafficCompetence("EXL", "R"),
+                RoleTrafficCompetence("EXP", "P"),
+                RoleTrafficCompetence("EXP", "R"),
+                RoleTrafficCompetence("EXT", "P"),
+                RoleTrafficCompetence("EXT", "R"),
+                RoleTrafficCompetence("PLA", "R"),
+                RoleTrafficCompetence("RFC", "R"),
+                RoleTrafficCompetence("DIS", "N/A"),
+                RoleTrafficCompetence("IPR", "N/A"),
+                RoleTrafficCompetence("ENQ", "P"),
+                RoleTrafficCompetence("ENQ", "R"),
+                RoleTrafficCompetence("ENQ", "N/A"),
+                RoleTrafficCompetence("REC", "P"),
+                RoleTrafficCompetence("REC", "R"),
+                RoleTrafficCompetence("REC", "N/A")
+              )
             )
           )
         )
@@ -180,7 +182,7 @@ class CustomsOfficeListsControllerSpec
       "prefixSuffixFlag"       -> false,
       "streetAndNumber"        -> "Dalsagervej 7"
     ),
-    "customsOfficeTimetable" -> Json.obj(
+    "customsOfficeTimetable" -> Json.arr(Json.obj(
       "seasonCode"      -> 1,
       "seasonStartDate" -> "2018-01-01",
       "seasonEndDate"   -> "2099-12-31",
@@ -259,7 +261,7 @@ class CustomsOfficeListsControllerSpec
         )
       )
     )
-  )
+  ))
 
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
     when(repository.fetchCustomsOfficeLists(equalTo(fixedInstant)))
