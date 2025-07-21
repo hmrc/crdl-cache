@@ -184,39 +184,39 @@ class CustomsOfficeListsRepositorySpec
       "Prima Strada, 5"
     ),
     List(
-      CustomsOfficeTimetable(
-        1,
-        Some("ALL YEAR"),
-        LocalDate.parse("20180101", dateFormat),
-        LocalDate.parse("99991231", dateFormat),
-        List(
-          TimetableLine(
-            DayOfWeek.of(1),
-            LocalTime.parse("08:00", timeFormat),
-            LocalTime.parse("18:00", timeFormat),
-            DayOfWeek.of(5),
-            None,
-            None,
-            List(
-              RoleTrafficCompetence("DEP", "R"),
-              RoleTrafficCompetence("INC", "R"),
-              RoleTrafficCompetence("TRA", "R"),
-              RoleTrafficCompetence("EXP", "R"),
-              RoleTrafficCompetence("EIN", "R"),
-              RoleTrafficCompetence("ENT", "R"),
-              RoleTrafficCompetence("EXC", "R"),
-              RoleTrafficCompetence("DES", "R"),
-              RoleTrafficCompetence("GUA", "R"),
-              RoleTrafficCompetence("EXT", "R"),
-              RoleTrafficCompetence("REG", "R"),
-              RoleTrafficCompetence("REC", "R"),
-              RoleTrafficCompetence("IPR", "N/A"),
-              RoleTrafficCompetence("ENQ", "N/A")
-            )
+    CustomsOfficeTimetable(
+      1,
+      Some("ALL YEAR"),
+      LocalDate.parse("20180101", dateFormat),
+      LocalDate.parse("99991231", dateFormat),
+      List(
+        TimetableLine(
+          DayOfWeek.of(1),
+          LocalTime.parse("08:00", timeFormat),
+          LocalTime.parse("18:00", timeFormat),
+          DayOfWeek.of(5),
+          None,
+          None,
+          List(
+            RoleTrafficCompetence("DEP", "R"),
+            RoleTrafficCompetence("INC", "R"),
+            RoleTrafficCompetence("TRA", "R"),
+            RoleTrafficCompetence("EXP", "R"),
+            RoleTrafficCompetence("EIN", "R"),
+            RoleTrafficCompetence("ENT", "R"),
+            RoleTrafficCompetence("EXC", "R"),
+            RoleTrafficCompetence("DES", "R"),
+            RoleTrafficCompetence("GUA", "R"),
+            RoleTrafficCompetence("EXT", "R"),
+            RoleTrafficCompetence("REG", "R"),
+            RoleTrafficCompetence("REC", "R"),
+            RoleTrafficCompetence("IPR", "N/A"),
+            RoleTrafficCompetence("ENQ", "N/A")
           )
         )
       )
     )
+  )
   )
 
   val newOffice = CustomsOffice(
@@ -253,47 +253,67 @@ class CustomsOfficeListsRepositorySpec
       true,
       "VIA DELL'AEROPORTO, 1"
     ),
-    List(
-      CustomsOfficeTimetable(
-        1,
-        Some("ALL YEAR"),
-        LocalDate.parse("20180101", dateFormat),
-        LocalDate.parse("20991231", dateFormat),
-        List(
-          TimetableLine(
-            DayOfWeek.of(1),
-            LocalTime.parse("00:00", timeFormat),
-            LocalTime.parse("23:59", timeFormat),
-            DayOfWeek.of(6),
-            None,
-            None,
-            List(
-              RoleTrafficCompetence("DEP", "AIR"),
-              RoleTrafficCompetence("INC", "AIR"),
-              RoleTrafficCompetence("TXT", "AIR"),
-              RoleTrafficCompetence("DES", "AIR"),
-              RoleTrafficCompetence("ENQ", "N/A"),
-              RoleTrafficCompetence("ENT", "AIR"),
-              RoleTrafficCompetence("EXC", "N/A"),
-              RoleTrafficCompetence("EXP", "AIR"),
-              RoleTrafficCompetence("EXT", "AIR"),
-              RoleTrafficCompetence("REC", "N/A"),
-              RoleTrafficCompetence("REG", "N/A"),
-              RoleTrafficCompetence("TRA", "AIR"),
-              RoleTrafficCompetence("EIN", "AIR"),
-              RoleTrafficCompetence("PLA", "N/A"),
-              RoleTrafficCompetence("DIS", "N/A"),
-              RoleTrafficCompetence("RFC", "N/A"),
-              RoleTrafficCompetence("IPR", "N/A")
-            )
+    List(CustomsOfficeTimetable(
+      1,
+      Some("ALL YEAR"),
+      LocalDate.parse("20180101", dateFormat),
+      LocalDate.parse("20991231", dateFormat),
+      List(
+        TimetableLine(
+          DayOfWeek.of(1),
+          LocalTime.parse("00:00", timeFormat),
+          LocalTime.parse("23:59", timeFormat),
+          DayOfWeek.of(6),
+          None,
+          None,
+          List(
+            RoleTrafficCompetence("DEP", "AIR"),
+            RoleTrafficCompetence("INC", "AIR"),
+            RoleTrafficCompetence("TXT", "AIR"),
+            RoleTrafficCompetence("DES", "AIR"),
+            RoleTrafficCompetence("ENQ", "N/A"),
+            RoleTrafficCompetence("ENT", "AIR"),
+            RoleTrafficCompetence("EXC", "N/A"),
+            RoleTrafficCompetence("EXP", "AIR"),
+            RoleTrafficCompetence("EXT", "AIR"),
+            RoleTrafficCompetence("REC", "N/A"),
+            RoleTrafficCompetence("REG", "N/A"),
+            RoleTrafficCompetence("TRA", "AIR"),
+            RoleTrafficCompetence("EIN", "AIR"),
+            RoleTrafficCompetence("PLA", "N/A"),
+            RoleTrafficCompetence("DIS", "N/A"),
+            RoleTrafficCompetence("RFC", "N/A"),
+            RoleTrafficCompetence("IPR", "N/A")
+          )
+        )
+      )
+    )
+  ))
+
+  val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
+
+  val officeWithACERole = newOffice.copy(
+    customsOfficeTimetable = List(CustomsOfficeTimetable(
+      1,
+      Some("ALL YEAR"),
+      LocalDate.parse("20180101", dateFormat),
+      LocalDate.parse("20991231", dateFormat),
+      List(
+        TimetableLine(
+          DayOfWeek.of(1),
+          LocalTime.parse("00:00", timeFormat),
+          LocalTime.parse("23:59", timeFormat),
+          DayOfWeek.of(6),
+          None,
+          None,
+          List(
+            RoleTrafficCompetence("ACE", "AIR"),
           )
         )
       )
     )
   )
-
-  val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
-
+  )
   private val customsOffices = Seq(DK003102, invalidatedoffice, postDatedOffice)
 
   "CustomsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers" should "return active offices present in the database" in withCustomsOfficeEntries(
@@ -440,7 +460,12 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ must contain(DK003102))
   }
 
@@ -448,7 +473,12 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ mustNot contain(invalidatedoffice))
   }
 
@@ -456,7 +486,12 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-06-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
       .map(_ mustNot contain(postDatedOffice))
   }
 
@@ -464,7 +499,103 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeLists(activeAt = Instant.parse("2025-04-05T00:00:00Z"))
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-04-05T00:00:00Z")
+      )
       .map(_ must contain(invalidatedoffice))
+  }
+
+  it should "apply filtering of offices according to the supplied referenceNumbers" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set("IT223101")),
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustBe List(newOffice))
+  }
+
+  it should "apply filtering of offices according to the supplied countryCodes" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = Some(Set("DK")),
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain(DK003102))
+  }
+
+  it should "apply filtering of offices according to the supplied roles" in withCustomsOfficeEntries(
+    customsOffices :+ officeWithACERole
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = Some(Set("EXL")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustBe List(DK003102))
+  }
+
+  it should "not apply filtering of referenceNumbers, countries and roles when the set of supplied referenceNumbers, countries and roles is empty" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set.empty),
+        countryCodes = Some(Set.empty),
+        roles = Some(Set.empty),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ must contain allElementsOf List(DK003102, newOffice))
+  }
+
+  it should "not return other offices even when matching referenceNumbers are specified" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set("IT223101")),
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustNot contain(DK003102))
+  }
+
+  it should "not return other offices even when matching countryCodes are specified" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = Some(Set("IT")),
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustNot contain(DK003102))
+  }
+
+  it should "not return other offices even when matching roles are specified" in withCustomsOfficeEntries(
+    customsOffices :+ newOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = Some(Set("EIN")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+      )
+      .map(_ mustNot contain(DK003102))
   }
 }

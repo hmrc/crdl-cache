@@ -32,10 +32,21 @@ class CustomsOfficeListsController @Inject() (
   clock: Clock
 )(using ec: ExecutionContext)
   extends BackendController(cc) {
-  def fetchCustomsOfficeLists(activeAt: Option[Instant]): Action[AnyContent] = Action.async { _ =>
-    customsOfficeListsRepository.fetchCustomsOfficeLists(activeAt.getOrElse(clock.instant())).map {
-      customsOfficeLists =>
+  def fetchCustomsOfficeLists(
+    referenceNumbers: Option[Set[String]],
+    countryCodes: Option[Set[String]],
+    roles: Option[Set[String]],
+    activeAt: Option[Instant]
+  ): Action[AnyContent] = Action.async { _ =>
+    customsOfficeListsRepository
+      .fetchCustomsOfficeLists(
+        referenceNumbers,
+        countryCodes,
+        roles,
+        activeAt.getOrElse(clock.instant())
+      )
+      .map { customsOfficeLists =>
         Ok(Json.toJson(customsOfficeLists))
-    }
+      }
   }
 }

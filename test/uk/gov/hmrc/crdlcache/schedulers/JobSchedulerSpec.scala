@@ -54,8 +54,8 @@ class JobSchedulerSpec
     appConfig = mock[AppConfig]
 
     when(appConfig.importCodeListsSchedule).thenReturn("0 0 4 * * ? 2099")
-    when(appConfig.importCorrespondenceListsSchedule).thenReturn("0 0 4 * * ? 2099")
     when(appConfig.importOfficesSchedule).thenReturn("0 0 4 * * ? 2099")
+    when(appConfig.importCorrespondenceListsSchedule).thenReturn("0 0 4 * * ? 2099")
     when(jobFactory.newJob(any(), any())).thenReturn(_ => Thread.sleep(50))
 
     jobScheduler = new JobScheduler(lifecycle, schedulerFactory, jobFactory, appConfig)
