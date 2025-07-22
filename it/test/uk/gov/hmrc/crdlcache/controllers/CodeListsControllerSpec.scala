@@ -25,10 +25,11 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
-import play.api.http.Status
+import play.api.http.{HeaderNames, Status}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
+import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCodeLists
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, E200}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
 import uk.gov.hmrc.crdlcache.repositories.{
@@ -39,7 +40,10 @@ import uk.gov.hmrc.crdlcache.repositories.{
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.internalauth.client.modules.InternalAuthModule
+import uk.gov.hmrc.internalauth.client.test.StubBehaviour
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, Retrieval}
 
 import java.time.{Clock, Instant, ZoneOffset}
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,6 +61,7 @@ class CodeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
+  private val authStub                      = mock[StubBehaviour]
   private val codeListsRepository           = mock[StandardCodeListsRepository]
   private val correspondenceListsRepository = mock[CorrespondenceListsRepository]
   private val lastUpdatedRepository         = mock[LastUpdatedRepository]
@@ -119,13 +124,18 @@ class CodeListsControllerSpec
   )
 
   override def beforeEach(): Unit = {
+    reset(authStub)
     reset(codeListsRepository)
     reset(lastUpdatedRepository)
+    reset(correspondenceListsRepository)
   }
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
+      .disable[InternalAuthModule]
       .overrides(
+        bind[StubBehaviour].toInstance(authStub),
+        bind[BackendAuthComponents].toProvider[BackendAuthStubProvider],
         bind[StandardCodeListsRepository].toInstance(codeListsRepository),
         bind[CorrespondenceListsRepository].toInstance(correspondenceListsRepository),
         bind[LastUpdatedRepository].toInstance(lastUpdatedRepository),
@@ -135,6 +145,9 @@ class CodeListsControllerSpec
       .build()
 
   "CodeListsController" should "return 200 OK when there are no errors" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -148,6 +161,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -168,6 +182,9 @@ class CodeListsControllerSpec
   }
 
   it should "use the correct repository for correspondence lists like E200" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       correspondenceListsRepository.fetchEntries(
         equalTo(E200),
@@ -181,6 +198,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${E200.code}")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -201,6 +219,9 @@ class CodeListsControllerSpec
   }
 
   it should "return 200 OK when there are no entries to return" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -214,6 +235,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -222,6 +244,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse comma-separated keys from the keys parameter when there is only one key" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -235,6 +260,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -242,6 +268,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse comma-separated keys from the keys parameter when there are multiple keys" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -255,6 +284,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -262,6 +292,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse comma-separated keys when there are multiple declarations of the keys parameter" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -275,6 +308,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI&keys=AW,BL")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -282,6 +316,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse comma-separated keys when there is no value declared for the keys parameter" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -295,6 +332,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -302,6 +340,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse other query parameters as boolean property filters when they are valid boolean values" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC36),
@@ -317,6 +358,7 @@ class CodeListsControllerSpec
         .get(
           url"http://localhost:$port/crdl-cache/lists/${BC36.code}?keys=B000&alcoholicStrengthApplicabilityFlag=true"
         )
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -324,6 +366,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse other query parameters as null property filters when the query parameter value is null" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC66),
@@ -339,6 +384,7 @@ class CodeListsControllerSpec
         .get(
           url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&responsibleDataManager=null"
         )
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -346,6 +392,9 @@ class CodeListsControllerSpec
   }
 
   it should "parse other query parameters as String property filters when they are neither boolean nor null values" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -361,16 +410,65 @@ class CodeListsControllerSpec
         .get(
           url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=384"
         )
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
     response.status mustBe Status.OK
   }
 
+  it should "return 401 Unauthorized when the user provides no Authorization header" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/BC08")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
+    response.status mustBe Status.UNAUTHORIZED
+  }
+
+  it should "return 401 Unauthorized when the user's token does not provide the appropriate permissions" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Unauthorized", Status.UNAUTHORIZED)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/BC08")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
+    response.status mustBe Status.UNAUTHORIZED
+  }
+
+  it should "return 403 Forbidden when the user's token cannot be validated" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Forbidden", Status.FORBIDDEN)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/BC08")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 403, "message" -> "Forbidden")
+    response.status mustBe Status.FORBIDDEN
+  }
+
   it should "return 400 Bad Request when the user provides an invalid codelist code" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/CL999")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -379,6 +477,9 @@ class CodeListsControllerSpec
   }
 
   it should "return 400 Bad Request when the user provides an invalid activeAt timestamp" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?activeAt=2025-06-05")
@@ -390,6 +491,9 @@ class CodeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(
       codeListsRepository.fetchEntries(
         equalTo(BC08),
@@ -403,6 +507,21 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  it should "return 500 Internal Server Error when there is an error communicating with internal-auth" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Internal Server Error", 500)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -410,12 +529,16 @@ class CodeListsControllerSpec
   }
 
   "CodeListsController.fetchCodeListVersions" should "return 200 OK when there are no errors" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(lastUpdatedRepository.fetchAllLastUpdated)
       .thenReturn(Future.successful(lastUpdatedEntries))
 
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -435,13 +558,75 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
+  it should "return 401 Unauthorized when the user provides no Authorization header" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
+    response.status mustBe Status.UNAUTHORIZED
+  }
+
+  it should "return 401 Unauthorized when the user's token does not provide the appropriate permissions" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Unauthorized", Status.UNAUTHORIZED)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
+    response.status mustBe Status.UNAUTHORIZED
+  }
+
+  it should "return 403 Forbidden when the user's token cannot be validated" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Forbidden", Status.FORBIDDEN)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 403, "message" -> "Forbidden")
+    response.status mustBe Status.FORBIDDEN
+  }
+
   it should "return 500 Internal Server Error when there is an error fetching from the last updated repository" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
     when(lastUpdatedRepository.fetchAllLastUpdated)
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  it should "return 500 Internal Server Error when there is an error communicating with internal-auth" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Internal Server Error", 500)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/")
+        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
