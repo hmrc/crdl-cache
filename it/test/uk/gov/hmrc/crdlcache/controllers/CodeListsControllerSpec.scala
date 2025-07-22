@@ -161,7 +161,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -198,7 +198,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${E200.code}")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -235,7 +235,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -260,7 +260,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -284,7 +284,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -308,7 +308,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB,XI&keys=AW,BL")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -332,7 +332,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -358,7 +358,7 @@ class CodeListsControllerSpec
         .get(
           url"http://localhost:$port/crdl-cache/lists/${BC36.code}?keys=B000&alcoholicStrengthApplicabilityFlag=true"
         )
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -384,7 +384,7 @@ class CodeListsControllerSpec
         .get(
           url"http://localhost:$port/crdl-cache/lists/${BC66.code}?keys=B&responsibleDataManager=null"
         )
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -410,7 +410,7 @@ class CodeListsControllerSpec
         .get(
           url"http://localhost:$port/crdl-cache/lists/${BC08.code}?keys=GB&actionIdentification=384"
         )
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -438,7 +438,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/BC08")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -453,7 +453,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/BC08")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -468,7 +468,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/CL999")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -507,7 +507,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -521,7 +521,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/${BC08.code}")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -538,7 +538,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -579,7 +579,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -594,7 +594,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -612,7 +612,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -626,7 +626,7 @@ class CodeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/lists/")
-        .setHeader(HeaderNames.AUTHORIZATION -> "Token some-auth-token")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
