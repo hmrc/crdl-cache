@@ -24,7 +24,7 @@ object Permissions {
   val ReadCodeLists = Predicate.Permission(
     Resource(
       ResourceType(crdlCacheResource),
-      ResourceLocation("/codelists")
+      ResourceLocation("/lists")
     ),
     IAAction("READ")
   )
