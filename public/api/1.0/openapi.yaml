@@ -35,6 +35,19 @@ tags:
       Most of the fields are optional for the response, only a few are mandatory like referenceNumber, activeFrom, countryCode, postalCode, traderDedicated, customsOfficeDetails and CustomsOfficeTimetable details.
 
 components:
+  securitySchemes:
+    InternalAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        This operation is secured by [internal-auth](https://github.com/hmrc/internal-auth).
+
+        In order to call this endpoint, your service must be [granted](https://github.com/hmrc/internal-auth?tab=readme-ov-file#grants) permission to call this API via [internal-auth-config](https://github.com/hmrc/internal-auth-config).
+
+        Your service will need to provide a token for authentication. Please see the [documentation](https://confluence.tools.tax.service.gov.uk/display/PLATOPS/Internal+Auth+-+Requesting+Access) for details about how to request a token.
+
+        Your `internal-auth.token` must be provided via the `Authorization` header when making requests to this service.
   schemas:
     CodeListEntry:
       type: object
@@ -364,6 +377,8 @@ paths:
         This endpoint is used to fetch the available codelists and their version information.
       tags:
         - Codelists
+      security:
+        - InternalAuth: ["READ lists"]
       responses:
         200:
           description: OK
@@ -404,6 +419,8 @@ paths:
         This endpoint is used to fetch entries of a reference data codelist.
       tags:
         - Codelists
+      security:
+        - InternalAuth: ["READ lists"]
       parameters:
         - name: code
           in: path
