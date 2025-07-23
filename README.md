@@ -10,6 +10,10 @@ This service exists to reduce the load on the DPS reference data APIs by caching
 
 [API Documentation (1.0)](https://redocly.github.io/redoc/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fhmrc%2Fcrdl-cache%2Frefs%2Fheads%2Fmain%2Fpublic%2Fapi%2F1.0%2Fopenapi.yaml)
 
+### Adding new codelists
+Please see our guide for details of how to [add new codelists](./ADDING-CODELISTS.md) to crdl-cache.
+
+
 ### Fetch Codelist Versions
 
 This endpoint is used to fetch the available codelists and their version information.
@@ -226,6 +230,7 @@ This endpoint is used to fetch customs office list.
   curl --fail-with-body http://localhost:7252/crdl-cache/lists/customs-office 
   ```
 
+
 ## Development
 
 ### Prerequisites
@@ -238,6 +243,7 @@ This should ensure that you have the prerequisites for the service installed:
 * sbt 1.10.x or later
 * MongoDB 7.x or later
 * Service Manager 2.x
+
 
 ### License
 
