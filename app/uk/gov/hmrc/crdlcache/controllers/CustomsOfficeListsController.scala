@@ -20,6 +20,8 @@ import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import play.api.libs.json.Json
+import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
+import uk.gov.hmrc.internalauth.client.*
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -28,6 +30,7 @@ import scala.concurrent.ExecutionContext
 @Singleton()
 class CustomsOfficeListsController @Inject() (
   cc: ControllerComponents,
+  auth: BackendAuthComponents,
   customsOfficeListsRepository: CustomsOfficeListsRepository,
   clock: Clock
 )(using ec: ExecutionContext)
@@ -37,7 +40,7 @@ class CustomsOfficeListsController @Inject() (
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
     activeAt: Option[Instant]
-  ): Action[AnyContent] = Action.async { _ =>
+  ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
     customsOfficeListsRepository
       .fetchCustomsOfficeLists(
         referenceNumbers,
