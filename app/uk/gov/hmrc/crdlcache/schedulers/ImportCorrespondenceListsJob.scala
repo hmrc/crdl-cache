@@ -17,18 +17,10 @@
 package uk.gov.hmrc.crdlcache.schedulers
 
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.scaladsl.Source
-import org.apache.pekko.stream.{ActorAttributes, Supervision}
-import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.*
-import uk.gov.hmrc.crdlcache.models.CodeListCode.E200
-import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{
-  InvalidateEntry,
-  RecordMissingEntry,
-  UpsertEntry
-}
+import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Update}
 import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -36,8 +28,7 @@ import uk.gov.hmrc.mongo.lock.MongoLockRepository
 
 import java.time.{Clock, Instant, LocalDate, ZoneOffset}
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
+import scala.concurrent.ExecutionContext
 
 class ImportCorrespondenceListsJob @Inject() (
   mongoComponent: MongoComponent,
@@ -97,45 +88,5 @@ class ImportCorrespondenceListsJob @Inject() (
       case Some(Invalidate | Delete) => InvalidateEntry(updatedEntry)
       case None                      => UpsertEntry(updatedEntry)
     }
-  }
-
-  // TODO: Remove this logic once DPS INC3142610 is resolved
-  private[schedulers] def importStaticData(): Future[Unit] =
-    lastUpdatedRepository.fetchLastUpdated(E200).flatMap { lastUpdated =>
-      if (lastUpdated.isDefined) {
-        logger.info(s"Skipping static data import for codelist ${E200.code}")
-        Future.unit
-      } else {
-        try {
-          val json    = Json.parse(getClass.getResourceAsStream("/data/E200.json"))
-          val entries = Json.fromJson[List[CodeListEntry]](json).get
-          withSessionAndTransaction { session =>
-            logger.info(s"Importing static data for codelist ${E200.code}")
-            for {
-              _ <- correspondenceListsRepository.saveEntries(session, E200, entries)
-              _ <- lastUpdatedRepository.setLastUpdated(session, E200, 0, SeedExtractDate)
-            } yield ()
-          }
-        } catch {
-          case NonFatal(err) =>
-            logger.error(s"Error parsing static data for codelist ${E200.code}", err)
-            Future.failed(err)
-        }
-      }
-    }
-
-  // TODO: Remove this override once DPS INC3142610 is resolved
-  override def importCodeLists(): Future[Unit] = {
-    val importStaticLists = Source.future(importStaticData())
-
-    val importCorrespondenceLists = Source(listConfigs)
-      .mapAsyncUnordered(Runtime.getRuntime.availableProcessors())(importCodeList)
-      .withAttributes(ActorAttributes.supervisionStrategy(Supervision.resumingDecider))
-
-    val importAll = importStaticLists.concat(importCorrespondenceLists).run().map(_ => ())
-
-    importAll.foreach(_ => logger.info(s"${jobName} job completed successfully"))
-
-    importAll
   }
 }
