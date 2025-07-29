@@ -76,7 +76,7 @@ Add configs to the appropriate config block to ensure it gets added to the daily
 
   We need to know this because the underlying DPS API does not normalise the feed structure, so each feed has its own feed-specific properties.
 
-  ```scala
+  ```hocon
   {
     code = "CL012"
     origin = "CSRD"
