@@ -212,8 +212,22 @@ If a job completed successfully it will emit a log statement like this:
 2025-07-29 11:29:08,421 level=[INFO] logger=[uk.gov.hmrc.crdlcache.schedulers.ImportCorrespondenceListsJob] thread=[application-pekko.actor.default-dispatcher-15] rid=[] user=[] message=[import-correspondence-lists job completed successfully]
 ```
 
+If you have not called the **crdl-cache** service locally before, you wil need to set up a dummy internal-auth token by calling the test-only token endpoint of **internal-auth**:
+
+```shell
+curl -i -X POST -H 'Content-Type: application/json'  -d '{
+  "token": "crdl-cache-token",
+  "principal": "emcs-tfe-crdl-reference-data",
+  "permissions": [{
+    "resourceType": "crdl-cache",
+    "resourceLocation": "*",
+    "actions": ["READ"]
+  }]
+}' 'http://localhost:8470/test-only/token'
+```
+
 Finally, you can use a curl request in the terminal to fetch the data from the **crdl-cache**: 
 
 ```shell
-curl -X GET http://localhost:7252/crdl-cache/lists/CL012
+curl -H 'Authorization crdl-cache-token' http://localhost:7252/crdl-cache/lists/CL012
 ```
