@@ -51,7 +51,7 @@ If it’s a **correspondence list**, include the `listType` as the second parame
 
 ### 2. Register the new codelist in the values set
 
-Add it to the `values` set in the companion object, keeping logical order:
+Add it to the `values` set in the companion object. We have tried to maintain lexical order of entries, but this is not necessary.
 
 ```scala
 object CodeListCode {
@@ -62,7 +62,7 @@ object CodeListCode {
 
 ### 3. Update application.conf
 
-Add configs to the appropriate config block to ensure it gets added to the daily import job.
+Add a new codelist configuration to the appropriate config block to ensure it gets added to the daily import job.
 
 * For a code list, add it to `import-codelists.codelists`.
 
@@ -212,7 +212,7 @@ If a job completed successfully it will emit a log statement like this:
 2025-07-29 11:29:08,421 level=[INFO] logger=[uk.gov.hmrc.crdlcache.schedulers.ImportCorrespondenceListsJob] thread=[application-pekko.actor.default-dispatcher-15] rid=[] user=[] message=[import-correspondence-lists job completed successfully]
 ```
 
-If you have not called the **crdl-cache** service locally before, you wil need to set up a dummy internal-auth token by calling the test-only token endpoint of **internal-auth**:
+If you have not called the **crdl-cache** service locally before, you will need to set up a dummy internal-auth token by calling the test-only token endpoint of **internal-auth**:
 
 ```shell
 curl -i -X POST -H 'Content-Type: application/json'  -d '{
@@ -226,7 +226,7 @@ curl -i -X POST -H 'Content-Type: application/json'  -d '{
 }' 'http://localhost:8470/test-only/token'
 ```
 
-Finally, you can use a curl request in the terminal to fetch the data from the **crdl-cache**: 
+Finally, you can use curl to fetch the data from the **crdl-cache**: 
 
 ```shell
 curl -H 'Authorization crdl-cache-token' http://localhost:7252/crdl-cache/lists/CL012
