@@ -6,13 +6,12 @@ The data originates from the EU CS/RD2 and SEED reference data systems and is ho
 
 This service exists to reduce the load on the DPS reference data APIs by caching reference data within MDTP.
 
+## Adding new codelists
+Please see our guide for details of how to [add new codelists](./ADDING-CODELISTS.md) to **crdl-cache**.
+
 ## Usage
 
 [API Documentation (1.0)](https://redocly.github.io/redoc/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fhmrc%2Fcrdl-cache%2Frefs%2Fheads%2Fmain%2Fpublic%2Fapi%2F1.0%2Fopenapi.yaml)
-
-### Adding new codelists
-Please see our guide for details of how to [add new codelists](./ADDING-CODELISTS.md) to crdl-cache.
-
 
 ### Fetch Codelist Versions
 
