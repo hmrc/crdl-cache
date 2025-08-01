@@ -51,7 +51,7 @@ case class CustomsOffice(
   dedicatedTraderName: Option[String],
   customsOfficeSpecificNotesCodes: List[String],
   customsOfficeLsd: CustomsOfficeDetail,
-  customsOfficeTimetable: CustomsOfficeTimetable
+  customsOfficeTimetable: List[CustomsOfficeTimetable]
 )
 
 object CustomsOffice {

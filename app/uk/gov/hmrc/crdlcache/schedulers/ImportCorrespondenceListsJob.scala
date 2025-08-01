@@ -20,7 +20,11 @@ import org.apache.pekko.actor.ActorSystem
 import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.*
-import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
+import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{
+  InvalidateEntry,
+  RecordMissingEntry,
+  UpsertEntry
+}
 import uk.gov.hmrc.crdlcache.models.Operation.{Create, Delete, Invalidate, Update}
 import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
