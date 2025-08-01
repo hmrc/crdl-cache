@@ -124,6 +124,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(CL239, CSRD2, "AdditionalInformationCode"),
       CodeListConfig(CL380, CSRD2, "DocumentType")
     )
-    appConfig.correspondenceListConfigs mustBe List.empty
+    appConfig.correspondenceListConfigs mustBe List(
+      CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
+    )
   }
 }

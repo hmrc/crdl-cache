@@ -244,74 +244,7 @@ class ImportCorrespondenceListsJobSpec
       .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
   }
 
-  "importCodeListsJob.importStaticData" should "import the static E200 codelist data" in {
-    when(correspondenceListsRepository.saveEntries(any(), any(), any()))
-      .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchLastUpdated(any()))
-      .thenReturn(Future.successful(None))
-    when(lastUpdatedRepository.setLastUpdated(any(), any(), any(), any())).thenReturn(Future.unit)
-
-    correspondenceListsJob.importStaticData().futureValue
-
-    verify(correspondenceListsRepository, times(1)).saveEntries(
-      equalTo(clientSession),
-      equalTo(E200),
-      any()
-    )
-
-    // Last update date should be set to the date of the SEED extract
-    verify(lastUpdatedRepository, times(1)).setLastUpdated(
-      equalTo(clientSession),
-      equalTo(E200),
-      equalTo(0L),
-      equalTo(correspondenceListsJob.SeedExtractDate)
-    )
-
-    verify(clientSession, times(1)).commitTransaction()
-  }
-
-  it should "skip the import process when data has been imported before" in {
-    when(lastUpdatedRepository.fetchLastUpdated(any()))
-      .thenReturn(Future.successful(Some(LastUpdated(E200, 1, fixedInstant))))
-
-    correspondenceListsJob.importStaticData().futureValue
-
-    verify(correspondenceListsRepository, never()).saveEntries(
-      equalTo(clientSession),
-      equalTo(E200),
-      any()
-    )
-
-    verify(lastUpdatedRepository, never()).setLastUpdated(
-      equalTo(clientSession),
-      equalTo(E200),
-      equalTo(0L),
-      equalTo(correspondenceListsJob.SeedExtractDate)
-    )
-
-    verify(clientSession, never()).commitTransaction()
-  }
-
-  it should "roll back when there is an error during the import process" in {
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
-
-    when(correspondenceListsRepository.saveEntries(any(), any(), any()))
-      .thenReturn(Future.failed(new RuntimeException("Boom!")))
-
-    assertThrows[RuntimeException] {
-      correspondenceListsJob.importStaticData().futureValue
-    }
-
-    verify(correspondenceListsRepository, times(1)).saveEntries(
-      equalTo(clientSession),
-      equalTo(E200),
-      any()
-    )
-
-    verify(clientSession, times(1)).abortTransaction()
-  }
-
-  "importCodeListsJob.importCodeLists" should "import the configured correspondence lists when there is no last updated date stored" in {
+  "ImportCodeListsJob.importCodeLists" should "import the configured correspondence lists when there is no last updated date stored" in {
     val lastUpdated        = LocalDate.of(2025, 3, 12)
     val lastUpdatedInstant = lastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
 
@@ -346,14 +279,6 @@ class ImportCorrespondenceListsJobSpec
         )
       )
 
-    when(
-      correspondenceListsRepository.saveEntries(
-        equalTo(clientSession),
-        equalTo(E200),
-        any()
-      )
-    ).thenReturn(Future.unit)
-
     // Correspondence list configuration
     when(appConfig.correspondenceListConfigs).thenReturn(
       List(
@@ -386,14 +311,6 @@ class ImportCorrespondenceListsJobSpec
     verify(correspondenceListsRepository, times(2))
       .executeInstructions(equalTo(clientSession), any())
 
-    // There is one set of static data for E200
-    verify(lastUpdatedRepository, times(1)).setLastUpdated(
-      equalTo(clientSession),
-      equalTo(E200),
-      anyLong(),
-      equalTo(correspondenceListsJob.SeedExtractDate)
-    )
-
     // There are two snapshots for E200
     verify(lastUpdatedRepository, times(2)).setLastUpdated(
       equalTo(clientSession),
@@ -402,15 +319,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(fixedInstant)
     )
 
-    // The (temporary) static data should have been saved
-    verify(correspondenceListsRepository, times(1)).saveEntries(
-      equalTo(clientSession),
-      equalTo(E200),
-      any()
-    )
-
-    // Two snapshots plus the static data should have been committed
-    verify(clientSession, times(3)).commitTransaction()
+    // Two snapshots should have been committed
+    verify(clientSession, times(2)).commitTransaction()
   }
 
   it should "import the configured correspondence lists when there is a last updated record stored" in {
@@ -544,14 +454,6 @@ class ImportCorrespondenceListsJobSpec
         )
       )
 
-    when(
-      correspondenceListsRepository.saveEntries(
-        equalTo(clientSession),
-        equalTo(E200),
-        any()
-      )
-    ).thenReturn(Future.unit)
-
     // Correspondence list configuration
     when(appConfig.correspondenceListConfigs).thenReturn(
       List(
@@ -593,17 +495,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(fixedInstant)
     )
 
-    // The (temporary) static data should have been saved
-    verify(correspondenceListsRepository, times(1)).saveEntries(
-      equalTo(clientSession),
-      equalTo(E200),
-      any()
-    )
-
-    // The first commit is the static data.
     // The first DPS snapshot should have been committed, but the second should be rolled back.
     val inOrder = Mockito.inOrder(clientSession)
-    inOrder.verify(clientSession, times(1)).commitTransaction()
     inOrder.verify(clientSession, times(1)).commitTransaction()
     inOrder.verify(clientSession, times(1)).abortTransaction()
   }
