@@ -8,6 +8,7 @@
     * [2. Register the New Codelist](#2-register-the-new-codelist-in-the-values-set)
     * [3. Update application.conf](#3-update-applicationconf)
     * [4. Add Test Coverage](#4-add-test-coverage)
+    * [5. Add the stub data](#5-add-stub-data)
 3. [Verifying the Import Works](#verifying-the-import-works)
     * [A. Start The Services](#a-start-the-services)
     * [B. Trigger the Appropriate Import Job](#b-trigger-the-appropriate-import-job)
@@ -101,7 +102,10 @@ Add a new codelist configuration to the appropriate config block to ensure it ge
 
 * Update [AppConfigSpec](./test/uk/gov/hmrc/crdlcache/config/AppConfigSpec.scala) to include the new default config from [application.conf](./conf/application.conf).
 * You can use the existing configuration and test cases as examples.
-* Add stub data for the new codelist to the [crdl-ref-data-dps-stub](https://github.com/hmrc/crdl-ref-data-dps-stub).
+
+### 5. Add Stub Data
+
+The steps to add the stub data to the [crdl-ref-data-dps-stub](https://github.com/hmrc/crdl-ref-data-dps-stub) have been detailed on here [Adding stub data](https://github.com/hmrc/crdl-ref-data-dps-stub/blob/main/README.md#adding-stub-data)
 
 ---
 
