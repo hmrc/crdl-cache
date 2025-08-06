@@ -189,18 +189,18 @@ components:
             spaceToAdd: false
             streetAndNumber:  BP Pelince
           customsOfficeTimetable:
-            seasonCode: 1
-            seasonName: ALL YEAR
-            seasonStartDate: 2019-01-01
-            seasonEndDate: 2019-12-31
-            customsOfficeTimetableLine:
-              - dayInTheWeekBeginDay: 1
-                openingHoursTimeFirstPeriodFrom: "0001"
-                openingHoursTimeFirstPeriodTo: "2359"
-                dayInTheWeekEndDay: 7
-                customsOfficeRoleTrafficCompetence:
-                 - roleName: TRA
-                   trafficType: R
+            - seasonCode: 1
+              seasonName: ALL YEAR
+              seasonStartDate: 2019-01-01
+              seasonEndDate: 2019-12-31
+              customsOfficeTimetableLine:
+                - dayInTheWeekBeginDay: 1
+                  openingHoursTimeFirstPeriodFrom: "0001"
+                  openingHoursTimeFirstPeriodTo: "2359"
+                  dayInTheWeekEndDay: 7
+                  customsOfficeRoleTrafficCompetence:
+                   - roleName: TRA
+                     trafficType: R
     customsOfficeLsd:
       type: object
       description: |
@@ -605,7 +605,6 @@ paths:
                   $ref: "#/components/schemas/CustomsOffice"
                 examples:
                   - - referenceNumber: IT223100
-                      activeTo: 2027-05-29T00:00:00Z
                       referenceNumberHigherAuthority: ITP00002
                       countryCode: IT
                       emailAddress: test@adm.gov.it
@@ -628,18 +627,18 @@ paths:
                         spaceToAdd: true
                         streetAndNumber: VIALE PIETRAMELLARA, 1/2
                       customsOfficeTimetable:
-                        seasonCode: 1
-                        seasonName: ALL YEAR
-                        seasonStartDate: 2018-01-01
-                        seasonEndDate: 2099-12-31
-                        customsOfficeTimetableLine:
-                          - dayInTheWeekBeginDay: 1
-                            openingHoursTimeFirstPeriodFrom: "0800"
-                            openingHoursTimeFirstPeriodTo: "1800"
-                            dayInTheWeekEndDay: 6
-                            customsOfficeRoleTrafficCompetence:
-                             - roleName: EXC
-                               trafficType: R
+                        - seasonCode: 1
+                          seasonName: ALL YEAR
+                          seasonStartDate: 2018-01-01
+                          seasonEndDate: 2099-12-31
+                          customsOfficeTimetableLine:
+                            - dayInTheWeekBeginDay: 1
+                              openingHoursTimeFirstPeriodFrom: "0800"
+                              openingHoursTimeFirstPeriodTo: "1800"
+                              dayInTheWeekEndDay: 6
+                              customsOfficeRoleTrafficCompetence:
+                               - roleName: EXC
+                                 trafficType: R
                     - referenceNumber: LV000724
                       referenceNumberMainOffice: LV002600
                       referenceNumberHigherAuthority: LV009999
@@ -665,22 +664,22 @@ paths:
                         spaceToAdd: true
                         streetAndNumber: Bozova, Malnavas pag.
                       customsOfficeTimetable:
-                        seasonCode: 1
-                        seasonName: all year
-                        seasonStartDate: 2018-01-01
-                        seasonEndDate: 2099-12-31
-                        customsOfficeTimetableLine:
-                          - dayInTheWeekBeginDay: 1
-                            openingHoursTimeFirstPeriodFrom: "0800"
-                            openingHoursTimeFirstPeriodTo: "1200"
-                            dayInTheWeekEndDay: 7
-                            openingHoursTimeSecondPeriodFrom: "1330"
-                            openingHoursTimeSecondPeriodTo: "1730"
-                            customsOfficeRoleTrafficCompetence:
-                              - roleName: DEP
-                                trafficType: V
-                              - roleName: PCI
-                                trafficType: V
+                        - seasonCode: 1
+                          seasonName: all year
+                          seasonStartDate: 2018-01-01
+                          seasonEndDate: 2099-12-31
+                          customsOfficeTimetableLine:
+                            - dayInTheWeekBeginDay: 1
+                              openingHoursTimeFirstPeriodFrom: "0800"
+                              openingHoursTimeFirstPeriodTo: "1200"
+                              dayInTheWeekEndDay: 7
+                              openingHoursTimeSecondPeriodFrom: "1330"
+                              openingHoursTimeSecondPeriodTo: "1730"
+                              customsOfficeRoleTrafficCompetence:
+                                - roleName: DEP
+                                  trafficType: V
+                                - roleName: PCI
+                                  trafficType: V
         400:
           $ref: "#/components/responses/badRequest"
 

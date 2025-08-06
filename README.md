@@ -226,7 +226,76 @@ This endpoint is used to fetch customs office list.
   curl --fail-with-body http://localhost:7252/crdl-cache/lists/customs-office 
   ```
 
+
 ## Development
+### Adding a new code list or correspondence list code to the import job
+The steps for doing so have been explained in detail on here [ADDING-CODELISTS.md](./ADDING-CODELISTS.md)
+
+### Importing data from DPS API
+
+When the code list, correspondence list or customs office list are imported via the scheduled jobs or via test-only endpoints as descripted in [ADDING-CODELISTS.md](./ADDING-CODELISTS.md#verifying-the-import-works) they are by default imported from our stubs.
+In order to import the actual data from the DPS API, in our [application.conf](./conf/application.conf) we need to comment out the config which calls our stub and uncomment the config which calls the DPS API. The resulting config would look like:
+```diff
+microservice {
+  services {
+    dps-api {
+-      host = localhost
+-      port = 7253
+-      ref-data-path = "crdl-ref-data-dps-stub/iv_crdl_reference_data"
+-      customs-offices-path = "crdl-ref-data-dps-stub/iv_crdl_customs_office"
+-      clientId = "client_id_must_be_set_in_app-config-xxx"
+-      clientSecret = "client_secret_must_be_set_in_app-config-xxx"
++      # host = localhost
++      # port = 7253
++      # ref-data-path = "crdl-ref-data-dps-stub/iv_crdl_reference_data"
++      # customs-offices-path = "crdl-ref-data-dps-stub/iv_crdl_customs_office"
++      # clientId = "client_id_must_be_set_in_app-config-xxx"
++      # clientSecret = "client_secret_must_be_set_in_app-config-xxx"
+
+-      # # Use for local testing with the real HIP API:
+-      # protocol = "https"
+-      # host = "admin.qa.tax.service.gov.uk"
+-      # port = 443
+-      # ref-data-path = "hip/crdl/views/iv_crdl_reference_data"
+-      # customs-offices-path = "hip/crdl/views/iv_crdl_customs_office"
+-      # # The following environment variables must be set using credentials from Integration Hub:
+-      # clientId = ${CLIENT_ID}
+-      # clientSecret = ${CLIENT_SECRET}
++      # Use for local testing with the real HIP API:
++      protocol = "https"
++      host = "admin.qa.tax.service.gov.uk"
++      port = 443
++      ref-data-path = "hip/crdl/views/iv_crdl_reference_data"
++      customs-offices-path = "hip/crdl/views/iv_crdl_customs_office"
++      # The following environment variables must be set using credentials from Integration Hub:
++      clientId = ${CLIENT_ID}
++      clientSecret = ${CLIENT_SECRET}
+    }
+  }
+```
+
+Please Note: To obtain the client id and secret, you can go to the [Integration Hub](https://admin.tax.service.gov.uk/integration-hub) and login with your LDAP credentials. Click on the 'Central Reference Data Cache' registered application and navigate to Test > Credentails.
+Follow the next steps to set up the client id and secret as environment variables. Post that when the import job is triggered next it would fetch the data from the DPS API.
+
+### Saving CLIENT_ID and CLIENT_SECRET as environment variables
+Open your shell configuration file(It can be .bashrc or .zshrc or any other shell) in an editor of your choice.
+
+Add these lines to the file. Replace <your-client-id> with your client id and <your-client-secret> with your client secret.
+ ```shell
+    export CLIENT_ID=<your-client-id>
+    export CLIENT_SECRET=<your-client-secret>
+ ```
+Save and close the file.
+
+Reload your shell configuration by executing
+ ```shell
+  source .bashrc #or source .zshrc depending on your shell
+  ```
+Verify the variables
+ ```shell
+    echo $CLIENT_ID
+    echo $CLIENT_SECRET
+ ```
 
 ### Prerequisites
 
@@ -238,6 +307,7 @@ This should ensure that you have the prerequisites for the service installed:
 * sbt 1.10.x or later
 * MongoDB 7.x or later
 * Service Manager 2.x
+
 
 ### License
 

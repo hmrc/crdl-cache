@@ -89,36 +89,38 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       true,
       "Test 7"
     ),
-    CustomsOfficeTimetable(
-      1,
-      None,
-      LocalDate.parse("20180101", dateFormat),
-      LocalDate.parse("20991231", dateFormat),
-      List(
-        TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("0800", timeFormat),
-          LocalTime.parse("1600", timeFormat),
-          DayOfWeek.of(5),
-          None,
-          None,
-          List(
-            RoleTrafficCompetence("EXL", "P"),
-            RoleTrafficCompetence("EXL", "R"),
-            RoleTrafficCompetence("EXP", "P"),
-            RoleTrafficCompetence("EXP", "R"),
-            RoleTrafficCompetence("EXT", "P"),
-            RoleTrafficCompetence("EXT", "R"),
-            RoleTrafficCompetence("PLA", "R"),
-            RoleTrafficCompetence("RFC", "R"),
-            RoleTrafficCompetence("DIS", "N/A"),
-            RoleTrafficCompetence("IPR", "N/A"),
-            RoleTrafficCompetence("ENQ", "P"),
-            RoleTrafficCompetence("ENQ", "R"),
-            RoleTrafficCompetence("ENQ", "N/A"),
-            RoleTrafficCompetence("REC", "P"),
-            RoleTrafficCompetence("REC", "R"),
-            RoleTrafficCompetence("REC", "N/A")
+    List(
+      CustomsOfficeTimetable(
+        1,
+        None,
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("0800", timeFormat),
+            LocalTime.parse("1600", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
           )
         )
       )
@@ -136,80 +138,82 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
       "prefixSuffixFlag"       -> false,
       "streetAndNumber"        -> "Test 7"
     ),
-    "customsOfficeTimetable" -> Json.obj(
-      "seasonCode"      -> 1,
-      "seasonStartDate" -> "2018-01-01",
-      "seasonEndDate"   -> "2099-12-31",
-      "customsOfficeTimetableLine" -> Json.arr(
-        Json.obj(
-          "dayInTheWeekEndDay"              -> 5,
-          "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
-          "dayInTheWeekBeginDay"            -> 1,
-          "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
-          "customsOfficeRoleTrafficCompetence" -> Json.arr(
-            Json.obj(
-              "roleName"    -> "EXL",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "EXL",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "EXP",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "EXP",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "EXT",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "EXT",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "PLA",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "RFC",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "DIS",
-              "trafficType" -> "N/A"
-            ),
-            Json.obj(
-              "roleName"    -> "IPR",
-              "trafficType" -> "N/A"
-            ),
-            Json.obj(
-              "roleName"    -> "ENQ",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "ENQ",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "ENQ",
-              "trafficType" -> "N/A"
-            ),
-            Json.obj(
-              "roleName"    -> "REC",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "REC",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "REC",
-              "trafficType" -> "N/A"
+    "customsOfficeTimetable" -> Json.arr(
+      Json.obj(
+        "seasonCode"      -> 1,
+        "seasonStartDate" -> "2018-01-01",
+        "seasonEndDate"   -> "2099-12-31",
+        "customsOfficeTimetableLine" -> Json.arr(
+          Json.obj(
+            "dayInTheWeekEndDay"              -> 5,
+            "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
+            "dayInTheWeekBeginDay"            -> 1,
+            "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
+            "customsOfficeRoleTrafficCompetence" -> Json.arr(
+              Json.obj(
+                "roleName"    -> "EXL",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXL",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "EXP",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXP",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "EXT",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXT",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "PLA",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "RFC",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "DIS",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "IPR",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "N/A"
+              )
             )
           )
         )
