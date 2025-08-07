@@ -32,8 +32,6 @@ case class CodeListEntry(
 )
 
 object CodeListEntry {
-  given Reads[CodeListEntry] = Json.reads[CodeListEntry]
-
   // Only serialize the key, value and properties in JSON responses
   given Writes[CodeListEntry] = (
     (JsPath \ "key").write[String] and

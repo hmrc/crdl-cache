@@ -33,8 +33,6 @@ import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
   UpsertCustomsOffice
 }
-import uk.gov.hmrc.crdlcache.models.dps.Relation
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.col.{
   CustomsOfficeListResponse,
   DpsCustomsOffice,
@@ -220,16 +218,6 @@ class ImportCustomsOfficesListJobSpec
           )
         )
       )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office"
-      ),
-      Relation(
-        Next,
-        "?%24start_index=10&%24count=10"
-      )
     )
   )
 
@@ -377,20 +365,6 @@ class ImportCustomsOfficesListJobSpec
           )
         )
       )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office?%24start_index=40"
-      ),
-      Relation(
-        Prev,
-        "?%24start_index=30&%24count=10"
-      ),
-      Relation(
-        Next,
-        "?%24start_index=50&%24count=10"
-      )
     )
   )
 
@@ -477,9 +451,7 @@ class ImportCustomsOfficesListJobSpec
 
   it should "roll back when there is an issue while importing" in {
     val invalidCustomsOfficeResponse = CustomsOfficeListResponse(
-      elements =
-        List(customsOfficeListPage1.elements.head.copy(nctsentrydate = Some("InvalidDate"))),
-      links = customsOfficeListPage1.links
+      List(customsOfficeListPage1.elements.head.copy(nctsentrydate = Some("InvalidDate")))
     )
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
