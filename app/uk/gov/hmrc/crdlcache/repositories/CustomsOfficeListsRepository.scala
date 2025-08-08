@@ -17,7 +17,7 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
-import org.mongodb.scala.*
+import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
@@ -63,7 +63,11 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
   with Logging {
 
   def fetchCustomsOfficeReferenceNumbers(session: ClientSession): Future[Set[String]] =
-    collection.find(session, equal("activeTo", null)).map(_.referenceNumber).toFuture.map(_.toSet)
+    collection
+      .find(session, equal("activeTo", null))
+      .map(_.referenceNumber)
+      .toFuture()
+      .map(_.toSet)
 
   def upsertOffice(session: ClientSession, customsOffice: CustomsOffice) =
     collection

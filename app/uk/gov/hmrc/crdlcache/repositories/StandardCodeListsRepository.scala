@@ -44,7 +44,8 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
       IndexModel(
         Indexes.ascending("codeListCode", "key", "activeFrom"),
         IndexOptions().unique(true)
-      )
+      ),
+      IndexModel(Indexes.ascending("codeListCode", "properties.countableFlag", "key", "activeFrom"))
     )
   ) {
 

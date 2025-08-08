@@ -39,7 +39,6 @@ import uk.gov.hmrc.crdlcache.models.CorrespondenceListInstruction.{
   UpsertEntry
 }
 import uk.gov.hmrc.crdlcache.models.Operation.Update
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.{
   CodeListResponse,
   DataItem,
@@ -47,7 +46,7 @@ import uk.gov.hmrc.crdlcache.models.dps.codelist.{
   DpsCodeListSnapshot,
   LanguageDescription
 }
-import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
+import uk.gov.hmrc.crdlcache.models.dps.codelist
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
@@ -145,16 +144,6 @@ class ImportCorrespondenceListsJobSpec
           )
         )
       )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=E200&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      ),
-      dps.Relation(
-        Next,
-        "?%24start_index=10&%24orderby=snapshotversion+ASC&code_list_code=E200&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      )
     )
   )
 
@@ -202,16 +191,6 @@ class ImportCorrespondenceListsJobSpec
             List(LanguageDescription("en", "No english language description available"))
           )
         )
-      )
-    ),
-    List(
-      dps.Relation(
-        Self,
-        "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=E200&%24start_index=10&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      ),
-      dps.Relation(
-        Prev,
-        "?%24orderby=snapshotversion+ASC&code_list_code=E200&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
       )
     )
   )
