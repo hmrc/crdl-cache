@@ -35,9 +35,8 @@ import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.SEED
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.crdlcache.models.Operation.Update
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.{CodeListResponse, DataItem, LanguageDescription}
-import uk.gov.hmrc.crdlcache.models.dps.{Relation, codelist}
+import uk.gov.hmrc.crdlcache.models.dps.codelist
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.repositories.{LastUpdatedRepository, StandardCodeListsRepository}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.{DpsCodeListEntry, DpsCodeListSnapshot}
@@ -110,16 +109,6 @@ class ImportStandardCodeListsJobSpec
           )
         )
       )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      ),
-      dps.Relation(
-        Next,
-        "?%24start_index=10&%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      )
     )
   )
 
@@ -175,16 +164,6 @@ class ImportStandardCodeListsJobSpec
             List(codelist.LanguageDescription("en", "Cyprus"))
           )
         )
-      )
-    ),
-    List(
-      dps.Relation(
-        Self,
-        "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=BC08&%24start_index=10&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      ),
-      dps.Relation(
-        Prev,
-        "?%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
       )
     )
   )

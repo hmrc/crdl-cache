@@ -29,7 +29,6 @@ import play.api.http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
 import uk.gov.hmrc.crdlcache.models.dps.*
-import uk.gov.hmrc.crdlcache.models.dps.RelationType.{Next, Prev, Self}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.*
 import uk.gov.hmrc.crdlcache.models.dps.col.*
 import uk.gov.hmrc.http.test.{HttpClientV2Support, WireMockSupport}
@@ -115,16 +114,6 @@ class DpsConnectorSpec
           )
         )
       )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      ),
-      Relation(
-        Next,
-        "?%24start_index=10&%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      )
     )
   )
 
@@ -158,16 +147,6 @@ class DpsConnectorSpec
             List(LanguageDescription("en", "Cyprus"))
           )
         )
-      )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://localhost:9443/server/central_reference_data_library/ws_iv_crdl_reference_data/views/iv_crdl_reference_data?%24orderby=snapshotversion+ASC&code_list_code=BC08&%24start_index=10&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
-      ),
-      Relation(
-        Prev,
-        "?%24orderby=snapshotversion+ASC&code_list_code=BC08&last_updated_date=2025-05-28T00%3A00%3A00Z&%24count=10"
       )
     )
   )
@@ -311,16 +290,6 @@ class DpsConnectorSpec
             )
           )
         )
-      )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office"
-      ),
-      Relation(
-        Next,
-        "?%24start_index=10&%24count=10"
       )
     )
   )
@@ -468,20 +437,6 @@ class DpsConnectorSpec
             )
           )
         )
-      )
-    ),
-    List(
-      Relation(
-        Self,
-        "https://vdp.nonprod.denodo.hip.ns2n.corp.hmrc.gov.uk:9443/server/central_reference_data_library/ws_iv_crdl_customs_office/views/iv_crdl_customs_office?%24start_index=40"
-      ),
-      Relation(
-        Prev,
-        "?%24start_index=30&%24count=10"
-      ),
-      Relation(
-        Next,
-        "?%24start_index=50&%24count=10"
       )
     )
   )
