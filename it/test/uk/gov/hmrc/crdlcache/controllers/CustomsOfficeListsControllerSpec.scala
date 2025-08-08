@@ -26,21 +26,19 @@ import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
 import org.mockito.ArgumentMatchers.eq as equalTo
-import uk.gov.hmrc.crdlcache.models.{
-  CustomsOffice,
-  CustomsOfficeDetail,
-  CustomsOfficeTimetable,
-  RoleTrafficCompetence,
-  TimetableLine
-}
+import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
 import org.mockito.Mockito.{reset, when}
-import play.api.http.Status
+import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
+import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
+import uk.gov.hmrc.internalauth.client.{BackendAuthComponents, Retrieval}
+import uk.gov.hmrc.internalauth.client.modules.InternalAuthModule
+import uk.gov.hmrc.internalauth.client.test.StubBehaviour
 
 import java.time.format.DateTimeFormatter
 import java.time.{Clock, DayOfWeek, Instant, LocalDate, LocalTime, ZoneOffset}
@@ -59,17 +57,22 @@ class CustomsOfficeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
-  val repository = mock[CustomsOfficeListsRepository]
+  private val authStub = mock[StubBehaviour]
+  private val repository = mock[CustomsOfficeListsRepository]
 
   private val fixedInstant = Instant.parse("2025-06-05T00:00:00Z")
 
   override def beforeEach(): Unit = {
+    reset(authStub)
     reset(repository)
   }
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
+      .disable[InternalAuthModule]
       .overrides(
+        bind[StubBehaviour].toInstance(authStub),
+        bind[BackendAuthComponents].toProvider[BackendAuthStubProvider],
         bind[CustomsOfficeListsRepository].toInstance(repository),
         bind[HttpClientV2].toInstance(httpClientV2),
         bind[Clock].toInstance(Clock.fixed(fixedInstant, ZoneOffset.UTC))
@@ -264,11 +267,14 @@ class CustomsOfficeListsControllerSpec
   ))
 
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.successful(office))
 
     val response = httpClientV2
       .get(url"http://localhost:$port/crdl-cache/offices")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
 
@@ -276,11 +282,14 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 200 OK when there are no offices to return" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
       .get(url"http://localhost:$port/crdl-cache/offices")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
 
@@ -289,9 +298,12 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 400 Bad Request when the user provides an invalid activeAt timestamp" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/offices?activeAt=2025-06-05")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -300,6 +312,8 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countryCodes and roles from a query parameter when there is only one country and role" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set("IT223100"))),
@@ -313,6 +327,7 @@ class CustomsOfficeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100&countryCodes=GB&roles=AUT")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -320,6 +335,8 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countryCodes and roles from a query parameter when there are multiple countries and roles" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set("IT223100", "IT223101"))),
@@ -333,6 +350,7 @@ class CustomsOfficeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100,IT223101&countryCodes=GB,XI&roles=AUT,CCA")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -340,6 +358,8 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countryCodes and roles when there are multiple declarations of the query parameter" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set("IT223100", "IT223101", "DK003102", "IT314102"))),
@@ -353,6 +373,7 @@ class CustomsOfficeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100,IT223101&referenceNumbers=DK003102,IT314102&countryCodes=GB,XI&countryCodes=AW,BL&roles=AUT,CCA&roles=ACE,RSS")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -360,6 +381,8 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countries and roles when there is no value declared for the query parameter" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set.empty)),
@@ -373,6 +396,7 @@ class CustomsOfficeListsControllerSpec
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=&countryCodes=&roles=")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 
@@ -380,13 +404,73 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
-
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
     when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant)))
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
       httpClientV2
         .get(url"http://localhost:$port/crdl-cache/offices")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  it should "return 401 Unauthorized when the user provides no Authorization header" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
+    response.status mustBe Status.UNAUTHORIZED
+  }
+
+  it should "return 401 Unauthorized when the user's token does not provide the appropriate permissions" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Unauthorized", Status.UNAUTHORIZED)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
+    response.status mustBe Status.UNAUTHORIZED
+  }
+
+  it should "return 403 Forbidden when the user's token cannot be validated" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Forbidden", Status.FORBIDDEN)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("statusCode" -> 403, "message" -> "Forbidden")
+    response.status mustBe Status.FORBIDDEN
+  }
+
+  it should "return 500 Internal Server Error when there is an error communicating with internal-auth" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.failed(UpstreamErrorResponse("Internal Server Error", 500)))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
 

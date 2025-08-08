@@ -16,7 +16,13 @@
 
 package uk.gov.hmrc.crdlcache.controllers.auth
 
-import uk.gov.hmrc.internalauth.client.{IAAction, Predicate, Resource, ResourceLocation, ResourceType}
+import uk.gov.hmrc.internalauth.client.{
+  IAAction,
+  Predicate,
+  Resource,
+  ResourceLocation,
+  ResourceType
+}
 
 object Permissions {
   private val crdlCacheResource = "crdl-cache"
@@ -25,6 +31,14 @@ object Permissions {
     Resource(
       ResourceType(crdlCacheResource),
       ResourceLocation("lists")
+    ),
+    IAAction("READ")
+  )
+
+  val ReadCustomsOfficeLists = Predicate.Permission(
+    Resource(
+      ResourceType(crdlCacheResource),
+      ResourceLocation("offices")
     ),
     IAAction("READ")
   )

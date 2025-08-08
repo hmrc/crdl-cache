@@ -23,7 +23,8 @@ import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
 
 class JobStatusSpec extends AnyWordSpec with Matchers with Inspectors {
-  private val triggerStates = TriggerState.values()
+  private val triggerStates = TriggerState
+    .values()
     .filterNot(Set(TriggerState.NORMAL, TriggerState.BLOCKED))
 
   "JobStatus" should {

@@ -529,6 +529,8 @@ paths:
         This endpoint is used to fetch customs office lists.
       tags:
         - CustomsOffices
+      security:
+        - InternalAuth: [ "READ offices" ]
       parameters:
         - name: referenceNumbers
           in: query
@@ -682,5 +684,3 @@ paths:
                                   trafficType: V
         400:
           $ref: "#/components/responses/badRequest"
-
-
