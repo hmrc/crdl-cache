@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.TimetableLine.fromDpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.utils.ParserUtils.parseDate
@@ -33,7 +32,6 @@ case class CustomsOfficeTimetable(
 )
 
 object CustomsOfficeTimetable {
-  given format: Format[CustomsOfficeTimetable] = Json.format[CustomsOfficeTimetable]
   def fromDpsCustomsOfficeTimetable(
     dpsCustomsOfficeTimetable: DpsCustomsOfficeTimetable,
     dateFormat: DateTimeFormatter

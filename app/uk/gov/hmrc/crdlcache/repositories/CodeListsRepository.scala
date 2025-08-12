@@ -26,6 +26,7 @@ import org.mongodb.scala.model.Filters.*
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
+import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -45,7 +46,7 @@ abstract class CodeListsRepository[K, I](
 ) extends PlayMongoRepository[CodeListEntry](
     mongoComponent,
     collectionName,
-    domainFormat = CodeListEntry.mongoFormat,
+    domainFormat = MongoFormats.codeListEntryFormat,
     extraCodecs = extraCodecs,
     indexes = IndexModel(
       Indexes.ascending("activeTo"),

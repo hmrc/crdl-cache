@@ -21,6 +21,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
+import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
 import uk.gov.hmrc.internalauth.client.*
 
 import java.time.{Clock, Instant}
@@ -34,7 +35,8 @@ class CustomsOfficeListsController @Inject() (
   customsOfficeListsRepository: CustomsOfficeListsRepository,
   clock: Clock
 )(using ec: ExecutionContext)
-  extends BackendController(cc) {
+  extends BackendController(cc)
+  with HttpFormats {
   def fetchCustomsOfficeLists(
     referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],

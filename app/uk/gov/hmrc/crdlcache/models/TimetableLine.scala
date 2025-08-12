@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models
 
 import uk.gov.hmrc.crdlcache.models.RoleTrafficCompetence.fromDpsRoleTrafficCompetence
-import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.formats.JavaTimeFormats
 import uk.gov.hmrc.crdlcache.utils.ParserUtils.{parseDayOfWeek, parseTime}
@@ -34,9 +33,6 @@ case class TimetableLine(
   customsOfficeRoleTrafficCompetence: List[RoleTrafficCompetence]
 )
 object TimetableLine extends JavaTimeFormats {
-
-  given format: Format[TimetableLine] = Json.format[TimetableLine]
-
   def fromDpsTimetableLine(timetableLine: DpsTimetableLine): Option[TimetableLine] = {
     for {
       beginDay            <- timetableLine.dayintheweekbeginday

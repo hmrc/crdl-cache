@@ -16,19 +16,6 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Format, Json, Writes}
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
-
 import java.time.Instant
 
 case class LastUpdated(codeListCode: CodeListCode, snapshotVersion: Long, lastUpdated: Instant)
-
-object LastUpdated {
-
-  val mongoFormat: Format[LastUpdated] = {
-    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
-    Json.format[LastUpdated]
-  }
-
-  given Writes[LastUpdated] = Json.writes[LastUpdated]
-}

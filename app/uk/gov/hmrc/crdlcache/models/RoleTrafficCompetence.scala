@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsRoleTrafficCompetence
 case class RoleTrafficCompetence(roleName: String, trafficType: String)
 
 object RoleTrafficCompetence {
-  given format: Format[RoleTrafficCompetence] = Json.format[RoleTrafficCompetence]
   def fromDpsRoleTrafficCompetence(
     roleTrafficCompetence: DpsRoleTrafficCompetence
   ): RoleTrafficCompetence = {
