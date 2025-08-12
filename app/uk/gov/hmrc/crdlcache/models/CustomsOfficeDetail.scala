@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOfficeDetail
 
 case class CustomsOfficeDetail(
@@ -31,7 +30,6 @@ case class CustomsOfficeDetail(
 )
 
 object CustomsOfficeDetail {
-  given format: Format[CustomsOfficeDetail] = Json.format[CustomsOfficeDetail]
   def fromDpsCustomsOfficeDetail(
     customsOfficeDetail: DpsCustomsOfficeDetail
   ): CustomsOfficeDetail = {

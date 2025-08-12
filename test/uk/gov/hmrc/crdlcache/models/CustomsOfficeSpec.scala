@@ -24,6 +24,7 @@ import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   CustomsOfficeDetailMissing,
   InvalidDateFormat
 }
+import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
@@ -141,8 +142,8 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
     "customsOfficeTimetable" -> Json.arr(
       Json.obj(
         "seasonCode"      -> 1,
-        "seasonStartDate" -> "2018-01-01",
-        "seasonEndDate"   -> "2099-12-31",
+        "seasonStartDate" -> Json.obj("$date" -> Json.obj("$numberLong" -> "1514764800000")),
+        "seasonEndDate"   -> Json.obj("$date" -> Json.obj("$numberLong" -> "4102358400000")),
         "customsOfficeTimetableLine" -> Json.arr(
           Json.obj(
             "dayInTheWeekEndDay"              -> 5,
@@ -244,11 +245,13 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
   }
 
   "The MongoDB format for CustomsOffice" should "serialize all properties as Mongo Extended JSON" in {
-    Json.toJson(expectedSnapshot)(CustomsOffice.mongoFormat) mustBe mongoJson
+    Json.toJson(expectedSnapshot)(MongoFormats.customsOfficeFormat) mustBe mongoJson
   }
 
   it should "deserialize all properties from Mongo Extended JSON" in {
-    Json.fromJson[CustomsOffice](mongoJson)(CustomsOffice.mongoFormat).get mustBe expectedSnapshot
+    Json
+      .fromJson[CustomsOffice](mongoJson)(MongoFormats.customsOfficeFormat)
+      .get mustBe expectedSnapshot
   }
 
   it should "throw InvalidDateFormat error when an invalid date is provided the input" in {

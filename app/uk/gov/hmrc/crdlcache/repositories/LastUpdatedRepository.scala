@@ -22,6 +22,7 @@ import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.{Filters, Indexes, Updates}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
+import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -37,7 +38,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 ) extends PlayMongoRepository[LastUpdated](
     mongoComponent,
     collectionName = "last-updated",
-    domainFormat = LastUpdated.mongoFormat,
+    domainFormat = MongoFormats.lastUpdatedFormat,
     indexes = Seq(IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(true)))
   )
   with Transactions {

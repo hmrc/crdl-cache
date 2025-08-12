@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 
 import java.time.Instant
@@ -30,19 +29,3 @@ case class CodeListEntry(
   updatedAt: Option[Instant],
   properties: JsObject
 )
-
-object CodeListEntry {
-  // Only serialize the key, value and properties in JSON responses
-  given Writes[CodeListEntry] = (
-    (JsPath \ "key").write[String] and
-      (JsPath \ "value").write[String] and
-      (JsPath \ "properties").write[JsObject]
-  )(entry => (entry.key, entry.value, entry.properties))
-
-  // Serialize the full object in MongoDB
-  val mongoFormat: Format[CodeListEntry] = {
-    // Use the Mongo Extended JSON format for dates
-    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
-    Json.format[CodeListEntry]
-  }
-}

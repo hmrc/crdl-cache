@@ -20,7 +20,8 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCodeLists
 import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, STANDARD}
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
+import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
+import uk.gov.hmrc.crdlcache.models.CodeListCode
 import uk.gov.hmrc.crdlcache.repositories.{
   CorrespondenceListsRepository,
   LastUpdatedRepository,
@@ -42,7 +43,8 @@ class CodeListsController @Inject() (
   lastUpdatedRepository: LastUpdatedRepository,
   clock: Clock
 )(using ec: ExecutionContext)
-  extends BackendController(cc) {
+  extends BackendController(cc)
+  with HttpFormats {
 
   def fetchCodeListEntries(
     codeListCode: CodeListCode,

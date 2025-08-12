@@ -20,6 +20,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.models.CodeListCode.BC08
+import uk.gov.hmrc.crdlcache.models.formats.{HttpFormats, MongoFormats}
 
 import java.time.Instant
 
@@ -54,7 +55,7 @@ class CodeListEntrySpec extends AnyFlatSpec with Matchers with TestData {
   )
 
   "The default Writes for CodeListEntry" should "serialize only the key, value and properties" in {
-    Json.toJson(sampleEntry) mustBe Json.obj(
+    Json.toJson(sampleEntry)(HttpFormats.codeListEntryWrites) mustBe Json.obj(
       "key"   -> "AW",
       "value" -> "Aruba",
       "properties" -> Json.obj(
@@ -65,10 +66,10 @@ class CodeListEntrySpec extends AnyFlatSpec with Matchers with TestData {
   }
 
   "The MongoDB format for CodeListEntry" should "serialize all properties as Mongo Extended JSON" in {
-    Json.toJson(sampleEntry)(CodeListEntry.mongoFormat) mustBe mongoJson
+    Json.toJson(sampleEntry)(MongoFormats.codeListEntryFormat) mustBe mongoJson
   }
 
   it should "deserialize all properties from Mongo Extended JSON" in {
-    Json.fromJson[CodeListEntry](mongoJson)(CodeListEntry.mongoFormat).get mustBe sampleEntry
+    Json.fromJson[CodeListEntry](mongoJson)(MongoFormats.codeListEntryFormat).get mustBe sampleEntry
   }
 }

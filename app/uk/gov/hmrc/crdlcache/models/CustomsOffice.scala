@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models
 
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeDetail.fromDpsCustomsOfficeDetail
-import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeTimetable.fromDpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOffice
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.CustomsOfficeDetailMissing
@@ -55,38 +54,6 @@ case class CustomsOffice(
 )
 
 object CustomsOffice {
-  given Writes[CustomsOffice] = Writes { office =>
-    Json.obj(
-      "referenceNumber"                -> office.referenceNumber,
-      "referenceNumberMainOffice"      -> office.referenceNumberMainOffice,
-      "referenceNumberHigherAuthority" -> office.referenceNumberHigherAuthority,
-      "referenceNumberCompetentAuthorityOfEnquiry" -> office.referenceNumberCompetentAuthorityOfEnquiry,
-      "referenceNumberCompetentAuthorityOfRecovery" -> office.referenceNumberCompetentAuthorityOfRecovery,
-      "referenceNumberTakeover"         -> office.referenceNumberTakeover,
-      "countryCode"                     -> office.countryCode,
-      "emailAddress"                    -> office.emailAddress,
-      "unLocodeId"                      -> office.unLocodeId,
-      "nctsEntryDate"                   -> office.nctsEntryDate,
-      "nearestOffice"                   -> office.nearestOffice,
-      "postalCode"                      -> office.postalCode,
-      "phoneNumber"                     -> office.phoneNumber,
-      "faxNumber"                       -> office.faxNumber,
-      "telexNumber"                     -> office.telexNumber,
-      "geoInfoCode"                     -> office.geoInfoCode,
-      "regionCode"                      -> office.regionCode,
-      "traderDedicated"                 -> office.traderDedicated,
-      "dedicatedTraderLanguageCode"     -> office.dedicatedTraderLanguageCode,
-      "dedicatedTraderName"             -> office.dedicatedTraderName,
-      "customsOfficeSpecificNotesCodes" -> office.customsOfficeSpecificNotesCodes,
-      "customsOfficeLsd"                -> office.customsOfficeLsd,
-      "customsOfficeTimetable"          -> office.customsOfficeTimetable
-    )
-  }
-
-  val mongoFormat: Format[CustomsOffice] = { // Use the Mongo Extended JSON format for dates
-    import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats.Implicits.*
-    Json.format[CustomsOffice]
-  }
 
   private val ukLocalDate  = DateTimeFormatter.ofPattern("dd-MM-yyyy")
   private val basicIsoDate = DateTimeFormatter.BASIC_ISO_DATE
