@@ -20,6 +20,7 @@ import org.mongodb.scala.*
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import play.api.Logging
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
@@ -46,7 +47,8 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
         IndexOptions().unique(true)
       )
     )
-  ) {
+  )
+  with Logging {
 
   override def activationDate(instruction: CorrespondenceListInstruction): Instant =
     instruction.activeFrom
@@ -92,6 +94,9 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
   ): Future[Unit] =
     instruction match {
       case CorrespondenceListInstruction.UpsertEntry(codeListEntry) =>
+        logger.debug(
+          s"CorrespondenceListInstruction UpsertEntry ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+        )
         for {
           _ <- supersedePreviousEntries(
             session,
@@ -103,6 +108,9 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
           _ <- upsertEntry(session, codeListEntry)
         } yield ()
       case CorrespondenceListInstruction.InvalidateEntry(codeListEntry) =>
+        logger.debug(
+          s"CorrespondenceListInstruction InvalidateEntry ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+        )
         supersedePreviousEntries(
           session,
           codeListEntry.codeListCode,
@@ -116,6 +124,9 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
             value,
             removedAt
           ) =>
+        logger.debug(
+          s"CorrespondenceListInstruction RecordMissingEntry ${codeListCode.code} with key $key"
+        )
         supersedePreviousEntries(
           session,
           codeListCode,

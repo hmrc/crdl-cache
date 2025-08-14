@@ -130,7 +130,7 @@ abstract class ImportCodeListsJob[K, I](
       lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
 
       _ = logger.info(
-        s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp ${lastUpdated}"
+        s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated"
       )
 
       _ <- dpsConnector
@@ -177,7 +177,7 @@ abstract class ImportCodeListsJob[K, I](
       .run()
       .map(_ => ())
 
-    importCodeLists.foreach(_ => logger.info(s"${jobName} job completed successfully"))
+    importCodeLists.foreach(_ => logger.info(s"$jobName job completed successfully"))
 
     importCodeLists
   }
@@ -186,7 +186,7 @@ abstract class ImportCodeListsJob[K, I](
     Await.result(
       withLock(importCodeLists()).map {
         _.getOrElse {
-          logger.info(s"${jobName} job lock could not be obtained")
+          logger.info(s"$jobName job lock could not be obtained")
         }
       },
       Duration.Inf
