@@ -21,6 +21,7 @@ import org.apache.pekko.NotUsed
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl
 import org.apache.pekko.stream.scaladsl.Source
+import play.api.Logging
 import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.models.CodeListCode
 import uk.gov.hmrc.crdlcache.models.dps.codelist.CodeListResponse
@@ -47,7 +48,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(using
   system: ActorSystem
-) extends Retries {
+) extends Retries
+  with Logging {
   override protected def actorSystem: ActorSystem = system
   override protected def configuration: Config    = appConfig.config.underlying
 
@@ -79,22 +81,35 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       "$orderby"          -> "snapshotversion ASC"
     )
 
-    val dpsUrl = url"$baseRefDataUrl?$queryParams"
+    val dpsUrl        = url"$baseRefDataUrl?$queryParams"
+    val correlationId = UUID.randomUUID().toString
 
-    retryFor(s"fetch of $code snapshots at index $startIndex as of $lastUpdatedDate") {
-      // No point in retrying if our request is wrong
-      case Upstream4xxResponse(_) => false
-      // Attempt to recover from intermittent connectivity issues
-      case Upstream5xxResponse(_) => true
-    } {
-      httpClient
-        .get(dpsUrl)(HeaderCarrier())
-        .setHeader(
-          "correlationId"           -> UUID.randomUUID().toString,
-          HeaderNames.authorisation -> basicAuthSecret
-        )
-        .execute[CodeListResponse](using throwOnFailure(readEitherOf[CodeListResponse]), ec)
-    }
+    logger.info(
+      s"Fetching ${code.code} snapshots at index $startIndex as of $lastUpdatedDate with correlationId $correlationId"
+    )
+
+    val fetchResult =
+      retryFor(s"fetch of ${code.code} snapshots at index $startIndex as of $lastUpdatedDate") {
+        // No point in retrying if our request is wrong
+        case Upstream4xxResponse(_) => false
+        // Attempt to recover from intermittent connectivity issues
+        case Upstream5xxResponse(_) => true
+      } {
+        httpClient
+          .get(dpsUrl)(HeaderCarrier())
+          .setHeader(
+            "correlationId"           -> correlationId,
+            HeaderNames.authorisation -> basicAuthSecret
+          )
+          .execute[CodeListResponse](using throwOnFailure(readEitherOf[CodeListResponse]), ec)
+      }
+    fetchResult.failed.foreach(err =>
+      logger.error(
+        s"Retries exceeded while fetching ${code.code} snapshots at index $startIndex as of $lastUpdatedDate with correlationId $correlationId ",
+        err
+      )
+    )
+    fetchResult
   }
 
   def fetchCodeListSnapshots(code: CodeListCode, lastUpdatedDate: Instant)(using
@@ -128,10 +143,14 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       "$start_index" -> startIndex,
       "$count"       -> 10
     )
+    val correlationId = UUID.randomUUID().toString
+    val dpsUrl        = url"$baseCustomsOfficeUrl?$queryParams"
 
-    val dpsUrl = url"$baseCustomsOfficeUrl?$queryParams"
+    logger.info(
+      s"Fetching customs office list at index $startIndex with correlationId $correlationId"
+    )
 
-    retryFor(s"fetch of customs office list at index $startIndex") {
+    val fetchResult = retryFor(s"fetch of customs office list at index $startIndex") {
       // No point in retrying if our request is wrong
       case Upstream4xxResponse(_) => false
       // Attempt to recover from intermittent connectivity issues
@@ -140,7 +159,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
       httpClient
         .get(dpsUrl)(HeaderCarrier())
         .setHeader(
-          "correlationId"           -> UUID.randomUUID().toString,
+          "correlationId"           -> correlationId,
           HeaderNames.authorisation -> basicAuthSecret
         )
         .execute[CustomsOfficeListResponse](using
@@ -148,5 +167,12 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
           ec
         )
     }
+    fetchResult.failed.foreach(err =>
+      logger.error(
+        s"Retries exceeded while fetching customs office list at index $startIndex with correlationId $correlationId ",
+        err
+      )
+    )
+    fetchResult
   }
 }

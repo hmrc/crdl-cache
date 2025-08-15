@@ -121,7 +121,9 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
         previousInstruction.flatMap { _ =>
           nextInstruction match {
             case UpsertCustomsOffice(customsOffice) =>
-              logger.info(s"UpsertingCustomsOffice ${customsOffice.referenceNumber}")
+              logger.debug(
+                s"Upserting customs office with reference number: ${customsOffice.referenceNumber}"
+              )
               for {
                 _ <- supersedeOffice(
                   session,
@@ -132,7 +134,9 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
                 _ <- upsertOffice(session, customsOffice)
               } yield ()
             case RecordMissingCustomsOffice(referenceNumber, removedAt) =>
-              logger.info(s"RecordMissingCustomsOffice $referenceNumber")
+              logger.debug(
+                s"Recording removal of customs office reference number: $referenceNumber"
+              )
               supersedeOffice(session, referenceNumber, removedAt, true)
           }
         }

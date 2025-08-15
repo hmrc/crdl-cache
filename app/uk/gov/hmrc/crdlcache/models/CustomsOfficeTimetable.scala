@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.crdlcache.models
-
 import uk.gov.hmrc.crdlcache.models.TimetableLine.fromDpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.dps.col.DpsCustomsOfficeTimetable
 import uk.gov.hmrc.crdlcache.utils.ParserUtils.parseDate
