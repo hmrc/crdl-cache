@@ -95,7 +95,7 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
     instruction match {
       case CorrespondenceListInstruction.UpsertEntry(codeListEntry) =>
         logger.debug(
-          s"CorrespondenceListInstruction UpsertEntry ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+          s"Upserting entry of correspondence list ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
         )
         for {
           _ <- supersedePreviousEntries(
@@ -109,7 +109,7 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
         } yield ()
       case CorrespondenceListInstruction.InvalidateEntry(codeListEntry) =>
         logger.debug(
-          s"CorrespondenceListInstruction InvalidateEntry ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+          s"Invalidating entry of correspondence list ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
         )
         supersedePreviousEntries(
           session,
@@ -125,7 +125,7 @@ class CorrespondenceListsRepository @Inject() (mongoComponent: MongoComponent)(u
             removedAt
           ) =>
         logger.debug(
-          s"CorrespondenceListInstruction RecordMissingEntry ${codeListCode.code} with key $key"
+          s"Recording removal of entry in correspondence list ${codeListCode.code} with key $key"
         )
         supersedePreviousEntries(
           session,

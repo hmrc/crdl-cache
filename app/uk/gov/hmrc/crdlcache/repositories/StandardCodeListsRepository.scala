@@ -61,7 +61,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
     instruction match {
       case UpsertEntry(codeListEntry) =>
         logger.debug(
-          s"UpsertEntry ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+          s"Upserting entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
         )
         for {
           _ <- supersedePreviousEntries(
@@ -75,7 +75,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
         } yield ()
       case InvalidateEntry(codeListEntry) =>
         logger.debug(
-          s"InvalidateEntry ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+          s"Invalidating entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
         )
         supersedePreviousEntries(
           session,
@@ -85,7 +85,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           includeActiveFrom = true
         )
       case RecordMissingEntry(codeListCode, key, removedAt) =>
-        logger.debug(s"RecordMissingEntry ${codeListCode.code} with key $key")
+        logger.debug(s"Recording removal of entry in codelist ${codeListCode.code} with key $key")
         supersedePreviousEntries(
           session,
           codeListCode,
