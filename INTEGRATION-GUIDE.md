@@ -55,7 +55,7 @@ Please see the [API Documentation](https://redocly.github.io/redoc/?url=https%3A
 
 ## How?
 
-Please contact the owners of crdl-cache in the MDTP Catalogue to discuss integrating with the service.
+Please contact the owners of crdl-cache in the [MDTP Catalogue](https://catalogue.tax.service.gov.uk/service/crdl-cache) to discuss integrating with the service.
 
 You will need some estimate of the additional load that your service will place upon crdl-cache.
 
