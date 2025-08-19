@@ -87,7 +87,7 @@ Add a new codelist configuration to the appropriate config block to ensure it ge
 
 * For a correspondence list, add it to `import-correspondence-lists.correspondence-lists`.
 
-  You will need a `keyProperty` and `valueProperty` which determine the data items in the DPS API response to use as the `key` and `value` of the entry. The `valueProperty` is used when there is a composite key in the entity definition. In the NCTS entity definitions, this might be indicated by the the presence of `isprimarykey` fields.
+  You will need a `keyProperty` and `valueProperty` which determine the data items in the DPS API response to use as the `key` and `value` of the entry. The `valueProperty` is used when there is a composite key in the entity definition. In the NCTS entity definitions, this might be indicated by the presence of `isprimarykey` fields.
 
   ```hocon
   {
