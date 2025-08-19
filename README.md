@@ -12,6 +12,45 @@ Please see our [Integration Guide](./INTEGRATION-GUIDE.md) for details of how to
 
 [API Documentation (1.0)](https://redocly.github.io/redoc/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fhmrc%2Fcrdl-cache%2Frefs%2Fheads%2Fmain%2Fpublic%2Fapi%2F1.0%2Fopenapi.yaml)
 
+### Running the service
+
+1. Make sure you run all the dependant services through the service manager:
+
+```shell
+ sm2 --start CRDL_CACHE_ALL
+ ```
+
+2. Stop the cache microservice from the service manager and run it locally:
+
+```shell 
+sm2 --stop CRDL_CACHE
+```
+
+```shell 
+sbt run
+```
+The service runs on port 7252 by default.
+
+You will need to set up a dummy internal-auth token by invoking the test-only token endpoint of **internal-auth**:
+
+```shell
+curl -i -X POST -H 'Content-Type: application/json'  -d '{
+  "token": "crdl-cache-token",
+  "principal": "emcs-tfe-crdl-reference-data",
+  "permissions": [{
+    "resourceType": "crdl-cache",
+    "resourceLocation": "*",
+    "actions": ["READ"]
+  }]
+}' 'http://localhost:8470/test-only/token'
+```
+
+And now you can use curl to fetch the data from the **crdl-cache**, For example:
+
+```shell
+curl -H 'Authorization: crdl-cache-token' http://localhost:7252/crdl-cache/lists/BC08
+```
+
 ### Fetch Codelist Versions
 
 This endpoint is used to fetch the available codelists and their version information.
@@ -42,7 +81,7 @@ This endpoint is used to fetch the available codelists and their version informa
 * **Sample Request:**
 
   ```shell
-  curl --fail-with-body http://localhost:7252/crdl-cache/lists
+  curl -H 'Authorization: crdl-cache-token' --fail-with-body http://localhost:7252/crdl-cache/lists
   ```
 
 ### Fetch Codelist Entries
@@ -111,7 +150,7 @@ This endpoint is used to fetch entries of a reference data codelist.
 
     * **Description:**
 
-      This error is returned when an invalid codelist code is provided, or when an invalid `activeAt` timestamp is used.
+      This error is returned when an invalid codelist code is provided.
 
       Unfortunately the [JsonErrorHandler](https://github.com/hmrc/bootstrap-play/blob/466657a13dec046a94ace9d3138dde33bead82e3/bootstrap-backend-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/backend/http/JsonErrorHandler.scala) of [bootstrap-play](https://github.com/hmrc/bootstrap-play) unconditionally redacts anything which looks like a parameter parsing error.
 
@@ -125,7 +164,7 @@ This endpoint is used to fetch entries of a reference data codelist.
 * **Sample Request:**
 
   ```shell
-  curl --fail-with-body http://localhost:7252/crdl-cache/lists/BC08 
+  curl -H 'Authorization: crdl-cache-token' --fail-with-body http://localhost:7252/crdl-cache/lists/BC08 
   ```
 
 ### Fetch Customs Office Lists
@@ -134,22 +173,42 @@ This endpoint is used to fetch customs office list.
 
 * **URL**
 
-  `/crdl-cache/lists/customs-office`
+  `/crdl-cache/offices`
 
 * **Method:**
 
   `GET`
 
-* **Query Parameters**
+  * **Query Parameters**
 
-  **Optional:**
+    **Optional:**
 
-    * `activeAt: Instant`
+      * `referenceNumbers: Seq[String]`
 
-      Used to specify the timestamp at which the office lists are active to return in the response. If omitted the current timestamp is used.
+        Used to specify the reference numbers of the offices to return in the response.
+      
+        You can provide comma-separated values for reference numbers, or provide multiple occurrences of the referenceNumbers parameter, or both.
 
-      For example: `?activeAt=2025-06-05T00:00:00Z`.
+        For example: `?referenceNumbers=IT314102,DK314102&referenceNumbers=DE005055&referenceNumbers=GB005055`.
+    
+      * `countryCodes: Seq[String]`
 
+        Used to specify the country codes of the offices to return in the response.
+
+        You can provide comma-separated values for country codes, or provide multiple occurrences of the countryCodes parameter, or both.
+    
+        For example: `?countryCodes=CZ,SK&countryCodes=XI&countryCodes=GB`.
+    
+      * `roles: Seq[String]`
+
+        Used to specify the roles of the offices to return in the response.
+
+        You can provide comma-separated values for roles, or provide multiple occurrences of the roles parameter, or both.
+
+        For example: `?roles=ACE,RSS&roles=AUT&roles=CCA`.
+         <!-- The `activeAt` parameter is undocumented for now as we await historical data bugfixes at DPS
+         * `activeAt: Instant` - The timestamp at which to view entries. If omitted the current timestamp is used.
+         -->
 * **Success Response:**
     * **Status:** 200 <br/>
     * **Content:**
@@ -205,31 +264,15 @@ This endpoint is used to fetch customs office list.
          }]
         ```
 
-* **Error Response:**
-
-    * **Status:** 400
-
-    * **Description:**
-
-      This error is returned when an invalid `activeAt` timestamp is used.
-
-      Unfortunately the [JsonErrorHandler](https://github.com/hmrc/bootstrap-play/blob/466657a13dec046a94ace9d3138dde33bead82e3/bootstrap-backend-play-30/src/main/scala/uk/gov/hmrc/play/bootstrap/backend/http/JsonErrorHandler.scala) of [bootstrap-play](https://github.com/hmrc/bootstrap-play) unconditionally redacts anything which looks like a parameter parsing error.
-
-      We can implement our own error handler if this proves excessively unhelpful to consuming services.
-
-    * **Content:**
-      ```json
-      {"status": 400, "message": "bad request, cause: REDACTED"}
-      ```
-
 * **Sample Request:**
 
   ```shell
-  curl --fail-with-body http://localhost:7252/crdl-cache/lists/customs-office 
+  curl -H 'Authorization: crdl-cache-token' --fail-with-body http://localhost:7252/crdl-cache/lists/offices 
   ```
 
 
 ## Development
+
 ### Adding a new code list or correspondence list code to the import job
 The steps for doing so have been explained in detail on here [ADDING-CODELISTS.md](./ADDING-CODELISTS.md)
 
@@ -277,7 +320,7 @@ microservice {
 ```
 
 Please Note: To obtain the client id and secret, you can go to the [Integration Hub](https://admin.tax.service.gov.uk/integration-hub) and login with your LDAP credentials. Click on the 'Central Reference Data Cache' registered application and navigate to Test > Credentails.
-Follow the next steps to set up the client id and secret as environment variables. Post that when the import job is triggered next it would fetch the data from the DPS API.
+Follow the below-mentioned steps to set up the client id and secret as environment variables. Post that when the import job is triggered next it would fetch the data from the DPS API.
 
 ### Saving CLIENT_ID and CLIENT_SECRET as environment variables
 Open your shell configuration file(It can be .bashrc or .zshrc or any other shell) in an editor of your choice.
@@ -310,6 +353,10 @@ This should ensure that you have the prerequisites for the service installed:
 * MongoDB 7.x or later
 * Service Manager 2.x
 
+### All tests and checks
+This is an sbt command alias specific to this project. It will run a scala format
+check, run unit tests, run integration tests and produce a coverage report:
+> `sbt runAllChecks`
 
 ### License
 

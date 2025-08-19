@@ -43,7 +43,7 @@ Insert the new case in `models/CodeListCode`:
   case CL141 extends CodeListCode("CL141")
 ```
 
-If it’s a **correspondence list**, include the `listType` as the second parameter:
+If it’s a **correspondence list**, include the `listType` as the second parameter. As CL012 is not an example of a correspondence list, we will use the existing E200 code as an example here:
 
 ```scala
    // E200 (CN Code <-> Excise Products Correspondence)
@@ -67,7 +67,7 @@ Add a new codelist configuration to the appropriate config block to ensure it ge
 
 * For a code list, add it to `import-codelists.codelists`.
 
-  You will need a `keyProperty` which determine the data item in the DPS API response to use as the `key` of the entry.
+  You will need a `keyProperty` which determines the data item in the DPS API response to use as the `key` of the entry. The NCTS entity definitions contain an `isprimarykey` attribute which can help to identify the `keyProperty`.
   
   You will also need to know the `origin` of the list. This indicates which feed the list is from:
 
@@ -87,7 +87,7 @@ Add a new codelist configuration to the appropriate config block to ensure it ge
 
 * For a correspondence list, add it to `import-correspondence-lists.correspondence-lists`.
 
-  You will need a `keyProperty` and `valueProperty` which determine the data items in the DPS API response to use as the `key` and `value` of the entry.
+  You will need a `keyProperty` and `valueProperty` which determine the data items in the DPS API response to use as the `key` and `value` of the entry. The `valueProperty` is used when there is a composite key in the entity definition. In the NCTS entity definitions, this might be indicated by the the presence of `isprimarykey` fields.
 
   ```hocon
   {
@@ -116,8 +116,7 @@ The steps to add the stub data to the [crdl-ref-data-dps-stub](https://github.co
 You can start the dependencies of the service using service manager:
 
 ```shell
-sm2 --start CRDL_REF_DATA_DPS_STUB
-sm2 --start INTERNAL_AUTH
+sm2 --start CRDL_CACHE_ALL
 ```
 
 You can start the service itself using sbt. You will need the test-only routes enabled to trigger the import jobs:
