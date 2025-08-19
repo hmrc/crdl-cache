@@ -320,7 +320,7 @@ sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
 ### Importing data from DPS API
 
 When the code list, correspondence list or customs office list are imported via the scheduled jobs or via test-only endpoints as described above they are by default imported from our stubs.
-In order to import the actual data from the DPS API, we need to comment out the config in [application.conf](./conf/application.conf) which calls the DPS API. The resulting config would look like:
+In order to import the actual data from the DPS API, we need to adjust the dps-api` configuration in [application.conf](./conf/application.conf).The default configuration calls the [crdl-ref-data-dps-stub](https://github.com/hmrc/crdl-ref-data-dps-stub), but the configuration for calling the DPS HIP API is provided below. The resulting config would look like:
 ```diff
 microservice {
   services {
