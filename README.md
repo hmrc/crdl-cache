@@ -276,10 +276,51 @@ This endpoint is used to fetch customs office list.
 ### Adding a new code list or correspondence list code to the import job
 The steps for doing so have been explained in detail on here [ADDING-CODELISTS.md](./ADDING-CODELISTS.md)
 
+### Importing data for local development
+
+In order to trigger the import jobs locally, we need to start the cache service using the following command:
+
+```shell
+sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes 
+```
+
+* **Customs office import** can be triggered via curl using the below test-only endpoint:
+    ```shell
+    curl -X POST http://localhost:7252/crdl-cache/test-only/customs-office-lists
+    ```
+
+* Similarly, for **codelists**:
+    ```shell
+    curl -X POST http://localhost:7252/crdl-cache/test-only/codelists
+    ```
+
+* For **correspondence lists**:
+    ```shell
+    curl -X POST http://localhost:7252/crdl-cache/test-only/correspondence-lists
+    ```
+
+* In cases when you need a fresh import you can use the **DELETE** test-only endpoints to clear the data that has been previously imported. Here are the delete endpoints for customs office, codelists, correspondence lists and last updated respectively.
+
+    Please note that the last updated needs to be deleted along with codelists and correspondence lists. This is because last updated contains the data when the codelists and correspondence lists were last updated. 
+    ```shell
+    curl -X DELETE http://localhost:7252/crdl-cache/test-only/customs-office-lists
+    curl -X DELETE http://localhost:7252/crdl-cache/test-only/codelists
+    curl -X DELETE http://localhost:7252/crdl-cache/test-only/correspondence-lists
+    curl -X DELETE http://localhost:7252/crdl-cache/test-only/last-updated
+    ```
+
+* To check the **status** of an import you can use the following endpoints for customs offices, codelists and correspondence lists respectively.
+    ```shell
+    curl -X GET http://localhost:7252/crdl-cache/test-only/codelists
+    curl -X GET http://localhost:7252/crdl-cache/test-only/customs-office-lists
+    curl -X GET http://localhost:7252/crdl-cache/test-only/correspondence-lists
+    ```
+    Depending on the job status it would either return IDLE or RUNNING status.
+
 ### Importing data from DPS API
 
-When the code list, correspondence list or customs office list are imported via the scheduled jobs or via test-only endpoints as descripted in [ADDING-CODELISTS.md](./ADDING-CODELISTS.md#verifying-the-import-works) they are by default imported from our stubs.
-In order to import the actual data from the DPS API, in our [application.conf](./conf/application.conf) we need to comment out the config which calls our stub and uncomment the config which calls the DPS API. The resulting config would look like:
+When the code list, correspondence list or customs office list are imported via the scheduled jobs or via test-only endpoints as described above they are by default imported from our stubs.
+In order to import the actual data from the DPS API, we need to comment out the config in [application.conf](./conf/application.conf) which calls the DPS API. The resulting config would look like:
 ```diff
 microservice {
   services {

@@ -20,7 +20,6 @@ GET           /crdl-cache/test-only/correspondence-lists  uk.gov.hmrc.crdlcache.
 POST          /crdl-cache/test-only/correspondence-lists  uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCorrespondenceLists()
 DELETE        /crdl-cache/test-only/correspondence-lists  uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCorrespondenceLists()
 DELETE        /crdl-cache/test-only/last-updated          uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteLastUpdated()
-
 DELETE        /crdl-cache/test-only/customs-office-lists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.deleteCustomsOfficeLists()
 GET           /crdl-cache/test-only/customs-office-lists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.officesImportStatus()
 POST          /crdl-cache/test-only/customs-office-lists           uk.gov.hmrc.crdlcache.controllers.testonly.TestOnlyController.importCustomsOfficeLists()
