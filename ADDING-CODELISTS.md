@@ -67,7 +67,7 @@ Add a new codelist configuration to the appropriate config block to ensure it ge
 
 * For a code list, add it to `import-codelists.codelists`.
 
-  You will need a `keyProperty` which determines the data item in the DPS API response to use as the `key` of the entry. For example, in the NCTS entity definitions contain an `isprimarykey` property which can help to identify the `keyProperty`.
+  You will need a `keyProperty` which determines the data item in the DPS API response to use as the `key` of the entry. The NCTS entity definitions contain an `isprimarykey` attribute which can help to identify the `keyProperty`.
   
   You will also need to know the `origin` of the list. This indicates which feed the list is from:
 
