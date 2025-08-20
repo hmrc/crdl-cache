@@ -234,3 +234,8 @@ Finally, you can use curl to fetch the data from the **crdl-cache**:
 ```shell
 curl -H 'Authorization crdl-cache-token' http://localhost:7252/crdl-cache/lists/CL012
 ```
+
+After adding your new Code list or Correspondence List, please update [crdl-cache-stub](https://github.com/hmrc/crdl-cache-stub) by following the [instructions for updating stub data](https://github.com/hmrc/crdl-cache-stub/blob/main/README.md#updating-the-stub-data), so the latest changes are also represented there.
+
+The crdl-cache-stub service provides a local-only stub of the crdl-cache service to facilitate acceptance testing for services integrating with CRDL (Central Reference Data Library).
+This ensures that downstream services do not need to be aware of the lifecycle of the data in the crdl-cache service, or the details of setting up internal-auth for local development.
