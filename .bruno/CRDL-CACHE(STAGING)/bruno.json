@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "CRDL-CACHE(STAGING)",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
