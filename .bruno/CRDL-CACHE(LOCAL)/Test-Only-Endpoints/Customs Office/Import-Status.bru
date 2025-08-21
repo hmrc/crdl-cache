@@ -1,0 +1,15 @@
+meta {
+  name: Import-Status
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/test-only/customs-office-lists
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

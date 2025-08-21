@@ -4,6 +4,7 @@
 !.gitignore
 !.scalafmt.conf
 !.scalafix.conf
+!.bruno
 bin
 .bloop/
 .cache

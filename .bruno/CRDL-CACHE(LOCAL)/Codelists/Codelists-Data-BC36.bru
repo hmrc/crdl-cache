@@ -1,0 +1,28 @@
+meta {
+  name: Codelists-Data-BC36
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/lists/BC36
+  body: none
+  auth: inherit
+}
+
+params:query {
+  ~keys: E300
+  ~unitOfMeasureCode: 2
+  ~degreePlatoApplicabilityFlag: false
+  ~exciseProductsCategoryCode: E
+  ~alcoholicStrengthApplicabilityFlag: false
+  ~densityApplicabilityFlag: true
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

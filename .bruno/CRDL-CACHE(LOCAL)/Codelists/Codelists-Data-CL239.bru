@@ -1,0 +1,24 @@
+meta {
+  name: Codelists-Data-CL239
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/lists/CL239?keys=30600&state=valid
+  body: none
+  auth: inherit
+}
+
+params:query {
+  keys: 30600
+  state: valid
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}
