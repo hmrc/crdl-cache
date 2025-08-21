@@ -92,7 +92,7 @@ class ImportCustomsOfficesListJob @Inject() (
   }
 
   private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
-    for {
+    val job = for {
       customOfficeLists <- dpsConnector.fetchCustomsOfficeLists
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
@@ -112,6 +112,10 @@ class ImportCustomsOfficesListJob @Inject() (
         } yield ()
       }
     } yield ()
+
+    job.map { _ =>
+      logger.info("Import customs offices job completed successfully")
+    }
   }
 
   def execute(context: JobExecutionContext): Unit =

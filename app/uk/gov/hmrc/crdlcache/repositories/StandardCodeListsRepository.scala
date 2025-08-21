@@ -20,6 +20,7 @@ import org.mongodb.scala.*
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import play.api.Logging
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
@@ -47,7 +48,8 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
       ),
       IndexModel(Indexes.ascending("codeListCode", "properties.countableFlag", "key", "activeFrom"))
     )
-  ) {
+  )
+  with Logging {
 
   override def activationDate(instruction: Instruction): Instant = instruction.activeFrom
 
@@ -58,6 +60,9 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
   def executeInstruction(session: ClientSession, instruction: Instruction): Future[Unit] =
     instruction match {
       case UpsertEntry(codeListEntry) =>
+        logger.debug(
+          s"Upserting entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+        )
         for {
           _ <- supersedePreviousEntries(
             session,
@@ -69,6 +74,9 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           _ <- upsertEntry(session, codeListEntry)
         } yield ()
       case InvalidateEntry(codeListEntry) =>
+        logger.debug(
+          s"Invalidating entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+        )
         supersedePreviousEntries(
           session,
           codeListEntry.codeListCode,
@@ -77,6 +85,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           includeActiveFrom = true
         )
       case RecordMissingEntry(codeListCode, key, removedAt) =>
+        logger.debug(s"Recording removal of entry in codelist ${codeListCode.code} with key $key")
         supersedePreviousEntries(
           session,
           codeListCode,
