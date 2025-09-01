@@ -50,6 +50,8 @@ And now you can use curl to fetch the data from the **crdl-cache**, For example:
 ```shell
 curl -H 'Authorization: crdl-cache-token' http://localhost:7252/crdl-cache/lists/BC08
 ```
+### Sample Bruno Requests
+To request data from the crdl-cache using Bruno, open the [CRDL-CACHE(LOCAL)](./bruno/CRDL-CACHE(LOCAL)) collection on your bruno application, the file that can be found in the .bruno folder.
 
 ### Fetch Codelist Versions
 
