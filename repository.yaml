@@ -1,4 +1,9 @@
+digital-service: Central Reference Data Library Cache
+description: This service provides an API and caching layer for reference data hosted at DPS (Data Platform Services).
 repoVisibility: public_0C3F0CE3E6E6448FAD341E7BFA50FCD333E06A20CFF05FCACE61154DDBBADF71
 type: service
 service-type: backend
 tags: []
+test-repositories:
+  - crdl-cache-api-tests
+  - crdl-cache-performance-tests
