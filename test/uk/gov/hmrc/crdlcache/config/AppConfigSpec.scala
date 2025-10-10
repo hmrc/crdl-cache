@@ -88,9 +88,9 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.dpsClientId mustBe "client_id_must_be_set_in_app-config-xxx"
     appConfig.dpsClientSecret mustBe "client_secret_must_be_set_in_app-config-xxx"
 
-    appConfig.importOfficesSchedule mustBe "0 0 4 * * ?"
-    appConfig.importCodeListsSchedule mustBe "0 0 4 * * ?"
-    appConfig.importCorrespondenceListsSchedule mustBe "0 0 4 * * ?"
+    appConfig.importOfficesSchedule mustBe "0 30 4 * * ?"
+    appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
+    appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 3, 12)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
