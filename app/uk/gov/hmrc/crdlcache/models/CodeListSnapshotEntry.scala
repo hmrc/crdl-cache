@@ -42,7 +42,7 @@ case class CodeListSnapshotEntry(
 )
 
 object CodeListSnapshotEntry {
-  private val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+  private val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy[ HH:mm:ss]")
 
   private val knownProperties = Set(
     SEED.activeDateProperty,

@@ -22,12 +22,16 @@ import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
   InvalidTimeFormat
 }
 
-import java.time.{DayOfWeek, Instant, LocalDate, LocalTime, ZoneOffset}
+import java.time.{DayOfWeek, Instant, LocalDate, LocalDateTime, LocalTime, ZoneOffset}
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 
 object ParserUtils {
-  def parseDateToInstant(value: String, dateFormat: DateTimeFormatter): Instant = {
-    try LocalDate.parse(value, dateFormat).atStartOfDay(ZoneOffset.UTC).toInstant
+  def parseDateToInstant(value: String, formatter: DateTimeFormatter): Instant = {
+    try
+      formatter.parseBest(value, LocalDateTime.from, LocalDate.from) match {
+        case ldt: LocalDateTime => ldt.toInstant(ZoneOffset.UTC)
+        case ld: LocalDate      => ld.atStartOfDay(ZoneOffset.UTC).toInstant
+      }
     catch case ex: DateTimeParseException => throw InvalidDateFormat(value)
   }
 
