@@ -38,19 +38,41 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
   private val BC08Config = CodeListConfig(BC08, SEED, "CountryCode")
   private val E200Config = CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
 
-  private val convertedEntry = CodeListSnapshotEntry(
+  private val valueDate     = "17-01-2024"
+  private val valueDateTime = s"${valueDate} 12:34:56"
+
+  private val baseExpectedDate = "2024-01-17"
+  private val expectedDate     = s"${baseExpectedDate}T00:00:00Z"
+  private val expectedDateTime = s"${baseExpectedDate}T12:34:56Z"
+
+  private val BC08ArubaWithDateAndTime = BC08Aruba.copy(
+    dataitem = BC08Aruba.dataitem
+      .patch(2, List(DataItem(BC08Aruba.dataitem(2).dataitem_name, Some(valueDateTime))), 1)
+      .patch(5, List(DataItem(BC08Aruba.dataitem(5).dataitem_name, Some(valueDateTime))), 1)
+  )
+
+  private val convertedEntryWithDate     = convertedEntry(expectedDate)
+  private val convertedEntryWithDateTime = convertedEntry(expectedDateTime)
+
+  private def convertedEntry(withDate: String) = CodeListSnapshotEntry(
     "AW",
     "Aruba",
-    Instant.parse("2024-01-17T00:00:00Z"),
-    Some(Instant.parse("2024-01-17T00:00:00Z")),
+    Instant.parse(withDate),
+    Some(Instant.parse(withDate)),
     Some(Update),
     Json.obj(
       "actionIdentification" -> "811"
     )
   )
 
-  "CodeListSnapshotEntry.fromDpsEntry" should "convert a sample BC08 codelist entry" in {
-    CodeListSnapshotEntry.fromDpsEntry(BC08Config, BC08Aruba) mustBe convertedEntry
+  "CodeListSnapshotEntry.fromDpsEntry" should "convert a sample BC08 codelist entry with only date values" in {
+    CodeListSnapshotEntry.fromDpsEntry(BC08Config, BC08Aruba) mustBe convertedEntryWithDate
+  }
+  it should "convert a sample BC08 codelist entry with date and time values" in {
+    CodeListSnapshotEntry.fromDpsEntry(
+      BC08Config,
+      BC08ArubaWithDateAndTime
+    ) mustBe convertedEntryWithDateTime
   }
 
   it should "fail when the key property is missing" in {
