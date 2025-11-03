@@ -1,0 +1,7 @@
+# v2 routes to support crdl cache admin frontend
+# Overlay's prod.routes to add in new endpoint
+
+->      /       prod.Routes
+
+# V2 endpoint to support crdl-cache-admin-frontend
+GET     /crdl-cache/v2/offices/summaries   uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant])

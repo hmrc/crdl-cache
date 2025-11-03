@@ -1,0 +1,67 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.crdlcache.controllers
+
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
+import play.api.libs.json.Json
+import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
+import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
+import uk.gov.hmrc.internalauth.client.*
+
+import java.time.{Clock, Instant}
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
+import uk.gov.hmrc.crdlcache.models.paging.PagedResult
+
+@Singleton()
+class CustomsOfficeListsV2Controller @Inject() (
+  cc: ControllerComponents,
+  auth: BackendAuthComponents,
+  customsOfficeListsRepository: CustomsOfficeListsRepository,
+  clock: Clock
+)(using ec: ExecutionContext)
+  extends BackendController(cc)
+  with HttpFormats {
+  def fetchCustomsOfficeListSummaries(
+    pageNum: Int,
+    pageSize: Int,
+    activeAt: Option[Instant]
+  ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
+    val summariesFuture = customsOfficeListsRepository
+      .fetchCustomsOfficeSummaries(activeAt.getOrElse(clock.instant()), pageNum, pageSize)
+    val officesCountFuture = customsOfficeListsRepository.customsOfficesCount()
+    for {
+      summaries    <- summariesFuture
+      officesCount <- officesCountFuture
+    } yield {
+      Ok(
+        Json.toJson(
+          PagedResult(
+            pageNum = pageNum,
+            pageSize = pageSize,
+            itemsInPage = summaries.length,
+            totalItems = officesCount,
+            totalPages = Math.ceil(officesCount.toFloat / pageSize).toInt,
+            items = summaries
+          )
+        )
+      )
+    }
+  }
+}

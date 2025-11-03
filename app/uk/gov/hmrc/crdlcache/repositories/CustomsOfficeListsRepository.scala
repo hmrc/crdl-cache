@@ -21,12 +21,17 @@ import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import org.mongodb.scala.model.Projections.*
 import play.api.Logging
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
   UpsertCustomsOffice
 }
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeListsInstruction,
+  CustomsOfficeSummary
+}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 import uk.gov.hmrc.mongo.MongoComponent
@@ -37,6 +42,8 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import org.bson.conversions.Bson
+import org.mongodb.scala.bson.collection.immutable.Document
 
 @Singleton
 class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
@@ -183,4 +190,36 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       .find(and(allFilters*))
       .toFuture()
   }
+
+  def fetchCustomsOfficeSummaries(
+    activeAt: Instant,
+    pageNum: Int,
+    pageSize: Int
+  ): Future[Seq[CustomsOfficeSummary]] = {
+    val filters = List(
+      lte("activeFrom", activeAt),
+      or(equal("activeTo", null), gt("activeTo", activeAt))
+    )
+
+    collection
+      .find[Document](and(filters*))
+      .projection(
+        fields(
+          include("referenceNumber", "countryCode", "customsOfficeLsd.customsOfficeUsualName"),
+          excludeId()
+        )
+      )
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .map(office =>
+        CustomsOfficeSummary(
+          CustomsOfficeSummary.getReferenceNumber(office),
+          CustomsOfficeSummary.getCountryCode(office),
+          CustomsOfficeSummary.getUsualName(office)
+        )
+      )
+      .toFuture()
+  }
+
+  def customsOfficesCount(): Future[Long] = collection.countDocuments().toFuture()
 }
