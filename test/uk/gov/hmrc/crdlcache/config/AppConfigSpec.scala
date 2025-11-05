@@ -91,7 +91,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importOfficesSchedule mustBe "0 30 4 * * ?"
     appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
-    appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 10, 14)
+    appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 5)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
       CodeListConfig(BC03, SEED, "AcoActionNotPossibleReasonCode"),
