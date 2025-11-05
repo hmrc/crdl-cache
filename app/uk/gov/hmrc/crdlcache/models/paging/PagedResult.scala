@@ -17,7 +17,6 @@
 package uk.gov.hmrc.crdlcache.models.paging
 
 import play.api.libs.json.{JsObject, Json, Writes}
-import uk.gov.hmrc.crdlcache.models.CustomsOfficeSummary
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsNumber
 

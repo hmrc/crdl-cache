@@ -19,7 +19,6 @@ package uk.gov.hmrc.crdlcache.models.paging
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.{Json, JsValue}
-import play.api.libs.json.JsArray
 
 class PagedResultSpec extends AnyFlatSpec with Matchers {
   val defaultItems: Seq[Int] = Seq(1, 2, 3, 4, 5)
