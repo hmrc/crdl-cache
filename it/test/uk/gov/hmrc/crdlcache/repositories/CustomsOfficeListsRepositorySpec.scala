@@ -70,7 +70,7 @@ class CustomsOfficeListsRepositorySpec
 
   def withCustomsOfficeEntries(
     offices: Seq[CustomsOffice]
-  )(test: ClientSession => Future[Assertion | Seq[Assertion]]): Unit = {
+  )(test: ClientSession => Future[Assertion]): Unit = {
     repository.collection.insertMany(offices).toFuture.futureValue
     repository.withSessionAndTransaction(test).futureValue
   }
@@ -606,13 +606,11 @@ class CustomsOfficeListsRepositorySpec
   "CustomsOfficesListsRepository.fetchCustomsOfficeSummaries" should "return only the summary fields of the Customs Office as a CustomsOfficeSumamry" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
+    val expectedSummary = CustomsOfficeSummary(customsOffices(0).referenceNumber, customsOffices(0).countryCode, customsOffices(0).customsOfficeLsd.customsOfficeUsualName)
     repository
       .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length)
       .map{results => {
-        results.zipWithIndex.map{ case (office: CustomsOfficeSummary, index: Int) =>
-          val expectedOffice = customsOffices(index)
-          office mustBe CustomsOfficeSummary(expectedOffice.referenceNumber, expectedOffice.countryCode, expectedOffice.customsOfficeLsd.customsOfficeUsualName)
-        }
+        results(0) mustBe expectedSummary
       }}
   }
 

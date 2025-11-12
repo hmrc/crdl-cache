@@ -44,6 +44,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import org.bson.conversions.Bson
 import org.mongodb.scala.bson.collection.immutable.Document
+import play.api.libs.json.Json
 
 @Singleton
 class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
@@ -211,13 +212,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       )
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
-      .map(office =>
-        CustomsOfficeSummary(
-          CustomsOfficeSummary.getReferenceNumber(office),
-          CustomsOfficeSummary.getCountryCode(office),
-          CustomsOfficeSummary.getUsualName(office)
-        )
-      )
+      .map(office => Json.parse(office.toJson()).as[CustomsOfficeSummary]())
       .toFuture()
   }
 

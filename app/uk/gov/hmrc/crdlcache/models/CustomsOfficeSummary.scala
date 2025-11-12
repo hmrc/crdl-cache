@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.crdlcache.models
 
-import play.api.libs.json.{Json, Writes}
-import org.mongodb.scala.bson.collection.immutable.Document
+import play.api.libs.json.*
+import play.api.libs.functional.syntax.*
 
 final case class CustomsOfficeSummary(
   referenceNumber: String,
@@ -27,16 +27,9 @@ final case class CustomsOfficeSummary(
 
 object CustomsOfficeSummary {
   given Writes[CustomsOfficeSummary] = Json.writes[CustomsOfficeSummary]
-
-  private val referenceNumberKey = "referenceNumber"
-  private val countryCodeKey     = "countryCode"
-  private val officeLsdKey       = "customsOfficeLsd"
-  private val usualNameKey       = "customsOfficeUsualName"
-  private def getDocumentKey(document: Document, key: String) =
-    document.find(doc => doc._1 == key).fold("")(bson => bson._2.asString().getValue())
-  def getReferenceNumber(document: Document) = getDocumentKey(document, referenceNumberKey)
-  def getCountryCode(document: Document)     = getDocumentKey(document, countryCodeKey)
-  def getUsualName(document: Document) = document
-    .find(doc => doc._1 == officeLsdKey)
-    .fold("")(bson => bson._2.asDocument().getString(usualNameKey).getValue())
+  given Reads[CustomsOfficeSummary] = (
+    (__ \ "referenceNumber").read[String] and
+      (__ \ "countryCode").read[String] and
+      (__ \ "customsOfficeLsd" \ "customsOfficeUsualName").read[String]
+  )(CustomsOfficeSummary.apply _)
 }

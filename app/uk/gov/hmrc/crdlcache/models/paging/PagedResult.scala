@@ -17,8 +17,6 @@
 package uk.gov.hmrc.crdlcache.models.paging
 
 import play.api.libs.json.{JsObject, Json, Writes}
-import play.api.libs.json.JsArray
-import play.api.libs.json.JsNumber
 
 final case class PagedResult[T](
   items: Seq[T],
@@ -30,17 +28,6 @@ final case class PagedResult[T](
 )
 
 object PagedResult {
-  implicit def pagedResultWrites[T](implicit writesT: Writes[T]): Writes[PagedResult[T]] =
-    new Writes[PagedResult[T]] {
-      def writes(result: PagedResult[T]) = JsObject(
-        Seq(
-          "items"       -> JsArray(result.items.map(Json.toJson(_))),
-          "pageNum"     -> JsNumber(result.pageNum),
-          "pageSize"    -> JsNumber(result.pageSize),
-          "itemsInPage" -> JsNumber(result.itemsInPage),
-          "totalItems"  -> JsNumber(result.totalItems),
-          "totalPages"  -> JsNumber(result.totalPages)
-        )
-      )
-    }
+  given [T](using Writes[T]): Writes[PagedResult[T]] =
+    Json.writes[PagedResult[T]]
 }
