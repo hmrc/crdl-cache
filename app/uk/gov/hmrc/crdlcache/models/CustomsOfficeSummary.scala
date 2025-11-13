@@ -26,10 +26,13 @@ final case class CustomsOfficeSummary(
 )
 
 object CustomsOfficeSummary {
-  given Writes[CustomsOfficeSummary] = Json.writes[CustomsOfficeSummary]
-  given Reads[CustomsOfficeSummary] = (
+  given reads: Reads[CustomsOfficeSummary] = (
     (__ \ "referenceNumber").read[String] and
       (__ \ "countryCode").read[String] and
       (__ \ "customsOfficeLsd" \ "customsOfficeUsualName").read[String]
   )(CustomsOfficeSummary.apply _)
+
+  given writes: Writes[CustomsOfficeSummary] = Json.writes[CustomsOfficeSummary]
+
+  given format: Format[CustomsOfficeSummary] = Format(reads, writes)
 }

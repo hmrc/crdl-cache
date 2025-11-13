@@ -17,34 +17,34 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
+import org.bson.codecs.Codec
+import org.bson.conversions.Bson
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
 import org.mongodb.scala.model.Projections.*
 import play.api.Logging
+import play.api.libs.json.Format
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
   UpsertCustomsOffice
 }
+import uk.gov.hmrc.crdlcache.models.errors.MongoError
+import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 import uk.gov.hmrc.crdlcache.models.{
   CustomsOffice,
   CustomsOfficeListsInstruction,
   CustomsOfficeSummary
 }
-import uk.gov.hmrc.crdlcache.models.errors.MongoError
-import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
-import org.bson.conversions.Bson
-import org.mongodb.scala.bson.collection.immutable.Document
-import play.api.libs.json.Json
 
 @Singleton
 class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent)(using
@@ -66,7 +66,8 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
         )
       ),
       IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS))
-    )
+    ),
+    extraCodecs = Seq(Codecs.playFormatCodec(CustomsOfficeSummary.format))
   )
   with Transactions
   with Logging {
@@ -203,7 +204,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     )
 
     collection
-      .find[Document](and(filters*))
+      .find[CustomsOfficeSummary](and(filters*))
       .projection(
         fields(
           include("referenceNumber", "countryCode", "customsOfficeLsd.customsOfficeUsualName"),
@@ -212,7 +213,6 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       )
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
-      .map(office => Json.parse(office.toJson()).as[CustomsOfficeSummary]())
       .toFuture()
   }
 
