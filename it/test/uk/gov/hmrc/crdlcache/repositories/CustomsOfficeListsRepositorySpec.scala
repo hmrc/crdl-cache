@@ -47,6 +47,7 @@ import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, Instant, LocalDate, LocalTime}
+import uk.gov.hmrc.crdlcache.models.CustomsOfficeSummary
 
 class CustomsOfficeListsRepositorySpec
   extends AnyFlatSpec
@@ -315,6 +316,8 @@ class CustomsOfficeListsRepositorySpec
   )
   )
   private val customsOffices = Seq(DK003102, invalidatedoffice, postDatedOffice)
+
+  val defaultActiveAt = Instant.parse("2025-06-05T00:00:00Z")
 
   "CustomsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers" should "return active offices present in the database" in withCustomsOfficeEntries(
     customsOffices
@@ -597,5 +600,23 @@ class CustomsOfficeListsRepositorySpec
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ mustNot contain(DK003102))
+  }
+
+  // V2 functionality
+  "CustomsOfficesListsRepository.fetchCustomsOfficeSummaries" should "return only the summary fields of the Customs Office as a CustomsOfficeSumamry" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    val expectedSummary = CustomsOfficeSummary(customsOffices(0).referenceNumber, customsOffices(0).countryCode, customsOffices(0).customsOfficeLsd.customsOfficeUsualName)
+    repository
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length)
+      .map{results => {
+        results(0) mustBe expectedSummary
+      }}
+  }
+
+  "CustomsOfficesListsRepository.customsOfficesCount" should s"return equal the number of documents in the store: ${customsOffices.length}" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository.customsOfficesCount().map(_ mustBe customsOffices.length)
   }
 }

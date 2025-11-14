@@ -17,20 +17,28 @@
 package uk.gov.hmrc.crdlcache.repositories
 
 import com.mongodb.client.model.ReplaceOptions
+import org.bson.codecs.Codec
+import org.bson.conversions.Bson
 import org.mongodb.scala.ClientSession
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import org.mongodb.scala.model.Projections.*
 import play.api.Logging
+import play.api.libs.json.Format
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
   UpsertCustomsOffice
 }
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeListsInstruction,
+  CustomsOfficeSummary
+}
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.transaction.Transactions
 
 import java.time.Instant
@@ -58,7 +66,8 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
         )
       ),
       IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS))
-    )
+    ),
+    extraCodecs = Seq(Codecs.playFormatCodec(CustomsOfficeSummary.format))
   )
   with Transactions
   with Logging {
@@ -183,4 +192,29 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       .find(and(allFilters*))
       .toFuture()
   }
+
+  def fetchCustomsOfficeSummaries(
+    activeAt: Instant,
+    pageNum: Int,
+    pageSize: Int
+  ): Future[Seq[CustomsOfficeSummary]] = {
+    val filters = List(
+      lte("activeFrom", activeAt),
+      or(equal("activeTo", null), gt("activeTo", activeAt))
+    )
+
+    collection
+      .find[CustomsOfficeSummary](and(filters*))
+      .projection(
+        fields(
+          include("referenceNumber", "countryCode", "customsOfficeLsd.customsOfficeUsualName"),
+          excludeId()
+        )
+      )
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .toFuture()
+  }
+
+  def customsOfficesCount(): Future[Long] = collection.countDocuments().toFuture()
 }
