@@ -35,7 +35,9 @@ class CodeListEntrySpec extends AnyFlatSpec with Matchers with TestData {
     Json.obj(
       "actionIdentification"   -> "811",
       "responsibleDataManager" -> (null: String)
-    )
+    ),
+    None,
+    None
   )
 
   private val mongoJson = Json.obj(

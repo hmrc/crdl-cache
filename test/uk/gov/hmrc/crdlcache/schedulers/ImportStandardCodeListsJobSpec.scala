@@ -260,7 +260,9 @@ class ImportStandardCodeListsJobSpec
               Some(Instant.parse("2024-01-17T00:00:00Z")),
               Json.obj(
                 "actionIdentification" -> "823"
-              )
+              ),
+              None,
+              None
             )
           ),
           UpsertEntry(
@@ -273,7 +275,9 @@ class ImportStandardCodeListsJobSpec
               Some(Instant.parse("2024-01-17T00:00:00Z")),
               Json.obj(
                 "actionIdentification" -> "824"
-              )
+              ),
+              None,
+              None
             )
           )
         )
@@ -440,7 +444,9 @@ class ImportStandardCodeListsJobSpec
               Some(Instant.parse("2024-01-17T00:00:00Z")),
               Json.obj(
                 "actionIdentification" -> "823"
-              )
+              ),
+              None,
+              None
             )
           ),
           UpsertEntry(
@@ -453,7 +459,9 @@ class ImportStandardCodeListsJobSpec
               Some(Instant.parse("2024-01-17T00:00:00Z")),
               Json.obj(
                 "actionIdentification" -> "824"
-              )
+              ),
+              None,
+              None
             )
           )
         )
@@ -509,7 +517,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "823"
-          )
+          ),
+          None,
+          None
         )
       ),
       UpsertEntry(
@@ -522,7 +532,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "824"
-          )
+          ),
+          None,
+          None
         )
       )
     )
@@ -554,7 +566,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "1027"
-          )
+          ),
+          None,
+          None
         )
       ),
       InvalidateEntry(
@@ -567,7 +581,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "823"
-          )
+          ),
+          None,
+          None
         )
       ),
       RecordMissingEntry(BC08, "BM", fixedInstant),
@@ -581,7 +597,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "848"
-          )
+          ),
+          None,
+          None
         )
       ),
       UpsertEntry(
@@ -594,7 +612,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2024-01-17T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "849"
-          )
+          ),
+          None,
+          None
         )
       )
     )
@@ -623,7 +643,9 @@ class ImportStandardCodeListsJobSpec
               Some(Update),
               Json.obj(
                 "actionIdentification" -> "1093"
-              )
+              ),
+              None,
+              None
             ),
             CodeListSnapshotEntry(
               "E470",
@@ -633,7 +655,9 @@ class ImportStandardCodeListsJobSpec
               Some(Update),
               Json.obj(
                 "actionIdentification" -> "1096"
-              )
+              ),
+              None,
+              None
             ),
             CodeListSnapshotEntry(
               "E470",
@@ -643,7 +667,9 @@ class ImportStandardCodeListsJobSpec
               Some(Update),
               Json.obj(
                 "actionIdentification" -> "1099"
-              )
+              ),
+              None,
+              None
             )
           )
         )
@@ -661,7 +687,9 @@ class ImportStandardCodeListsJobSpec
           Some(Instant.parse("2023-11-01T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "1099"
-          )
+          ),
+          None,
+          None
         )
       )
     )

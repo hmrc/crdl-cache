@@ -62,7 +62,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     Some(Update),
     Json.obj(
       "actionIdentification" -> "811"
-    )
+    ),
+    None,
+    None
   )
 
   "CodeListSnapshotEntry.fromDpsEntry" should "convert a sample BC08 codelist entry with only date values" in {
@@ -130,7 +132,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       Instant.parse("2024-01-17T00:00:00Z"),
       None,
       None,
-      Json.obj()
+      Json.obj(),
+      None,
+      None
     )
 
     CodeListSnapshotEntry.fromDpsEntry(BC08Config, inputEntry) mustBe expectedEntry
@@ -151,7 +155,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       Instant.parse("2024-01-17T00:00:00Z"),
       None,
       None,
-      Json.obj()
+      Json.obj(),
+      None,
+      None
     )
 
     CodeListSnapshotEntry.fromDpsEntry(BC08Config, inputEntry) mustBe expectedEntry
@@ -190,7 +196,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       Instant.parse("2024-01-17T00:00:00Z"),
       None,
       Some(Create),
-      Json.obj()
+      Json.obj(),
+      None,
+      None
     )
 
     CodeListSnapshotEntry.fromDpsEntry(BC08Config, inputEntry) mustBe expectedEntry
@@ -212,7 +220,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       Instant.parse("2024-01-17T00:00:00Z"),
       None,
       None,
-      Json.obj("densityApplicabilityFlag" -> true)
+      Json.obj("densityApplicabilityFlag" -> true),
+      None,
+      None
     )
 
     CodeListSnapshotEntry.fromDpsEntry(BC08Config, inputEntry) mustBe expectedEntry
@@ -234,7 +244,9 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       Instant.parse("2024-01-17T00:00:00Z"),
       None,
       None,
-      Json.obj("densityApplicabilityFlag" -> false)
+      Json.obj("densityApplicabilityFlag" -> false),
+      None,
+      None
     )
 
     CodeListSnapshotEntry.fromDpsEntry(BC08Config, inputEntry) mustBe expectedEntry

@@ -79,7 +79,9 @@ class CorrespondenceListsRepositorySpec
       Some(Instant.parse("2024-12-30T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "433"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       E200,
@@ -90,7 +92,9 @@ class CorrespondenceListsRepositorySpec
       Some(Instant.parse("2024-12-30T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "437"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       E200,
@@ -101,7 +105,9 @@ class CorrespondenceListsRepositorySpec
       Some(Instant.parse("2013-11-14T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "432"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       E200,
@@ -112,7 +118,9 @@ class CorrespondenceListsRepositorySpec
       Some(Instant.parse("2013-11-14T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "437"
-      )
+      ),
+      None,
+      None
     )
   )
 
@@ -126,7 +134,9 @@ class CorrespondenceListsRepositorySpec
       Some(Instant.parse("2024-01-14T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "1234"
-      )
+      ),
+      None,
+      None
     )
   )
 
@@ -139,7 +149,9 @@ class CorrespondenceListsRepositorySpec
     Some(Instant.parse("2024-01-17T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "1024"
-    )
+    ),
+    None,
+    None
   )
 
   private val invalidatedEntry = CodeListEntry(
@@ -151,7 +163,9 @@ class CorrespondenceListsRepositorySpec
     Some(Instant.parse("2026-05-21T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "9999"
-    )
+    ),
+    None,
+    None
   )
 
   private val existingE470Entry = CodeListEntry(
@@ -163,7 +177,9 @@ class CorrespondenceListsRepositorySpec
     None,
     Json.obj(
       "actionIdentification" -> "7777"
-    )
+    ),
+    None,
+    None
   )
 
   private val postDatedE470Entry = CodeListEntry(
@@ -175,7 +191,9 @@ class CorrespondenceListsRepositorySpec
     None,
     Json.obj(
       "actionIdentification" -> "9999"
-    )
+    ),
+    None,
+    None
   )
 
   private val newCorrespondenceEntry = CodeListEntry(
@@ -187,7 +205,9 @@ class CorrespondenceListsRepositorySpec
     Some(Instant.parse("2024-01-17T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "1024"
-    )
+    ),
+    None,
+    None
   )
 
   private val entriesWithNoEndDate = activeEntries :+ postDatedE470Entry
@@ -574,7 +594,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2024-12-30T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "433"
-        )
+        ),
+        None,
+        None
       ),
       CodeListEntry(
         E200,
@@ -585,7 +607,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2024-12-30T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "437"
-        )
+        ),
+        None,
+        None
       ),
       CodeListEntry(
         E200,
@@ -596,7 +620,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2013-11-14T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "432"
-        )
+        ),
+        None,
+        None
       ),
       CodeListEntry(
         E200,
@@ -607,7 +633,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2013-11-14T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "437"
-        )
+        ),
+        None,
+        None
       )
     )
 
@@ -631,7 +659,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2024-12-30T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "437"
-        )
+        ),
+        None,
+        None
       ),
       CodeListEntry(
         E200,
@@ -642,7 +672,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2013-11-14T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "432"
-        )
+        ),
+        None,
+        None
       )
     )
 
@@ -658,7 +690,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2024-12-30T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "433"
-        )
+        ),
+        None,
+        None
       ),
       CodeListEntry(
         E200,
@@ -669,7 +703,9 @@ class CorrespondenceListsRepositorySpec
         Some(Instant.parse("2013-11-14T00:00:00Z")),
         Json.obj(
           "actionIdentification" -> "437"
-        )
+        ),
+        None,
+        None
       )
     )
 

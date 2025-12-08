@@ -66,7 +66,9 @@ class StandardCodeListsRepositorySpec
     Some(Instant.parse("2023-01-17T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "850"
-    )
+    ),
+    None,
+    None
   )
 
   private val activeCodelistEntries = Seq(
@@ -79,7 +81,9 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "811"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       BC08,
@@ -90,7 +94,9 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "823"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       BC08,
@@ -101,7 +107,9 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "824"
-      )
+      ),
+      None,
+      None
     )
   )
 
@@ -115,7 +123,9 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2016-10-12T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "1084"
-      )
+      ),
+      None,
+      None
     )
   )
 
@@ -129,7 +139,9 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-14T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "1234"
-      )
+      ),
+      None,
+      None
     )
   )
 
@@ -144,7 +156,9 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2025-05-21T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "1024"
-      )
+      ),
+      None,
+      None
     )
 
   private val activeIoEntry = CodeListEntry(
@@ -156,7 +170,9 @@ class StandardCodeListsRepositorySpec
     Some(Instant.parse("2024-01-17T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "1024"
-    )
+    ),
+    None,
+    None
   )
 
   private val postDatedEntry = CodeListEntry(
@@ -168,7 +184,9 @@ class StandardCodeListsRepositorySpec
     None,
     Json.obj(
       "actionIdentification" -> "9999"
-    )
+    ),
+    None,
+    None
   )
 
   private val updatedCzechEntry = CodeListEntry(
@@ -180,7 +198,9 @@ class StandardCodeListsRepositorySpec
     Some(Instant.parse("2024-01-17T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "850"
-    )
+    ),
+    None,
+    None
   )
 
   private val newCountryEntry = CodeListEntry(
@@ -192,7 +212,9 @@ class StandardCodeListsRepositorySpec
     Some(Instant.parse("2024-01-18T00:00:00Z")),
     Json.obj(
       "actionIdentification" -> "1002"
-    )
+    ),
+    None,
+    None
   )
 
   def withCodeListEntries(
@@ -349,7 +371,9 @@ class StandardCodeListsRepositorySpec
         "degreePlatoApplicabilityFlag"       -> true,
         "densityApplicabilityFlag"           -> false,
         "responsibleDataManager"             -> null
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       BC36,
@@ -364,7 +388,9 @@ class StandardCodeListsRepositorySpec
         "alcoholicStrengthApplicabilityFlag" -> false,
         "degreePlatoApplicabilityFlag"       -> false,
         "densityApplicabilityFlag"           -> true
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       BC36,
@@ -380,7 +406,9 @@ class StandardCodeListsRepositorySpec
         "degreePlatoApplicabilityFlag"       -> false,
         "densityApplicabilityFlag"           -> false,
         "responsibleDataManager"             -> "ABC"
-      )
+      ),
+      None,
+      None
     )
   )
 
