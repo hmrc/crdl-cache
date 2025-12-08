@@ -27,5 +27,7 @@ case class CodeListEntry(
   activeFrom: Instant,
   activeTo: Option[Instant],
   updatedAt: Option[Instant],
-  properties: JsObject
+  properties: JsObject,
+  phase: Option[String],
+  domain: Option[String]
 )

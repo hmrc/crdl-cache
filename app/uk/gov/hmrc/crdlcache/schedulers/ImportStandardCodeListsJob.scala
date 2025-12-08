@@ -74,7 +74,9 @@ class ImportStandardCodeListsJob @Inject() (
       newEntry.activeFrom,
       None,
       newEntry.updatedAt,
-      newEntry.properties
+      newEntry.properties,
+      newEntry.phase,
+      newEntry.domain
     )
 
     newEntry.operation match {
