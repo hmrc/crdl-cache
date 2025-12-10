@@ -508,7 +508,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2024-12-30T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "433"
-          )
+          ),
+          None,
+          None
         )
       ),
       UpsertEntry(
@@ -521,7 +523,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2024-12-30T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "437"
-          )
+          ),
+          None,
+          None
         )
       ),
       UpsertEntry(
@@ -534,7 +538,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2013-11-14T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "432"
-          )
+          ),
+          None,
+          None
         )
       ),
       UpsertEntry(
@@ -547,7 +553,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2013-11-14T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "437"
-          )
+          ),
+          None,
+          None
         )
       )
     )
@@ -590,7 +598,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2025-01-01T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "2412"
-          )
+          ),
+          None,
+          None
         )
       ),
       UpsertEntry(
@@ -603,7 +613,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2024-12-30T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "2413"
-          )
+          ),
+          None,
+          None
         )
       ),
       RecordMissingEntry(E200, "27102019", "E430", fixedInstant),
@@ -617,7 +629,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2013-11-14T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "437"
-          )
+          ),
+          None,
+          None
         )
       )
     )
@@ -653,7 +667,9 @@ class ImportCorrespondenceListsJobSpec
               Some(Update),
               Json.obj(
                 "actionIdentification" -> "1093"
-              )
+              ),
+              None,
+              None
             ),
             CodeListSnapshotEntry(
               "27101966",
@@ -663,7 +679,9 @@ class ImportCorrespondenceListsJobSpec
               Some(Update),
               Json.obj(
                 "actionIdentification" -> "1096"
-              )
+              ),
+              None,
+              None
             ),
             CodeListSnapshotEntry(
               "27101966",
@@ -673,7 +691,9 @@ class ImportCorrespondenceListsJobSpec
               Some(Update),
               Json.obj(
                 "actionIdentification" -> "1099"
-              )
+              ),
+              None,
+              None
             )
           )
         )
@@ -691,7 +711,9 @@ class ImportCorrespondenceListsJobSpec
           Some(Instant.parse("2023-11-01T00:00:00Z")),
           Json.obj(
             "actionIdentification" -> "1099"
-          )
+          ),
+          None,
+          None
         )
       )
     )

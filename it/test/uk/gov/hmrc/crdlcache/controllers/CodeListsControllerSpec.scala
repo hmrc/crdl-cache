@@ -78,7 +78,9 @@ class CodeListsControllerSpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "811"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       BC08,
@@ -89,7 +91,9 @@ class CodeListsControllerSpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "823"
-      )
+      ),
+      None,
+      None
     )
   )
 
@@ -103,7 +107,9 @@ class CodeListsControllerSpec
       Some(Instant.parse("2024-12-30T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "433"
-      )
+      ),
+      None,
+      None
     ),
     CodeListEntry(
       E200,
@@ -114,7 +120,9 @@ class CodeListsControllerSpec
       Some(Instant.parse("2024-12-30T00:00:00Z")),
       Json.obj(
         "actionIdentification" -> "437"
-      )
+      ),
+      None,
+      None
     )
   )
 

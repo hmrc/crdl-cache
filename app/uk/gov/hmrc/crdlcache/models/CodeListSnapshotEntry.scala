@@ -38,7 +38,9 @@ case class CodeListSnapshotEntry(
   activeFrom: Instant,
   updatedAt: Option[Instant],
   operation: Option[Operation],
-  properties: JsObject
+  properties: JsObject,
+  phase: Option[String],
+  domain: Option[String]
 )
 
 object CodeListSnapshotEntry {
@@ -109,6 +111,19 @@ object CodeListSnapshotEntry {
         builder += (item.propertyName -> propertyValue)
       }
 
-    CodeListSnapshotEntry(key, value, activeFrom, updatedAt, operation, builder.result())
+    val phase: Option[String] = None
+
+    val domain: Option[String] = None
+
+    CodeListSnapshotEntry(
+      key,
+      value,
+      activeFrom,
+      updatedAt,
+      operation,
+      builder.result(),
+      phase,
+      domain
+    )
   }
 }

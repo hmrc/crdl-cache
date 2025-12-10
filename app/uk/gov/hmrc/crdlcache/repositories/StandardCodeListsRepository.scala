@@ -43,10 +43,19 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
         Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("codeListCode", "key", "activeFrom"),
+        Indexes.ascending("codeListCode", "key", "activeFrom", "phase", "domain"),
         IndexOptions().unique(true)
       ),
-      IndexModel(Indexes.ascending("codeListCode", "properties.countableFlag", "key", "activeFrom"))
+      IndexModel(
+        Indexes.ascending(
+          "codeListCode",
+          "properties.countableFlag",
+          "key",
+          "activeFrom",
+          "phase",
+          "domain"
+        )
+      )
     )
   )
   with Logging {

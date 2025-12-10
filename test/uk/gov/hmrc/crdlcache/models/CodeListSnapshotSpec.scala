@@ -46,7 +46,9 @@ class CodeListSnapshotSpec extends AnyFlatSpec with Matchers with TestData {
           Some(Update),
           Json.obj(
             "actionIdentification" -> "811"
-          )
+          ),
+          None,
+          None
         )
       )
     )
