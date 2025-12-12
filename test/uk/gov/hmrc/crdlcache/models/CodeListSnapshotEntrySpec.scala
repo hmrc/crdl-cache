@@ -35,7 +35,7 @@ import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
 import java.time.Instant
 
 class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData {
-  private val BC08Config = CodeListConfig(BC08, SEED, "CountryCode")
+  private val BC08Config = CodeListConfig(code = BC08, origin = SEED, keyProperty = "CountryCode")
   private val E200Config = CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
 
   private val valueDate     = "17-01-2024"
@@ -63,8 +63,8 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     Json.obj(
       "actionIdentification" -> "811"
     ),
-    None,
-    None
+    Some("NCTS"),
+    Some("6")
   )
 
   "CodeListSnapshotEntry.fromDpsEntry" should "convert a sample BC08 codelist entry with only date values" in {

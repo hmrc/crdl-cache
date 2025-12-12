@@ -50,6 +50,8 @@ object CodeListSnapshotEntry {
     SEED.activeDateProperty,
     SEED.modificationDateProperty.get,
     SEED.operationProperty.get,
+    SEED.phaseProperty.get,
+    SEED.domainProperty.get,
     CSRD2.activeDateProperty
   )
 
@@ -111,9 +113,13 @@ object CodeListSnapshotEntry {
         builder += (item.propertyName -> propertyValue)
       }
 
-    val phase: Option[String] = None
+    val phase: Option[String] = config.origin.phaseProperty
+      .flatMap(dpsEntry.getProperty)
+      .flatMap(_.dataitem_value)
 
-    val domain: Option[String] = None
+    val domain: Option[String] = config.origin.domainProperty
+      .flatMap(dpsEntry.getProperty)
+      .flatMap(_.dataitem_value)
 
     CodeListSnapshotEntry(
       key,

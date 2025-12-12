@@ -49,6 +49,14 @@ trait TestData {
         |    {
         |      "dataitem_name": "Action_ModificationDateAndTime",
         |      "dataitem_value": "17-01-2024"
+        |    },
+        |    {
+        |      "dataitem_name": "Phase",
+        |      "dataitem_value": "NCTS"
+        |    },
+        |    {
+        |      "dataitem_name": "Domain",
+        |      "dataitem_value": "6"
         |    }
         |  ],
         |  "language": [

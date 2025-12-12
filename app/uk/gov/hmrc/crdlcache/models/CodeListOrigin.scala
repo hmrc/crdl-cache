@@ -34,4 +34,14 @@ enum CodeListOrigin {
     case SEED  => Some("Action_Operation")
     case CSRD2 => None
   }
+
+  def phaseProperty: Option[String] = this match {
+    case SEED  => Some("Phase")
+    case CSRD2 => None
+  }
+
+  def domainProperty: Option[String] = this match {
+    case SEED  => Some("Domain")
+    case CSRD2 => None
+  }
 }
