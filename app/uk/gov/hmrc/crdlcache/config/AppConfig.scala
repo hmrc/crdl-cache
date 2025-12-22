@@ -36,6 +36,7 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
   val importCodeListsSchedule: String = config.get[String]("import-codelists.schedule")
+  val importListsSchedule: String     = config.get[String]("import-lists.schedule")
   val importOfficesSchedule: String   = config.get[String]("import-offices.schedule")
   val importCorrespondenceListsSchedule: String =
     config.get[String]("import-correspondence-lists.schedule")
@@ -47,10 +48,20 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
     config
       .get[Seq[Config]]("import-codelists.codelists")
       .map { codeListConfig =>
+        val phase: Option[String] = {
+          if (codeListConfig.hasPath("phase")) Some(codeListConfig.getString("phase"))
+          else None
+        }
+        val domain: Option[String] = {
+          if (codeListConfig.hasPath("domain")) Some(codeListConfig.getString("domain"))
+          else None
+        }
         CodeListConfig(
           CodeListCode.fromString(codeListConfig.getString("code")),
           CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-          codeListConfig.getString("keyProperty")
+          codeListConfig.getString("keyProperty"),
+          phase,
+          domain
         )
       }
       .toList
@@ -59,11 +70,23 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
     config
       .get[Seq[Config]]("import-correspondence-lists.correspondence-lists")
       .map { correspondenceListConfig =>
+        val phase: Option[String] = {
+          if (correspondenceListConfig.hasPath("phase"))
+            Some(correspondenceListConfig.getString("phase"))
+          else None
+        }
+        val domain: Option[String] = {
+          if (correspondenceListConfig.hasPath("domain"))
+            Some(correspondenceListConfig.getString("domain"))
+          else None
+        }
         CorrespondenceListConfig(
           CodeListCode.fromString(correspondenceListConfig.getString("code")),
           CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
           correspondenceListConfig.getString("keyProperty"),
-          correspondenceListConfig.getString("valueProperty")
+          correspondenceListConfig.getString("valueProperty"),
+          phase,
+          domain
         )
       }
       .toList
