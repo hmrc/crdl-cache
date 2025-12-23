@@ -38,7 +38,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.clientSecret"         -> "def456",
         "last-updated-date.default"                          -> "2025-05-29",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
-        "import-pd-lists.schedule"                              -> "*/10 * * * * ?",
+        "import-pd-lists.schedule"                           -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
         "import-offices.schedule"                            -> "*/10 * * * * ?",
         "import-codelists.codelists" -> List(
@@ -48,19 +48,18 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         ),
         "import-pd-lists.pd-lists" -> List(
           Map(
-            "code" -> "CL231",
-            "origin"  -> "CSRD2",
-            "keyProperty"  -> "DeclarationTypeCode",
-            "phase" -> "6",
-            "domain" -> "NCTS"
-          )
-          ,
+            "code"        -> "CL231",
+            "origin"      -> "CSRD2",
+            "keyProperty" -> "DeclarationTypeCode",
+            "phase"       -> "6",
+            "domain"      -> "NCTS"
+          ),
           Map(
-            "code" -> "CL234",
-            "origin"  -> "CSRD2",
-            "keyProperty"  -> "DocumentTypeExciseCode",
-            "phase" -> "6",
-            "domain" -> "NCTS"
+            "code"        -> "CL234",
+            "origin"      -> "CSRD2",
+            "keyProperty" -> "DocumentTypeExciseCode",
+            "phase"       -> "6",
+            "domain"      -> "NCTS"
           )
         ),
         "import-correspondence-lists.correspondence-lists" -> List(
@@ -90,6 +89,10 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode"),
       CodeListConfig(Unknown("CL218"), CSRD2, "TransportModeCode")
+    )
+    appConfig.phaseAndDomainListConfigs mustBe List(
+      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("6"), Some("NCTS"))
     )
     appConfig.correspondenceListConfigs mustBe List(
       CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
@@ -140,10 +143,12 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC107, SEED, "ManualClosureRequestReasonCode"),
       CodeListConfig(BC108, SEED, "ManualClosureRejectionReasonCode"),
       CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode"),
+      CodeListConfig(CL239, CSRD2, "AdditionalInformationCode"),
+      CodeListConfig(CL380, CSRD2, "DocumentType")
+    )
+    appConfig.phaseAndDomainListConfigs mustBe List(
       PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL239, CSRD2, "AdditionalInformationCode"),
-      PhaseAndDomainListConfig(CL380, CSRD2, "DocumentType")
+      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("6"), Some("NCTS"))
     )
     appConfig.correspondenceListConfigs mustBe List(
       CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")

@@ -81,7 +81,7 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case CL141 extends CodeListCode("CL141")
   // CL231 (Declaration Type)
   case CL231 extends CodeListCode("CL231", listType = PD)
-  // CL239 (Document Type Excise)
+  // CL234 (Document Type Excise)
   case CL234 extends CodeListCode("CL234", listType = PD)
   // CL239 (Additional Information)
   case CL239 extends CodeListCode("CL239", listType = PD)

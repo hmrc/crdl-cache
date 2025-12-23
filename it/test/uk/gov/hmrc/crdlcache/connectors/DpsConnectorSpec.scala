@@ -69,11 +69,11 @@ class DpsConnectorSpec
       "microservice.services.dps-api.clientSecret"         -> clientSecret,
       "last-updated-date.default"                          -> "2025-05-29",
       "import-codelists.schedule"                          -> "* * * * * ?",
-      "import-lists.schedule"                              -> "* * * * * ?",
+      "import-pd-lists.schedule"                           -> "* * * * * ?",
       "import-offices.schedule"                            -> "* * * * * ?",
       "import-correspondence-lists.schedule"               -> "* * * * * ?",
       "import-codelists.codelists"                         -> List.empty,
-      "import-lists.lists"                                 -> List.empty,
+      "import-pd-lists.pd-lists"                           -> List.empty,
       "import-correspondence-lists.correspondence-lists"   -> List.empty,
       "http-verbs.retries.intervals"                       -> List("1.millis")
     )
