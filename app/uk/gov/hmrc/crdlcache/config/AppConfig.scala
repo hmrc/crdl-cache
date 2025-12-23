@@ -36,7 +36,7 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
   val importCodeListsSchedule: String = config.get[String]("import-codelists.schedule")
-  val importListsSchedule: String     = config.get[String]("import-lists.schedule")
+  val importPhaseAndDomainListsSchedule: String = config.get[String]("import-pd-lists.schedule")
   val importOfficesSchedule: String   = config.get[String]("import-offices.schedule")
   val importCorrespondenceListsSchedule: String =
     config.get[String]("import-correspondence-lists.schedule")
@@ -90,4 +90,12 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
         )
       }
       .toList
+
+    def loadListConfigs[T](configPath: String)(mapper: Config => T): List[T] = {
+      val listElementName = configPath.split("import-").last
+      for {
+        listConfig <- config.get[Seq[Config]](s"$configPath.$listElementName").toList
+           } yield mapper(listConfig)
+    }
+
 }
