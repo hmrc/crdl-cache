@@ -51,17 +51,17 @@ class JobScheduler @Inject() (
     .withSchedule(codeListsJobSchedule)
     .build()
 
-  // Lists Job Set
-  private val listsJobDetail = newJob(classOf[ImportStandardCodeListsJob])
-    .withIdentity("import-lists")
+  // Phase and Domain Code Lists
+  private val phaseAndDomainListsJobDetail = newJob(classOf[ImportStandardCodeListsJob])
+    .withIdentity("import-pd-lists")
     .build()
 
-  private val listsJobSchedule = CronScheduleBuilder
-    .cronSchedule(config.importListsSchedule)
+  private val phaseAndDomainListsJobSchedule = CronScheduleBuilder
+    .cronSchedule(config.importPhaseAndDomainListsSchedule)
 
-  private val listsJobTrigger = newTrigger()
-    .forJob(listsJobDetail)
-    .withSchedule(listsJobSchedule)
+  private val phaseAndDomainListsJobTrigger = newTrigger()
+    .forJob(phaseAndDomainListsJobDetail)
+    .withSchedule(phaseAndDomainListsJobSchedule)
     .build()
 
   // Customs Office List
@@ -95,8 +95,8 @@ class JobScheduler @Inject() (
     quartz.triggerJob(codeListsJobDetail.getKey)
   }
 
-  def startListImport(): Unit = {
-    quartz.triggerJob(listsJobDetail.getKey)
+  def startPhaseAndDomainListImport(): Unit = {
+    quartz.triggerJob(phaseAndDomainListsJobDetail.getKey)
   }
 
   def startCustomsOfficeListImport(): Unit = {
@@ -115,8 +115,8 @@ class JobScheduler @Inject() (
     getJobStatus(codeListsJobTrigger)
   }
 
-  def listImportStatus(): JobStatus = {
-    getJobStatus(listsJobTrigger)
+  def phaseAndDomainListImportStatus(): JobStatus = {
+    getJobStatus(phaseAndDomainListsJobTrigger)
   }
 
   def correspondenceListImportStatus(): JobStatus = {
@@ -136,7 +136,7 @@ class JobScheduler @Inject() (
     lifecycle.addStopHook(() => Future(quartz.shutdown()))
 
     quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
-    quartz.scheduleJob(listsJobDetail, listsJobTrigger)
+    quartz.scheduleJob(phaseAndDomainListsJobDetail, phaseAndDomainListsJobTrigger)
     quartz.scheduleJob(correspondenceListsJobDetail, correspondenceListsJobTrigger)
     quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesJobTrigger)
     quartz.start()

@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.crdlcache.models
+package uk.gov.hmrc.crdlcache.config
 
-enum CodeListType {
-  case STANDARD, CORRESPONDENCE, PD
-}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
+
+case class PhaseAndDomainListConfig(
+  code: CodeListCode,
+  origin: CodeListOrigin,
+  keyProperty: String,
+  phase: Option[String] = None,
+  domain: Option[String] = None
+) extends ListConfig

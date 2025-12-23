@@ -38,13 +38,30 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.clientSecret"         -> "def456",
         "last-updated-date.default"                          -> "2025-05-29",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
-        "import-lists.schedule"                              -> "*/10 * * * * ?",
+        "import-pd-lists.schedule"                              -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
         "import-offices.schedule"                            -> "*/10 * * * * ?",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin"  -> "SEED", "keyProperty"  -> "CountryCode"),
           Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode"),
           Map("code" -> "CL218", "origin" -> "CSRD2", "keyProperty" -> "TransportModeCode")
+        ),
+        "import-pd-lists.pd-lists" -> List(
+          Map(
+            "code" -> "CL231",
+            "origin"  -> "CSRD2",
+            "keyProperty"  -> "DeclarationTypeCode",
+            "phase" -> "6",
+            "domain" -> "NCTS"
+          )
+          ,
+          Map(
+            "code" -> "CL234",
+            "origin"  -> "CSRD2",
+            "keyProperty"  -> "DocumentTypeExciseCode",
+            "phase" -> "6",
+            "domain" -> "NCTS"
+          )
         ),
         "import-correspondence-lists.correspondence-lists" -> List(
           Map(
@@ -91,6 +108,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
 
     appConfig.importOfficesSchedule mustBe "0 30 4 * * ?"
     appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
+    appConfig.importPhaseAndDomainListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 3)
     appConfig.codeListConfigs mustBe List(
@@ -122,10 +140,10 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC107, SEED, "ManualClosureRequestReasonCode"),
       CodeListConfig(BC108, SEED, "ManualClosureRejectionReasonCode"),
       CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode"),
-      CodeListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("6"), Some("NCTS")),
-      CodeListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("6"), Some("NCTS")),
-      CodeListConfig(CL239, CSRD2, "AdditionalInformationCode"),
-      CodeListConfig(CL380, CSRD2, "DocumentType")
+      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL239, CSRD2, "AdditionalInformationCode"),
+      PhaseAndDomainListConfig(CL380, CSRD2, "DocumentType")
     )
     appConfig.correspondenceListConfigs mustBe List(
       CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
