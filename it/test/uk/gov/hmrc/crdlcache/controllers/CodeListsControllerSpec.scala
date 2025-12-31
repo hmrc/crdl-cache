@@ -161,7 +161,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(codeListEntries))
@@ -198,7 +200,9 @@ class CodeListsControllerSpec
         equalTo(E200),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(correspondenceListEntries))
@@ -235,7 +239,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -260,7 +266,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -284,9 +292,10 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(None),
-        equalTo(fixedInstant)
-      )
-    )
+        equalTo(fixedInstant), 
+        equalTo(None),
+        equalTo(None)
+    ))
       .thenReturn(Future.successful(List.empty))
 
     val response =
@@ -308,7 +317,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -332,7 +343,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set.empty)),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -356,7 +369,9 @@ class CodeListsControllerSpec
         equalTo(BC36),
         equalTo(Some(Set("B000"))),
         equalTo(Some(Map("alcoholicStrengthApplicabilityFlag" -> JsBoolean(true)))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -382,7 +397,9 @@ class CodeListsControllerSpec
         equalTo(BC66),
         equalTo(Some(Set("B"))),
         equalTo(Some(Map("responsibleDataManager" -> JsNull))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -408,7 +425,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(Some(Map("actionIdentification" -> JsString("384")))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -507,7 +526,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
