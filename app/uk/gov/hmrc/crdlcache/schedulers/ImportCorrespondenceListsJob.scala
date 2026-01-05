@@ -51,7 +51,9 @@ class ImportCorrespondenceListsJob @Inject() (
     correspondenceListsRepository,
     dpsConnector,
     appConfig,
-    clock
+    clock,
+    None,
+    None
   ) {
   // The date of the full SEED extract used to populate the E200 list
   val SeedExtractDate: Instant = Instant.parse("2024-12-27T10:53:17Z")

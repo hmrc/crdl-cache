@@ -37,7 +37,9 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
   codeListsRepository: StandardCodeListsRepository,
   dpsConnector: DpsConnector,
   appConfig: AppConfig,
-  clock: Clock
+  clock: Clock,
+  phase: Option[String],
+  domain: Option[String]
 )(using system: ActorSystem, ec: ExecutionContext)
   extends ImportCodeListsJob[String, Instruction](
     "import-pd-lists",
@@ -47,11 +49,13 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
     codeListsRepository,
     dpsConnector,
     appConfig,
-    clock
+    clock,
+    phase,
+    domain
   ) {
 
   override protected def listConfigs: List[ListConfig] =
-    appConfig.phaseAndDomainListConfigs
+    appConfig.codeListConfigs
 
   override protected def keyOfEntry(snapshotEntry: CodeListSnapshotEntry): String =
     snapshotEntry.key

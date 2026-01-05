@@ -43,7 +43,9 @@ abstract class ImportCodeListsJob[K, I](
   repository: CodeListsRepository[K, I],
   dpsConnector: DpsConnector,
   appConfig: AppConfig,
-  clock: Clock
+  clock: Clock,
+  phase: Option[String],
+  domain: Option[String]
 )(using system: ActorSystem, ec: ExecutionContext)
   extends Job
   with LockService
