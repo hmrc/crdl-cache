@@ -43,8 +43,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-offices.schedule"                            -> "*/10 * * * * ?",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin"  -> "SEED", "keyProperty"  -> "CountryCode"),
-          Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode"),
-          Map("code" -> "CL218", "origin" -> "CSRD2", "keyProperty" -> "TransportModeCode")
+          Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode")
         ),
         "import-pd-lists.pd-lists" -> List(
           Map(
@@ -87,8 +86,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 5, 29)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
-      CodeListConfig(BC36, SEED, "ExciseProductCode"),
-      CodeListConfig(Unknown("CL218"), CSRD2, "TransportModeCode")
+      CodeListConfig(BC36, SEED, "ExciseProductCode")
     )
     appConfig.phaseAndDomainListConfigs mustBe List(
       PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("6"), Some("NCTS")),
