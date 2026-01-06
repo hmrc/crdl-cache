@@ -79,14 +79,120 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case BC109 extends CodeListCode("BC109")
   // CL141 (Customs Offices)
   case CL141 extends CodeListCode("CL141")
+  // CL008 (Country Codes Full List)
+  case CL008 extends CodeListCode("CL008", listType = PD)
+  // CL009 (Country Codes Common Transit)
+  case CL009 extends CodeListCode("CL009", listType = PD)
+  // CL010 (Country Codes Community)
+  case CL010 extends CodeListCode("CL010", listType = PD)
+  // CL017
+  case CL017 extends CodeListCode("CL017", listType = PD)
+  // CL019
+  case CL019 extends CodeListCode("CL019", listType = PD)
+  // CL030
+  case CL030 extends CodeListCode("CL030", listType = PD)
+  // CL038
+  case CL038 extends CodeListCode("CL038", listType = PD)
+  // CL042
+  case CL042 extends CodeListCode("CL042", listType = PD)
+  // CL048
+  case CL048 extends CodeListCode("CL048", listType = PD)
+  // CL056
+  case CL056 extends CodeListCode("CL056", listType = PD)
+  // CL076
+  case CL076 extends CodeListCode("CL076", listType = PD)
+  // CL094
+  case CL094 extends CodeListCode("CL094", listType = PD)
+  // CL112
+  case CL112 extends CodeListCode("CL112", listType = PD)
+  // CL116
+  case CL116 extends CodeListCode("CL116", listType = PD)
+  // CL147
+  case CL147 extends CodeListCode("CL147", listType = PD)
+  // CL165
+  case CL165 extends CodeListCode("CL165", listType = PD)
+  // CL167
+  case CL167 extends CodeListCode("CL167", listType = PD)
+  // CL178
+  case CL178 extends CodeListCode("CL178", listType = PD)
+  // CL180
+  case CL180 extends CodeListCode("CL180", listType = PD)
+  // CL181
+  case CL181 extends CodeListCode("CL181", listType = PD)
+  // CL182
+  case CL182 extends CodeListCode("CL182", listType = PD)
+  // CL190
+  case CL190 extends CodeListCode("CL190", listType = PD)
+  // CL198
+  case CL198 extends CodeListCode("CL198", listType = PD)
+  // CL213
+  case CL213 extends CodeListCode("CL213", listType = PD)
+  // CL214
+  case CL214 extends CodeListCode("CL214", listType = PD)
+  // CL215
+  case CL215 extends CodeListCode("CL215", listType = PD)
+  // CL217
+  case CL217 extends CodeListCode("CL217", listType = PD)
+  // CL218
+  case CL218 extends CodeListCode("CL218", listType = PD)
+  // CL219
+  case CL219 extends CodeListCode("CL219", listType = PD)
+  // CL226
+  case CL226 extends CodeListCode("CL226", listType = PD)
+  // CL228
+  case CL228 extends CodeListCode("CL228", listType = PD)
+  // CL229
+  case CL229 extends CodeListCode("CL229", listType = PD)
+  // CL230 (Guarantee Type EU Non TIR)
+  case CL230 extends CodeListCode("CL230", listType = PD)
   // CL231 (Declaration Type)
   case CL231 extends CodeListCode("CL231", listType = PD)
+  // CL232
+  case CL232 extends CodeListCode("CL232", listType = PD)
   // CL234 (Document Type Excise)
   case CL234 extends CodeListCode("CL234", listType = PD)
+  // CL235
+  case CL235 extends CodeListCode("CL235", listType = PD)
+  // CL236
+  case CL236 extends CodeListCode("CL236", listType = PD)
   // CL239 (Additional Information)
   case CL239 extends CodeListCode("CL239", listType = PD)
+  // CL248
+  case CL248 extends CodeListCode("CL248", listType = PD)
+  // CL251
+  case CL251 extends CodeListCode("CL251", listType = PD)
+  // CL252
+  case CL252 extends CodeListCode("CL252", listType = PD)
+  // CL286
+  case CL286 extends CodeListCode("CL286", listType = PD)
+  // CL296
+  case CL296 extends CodeListCode("CL296", listType = PD)
+  // CL326
+  case CL326 extends CodeListCode("CL326", listType = PD)
+  // CL347
+  case CL347 extends CodeListCode("CL347", listType = PD)
+  // CL349
+  case CL349 extends CodeListCode("CL349", listType = PD)
   // CL380 (Additional Reference)
   case CL380 extends CodeListCode("CL380", listType = PD)
+  // CL437
+  case CL437 extends CodeListCode("CL437", listType = PD)
+  // CL560
+  case CL560 extends CodeListCode("CL560", listType = PD)
+  // CL580
+  case CL580 extends CodeListCode("CL580", listType = PD)
+  // CL581
+  case CL581 extends CodeListCode("CL581", listType = PD)
+  // CL704
+  case CL704 extends CodeListCode("CL704", listType = PD)
+  // CL716
+  case CL716 extends CodeListCode("CL716", listType = PD)
+  // CL750
+  case CL750 extends CodeListCode("CL750", listType = PD)
+  // CL752
+  case CL752 extends CodeListCode("CL752", listType = PD)
+  // CL754
+  case CL754 extends CodeListCode("CL754", listType = PD)
   // E200 (CN Code <-> Excise Products Correspondence)
   case E200 extends CodeListCode("E200", listType = CORRESPONDENCE)
   // Unknown codelist code
