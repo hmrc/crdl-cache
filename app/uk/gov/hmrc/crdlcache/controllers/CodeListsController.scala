@@ -62,9 +62,7 @@ class CodeListsController @Inject() (
               codeListCode,
               filterKeys,
               filterProperties,
-              activeAt.getOrElse(clock.instant()),
-              phase,
-              domain
+              activeAt.getOrElse(clock.instant())
             )
         case CORRESPONDENCE =>
           correspondenceListsRepository
@@ -72,9 +70,7 @@ class CodeListsController @Inject() (
               codeListCode,
               filterKeys,
               filterProperties,
-              activeAt.getOrElse(clock.instant()),
-              phase,
-              domain
+              activeAt.getOrElse(clock.instant())
             )
         case PD =>
           codeListsRepository
@@ -82,9 +78,7 @@ class CodeListsController @Inject() (
               codeListCode,
               filterKeys,
               filterProperties,
-              activeAt.getOrElse(clock.instant()),
-              phase,
-              domain
+              activeAt.getOrElse(clock.instant())
             )
       }
 

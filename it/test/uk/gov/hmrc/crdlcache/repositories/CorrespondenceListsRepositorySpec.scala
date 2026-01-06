@@ -247,9 +247,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeEntries)
   }
@@ -262,9 +260,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = Some(Set("27101944")),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeEntries.take(2))
   }
@@ -277,9 +273,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = Some(Set.empty),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeEntries)
   }
@@ -292,9 +286,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain noElementsOf supersededListEntries)
   }
@@ -307,9 +299,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ mustNot contain(postDatedE470Entry))
   }
@@ -322,9 +312,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain(invalidatedEntry))
   }
@@ -337,9 +325,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = None,
         filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain theSameElementsAs List(activeEntries(1), activeEntries(3)))
   }
@@ -352,9 +338,7 @@ class CorrespondenceListsRepositorySpec
         E200,
         filterKeys = Some(Set("27101944")),
         filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       ).map(_ must contain only activeEntries(1))
   }
 

@@ -80,9 +80,7 @@ abstract class CodeListsRepository[K, I](
     code: CodeListCode,
     filterKeys: Option[Set[String]],
     filterProperties: Option[Map[String, JsValue]],
-    activeAt: Instant,
-    phase: Option[String],
-    domain: Option[String]
+    activeAt: Instant
   ): Future[Seq[CodeListEntry]] = {
     val mandatoryFilters = List(
       equal("codeListCode", code.code),

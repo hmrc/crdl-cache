@@ -264,9 +264,7 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeCodelistEntries)
   }
@@ -279,9 +277,7 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = Some(Set("AW", "BL")),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeCodelistEntries.take(2))
   }
@@ -294,9 +290,7 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = Some(Set.empty),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain allElementsOf activeCodelistEntries)
   }
@@ -307,9 +301,7 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain noElementsOf differentCodeListEntries)
   }
@@ -322,9 +314,7 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = Some(Set("B")),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain noElementsOf differentCodeListEntries)
   }
@@ -336,9 +326,7 @@ class StandardCodeListsRepositorySpec
           BC08,
           filterKeys = None,
           filterProperties = None,
-          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-          phase = None,
-          domain = None
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
         )
         .map(_ must contain noElementsOf supersededCodeListEntries)
   }
@@ -350,9 +338,7 @@ class StandardCodeListsRepositorySpec
           BC08,
           filterKeys = None,
           filterProperties = None,
-          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-          phase = None,
-          domain = None
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
         )
         .map(_ mustNot contain(postDatedEntry))
   }
@@ -365,9 +351,7 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain(invalidatedIoEntry))
   }
@@ -436,9 +420,7 @@ class StandardCodeListsRepositorySpec
         BC36,
         filterKeys = Some(Set("B000", "W200")),
         filterProperties = Some(Map("exciseProductsCategoryCode" -> JsString("W"))),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        activeAt = Instant.parse("2025-06-05T00:00:00Z")
       )
       .map(_ must contain only exciseProductEntries.last)
   }
@@ -452,9 +434,7 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = None,
           filterProperties = Some(Map("alcoholicStrengthApplicabilityFlag" -> JsTrue)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-          phase = None,
-          domain = None
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
         )
 
       filteredEntriesWithFlag <- repository
@@ -462,9 +442,7 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = Some(Set("B000", "W200")),
           filterProperties = Some(Map("degreePlatoApplicabilityFlag" -> JsTrue)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-          phase = None,
-          domain = None
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
         )
     } yield {
       allEntriesWithFlag must contain allOf (exciseProductEntries.head, exciseProductEntries.last)
@@ -481,9 +459,7 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = None,
           filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-          phase = None,
-          domain = None
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
         )
 
       filteredEntriesWithNull <- repository
@@ -491,9 +467,7 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = Some(Set("B000", "W200")),
           filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-          phase = None,
-          domain = None
+          activeAt = Instant.parse("2025-06-05T00:00:00Z")
         )
     } yield {
       allEntriesWithNull must contain allElementsOf exciseProductEntries.init
