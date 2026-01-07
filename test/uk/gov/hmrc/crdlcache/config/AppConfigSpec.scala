@@ -197,7 +197,13 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         Some("P6"),
         Some("NCTS")
       ),
-      PhaseAndDomainListConfig(Unknown("CL112"), CSRD2, "CountryCodesCTC", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(
+        Unknown("CL112"),
+        CSRD2,
+        "CountryCodesCTC",
+        Some("P6"),
+        Some("NCTS")
+      ),
       PhaseAndDomainListConfig(
         Unknown("CL116"),
         CSRD2,
