@@ -200,7 +200,7 @@ class DpsConnectorSpec
               Some("1"),
               Some("0800"),
               Some("1800"),
-              Some("P6"),
+              Some("6"),
               None,
               None,
               Some(
@@ -265,7 +265,7 @@ class DpsConnectorSpec
               Some("1"),
               Some("0000"),
               Some("2359"),
-              Some("P6"),
+              Some("6"),
               None,
               None,
               Some(
