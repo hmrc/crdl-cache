@@ -74,23 +74,11 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
 
   val correspondenceListConfigs: List[CorrespondenceListConfig] =
     loadListConfigs("import-correspondence-lists") { correspondenceListConfig =>
-      val phase: Option[String] = {
-        if (correspondenceListConfig.hasPath("phase"))
-          Some(correspondenceListConfig.getString("phase"))
-        else None
-      }
-      val domain: Option[String] = {
-        if (correspondenceListConfig.hasPath("domain"))
-          Some(correspondenceListConfig.getString("domain"))
-        else None
-      }
       CorrespondenceListConfig(
         CodeListCode.fromString(correspondenceListConfig.getString("code")),
         CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
         correspondenceListConfig.getString("keyProperty"),
-        correspondenceListConfig.getString("valueProperty"),
-        phase,
-        domain
+        correspondenceListConfig.getString("valueProperty")
       )
     }.toList
 
