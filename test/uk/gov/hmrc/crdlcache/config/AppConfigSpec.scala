@@ -41,6 +41,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-pd-lists.schedule"                           -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
         "import-offices.schedule"                            -> "*/10 * * * * ?",
+        "import-pd-lists.phase"                              -> "P6",
+        "import-pd-lists.domain"                             -> "NCTS",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
           Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode")
@@ -49,16 +51,12 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
           Map(
             "code"        -> "CL231",
             "origin"      -> "CSRD2",
-            "keyProperty" -> "DeclarationTypeCode",
-            "phase"       -> "P6",
-            "domain"      -> "NCTS"
+            "keyProperty" -> "DeclarationTypeCode"
           ),
           Map(
             "code"        -> "CL234",
             "origin"      -> "CSRD2",
-            "keyProperty" -> "DocumentTypeExciseCode",
-            "phase"       -> "P6",
-            "domain"      -> "NCTS"
+            "keyProperty" -> "DocumentTypeExciseCode"
           )
         ),
         "import-correspondence-lists.correspondence-lists" -> List(

@@ -63,22 +63,12 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
 
   val phaseAndDomainListConfigs: List[PhaseAndDomainListConfig] =
     loadListConfigs("import-pd-lists") { phaseAndDomainListConfig =>
-      val phase: Option[String] = {
-        if (phaseAndDomainListConfig.hasPath("phase"))
-          Some(phaseAndDomainListConfig.getString("phase"))
-        else None
-      }
-      val domain: Option[String] = {
-        if (phaseAndDomainListConfig.hasPath("domain"))
-          Some(phaseAndDomainListConfig.getString("domain"))
-        else None
-      }
       PhaseAndDomainListConfig(
         CodeListCode.fromString(phaseAndDomainListConfig.getString("code")),
         CodeListOrigin.valueOf(phaseAndDomainListConfig.getString("origin")),
         phaseAndDomainListConfig.getString("keyProperty"),
-        phase,
-        domain
+        Some(config.get[String]("import-pd-lists.phase")),
+        Some(config.get[String]("import-pd-lists.domain"))
       )
     }.toList
 
