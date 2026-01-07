@@ -22,7 +22,5 @@ case class CorrespondenceListConfig(
   code: CodeListCode,
   origin: CodeListOrigin,
   keyProperty: String,
-  valueProperty: String,
-  phase: Option[String] = None,
-  domain: Option[String] = None
+  valueProperty: String
 ) extends ListConfig
