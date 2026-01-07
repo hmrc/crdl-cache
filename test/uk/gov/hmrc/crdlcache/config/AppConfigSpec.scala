@@ -87,8 +87,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC36, SEED, "ExciseProductCode")
     )
     appConfig.phaseAndDomainListConfigs mustBe List(
-      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("P6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("P6"), Some("NCTS"))
+      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", "P6", "NCTS")
     )
     appConfig.correspondenceListConfigs mustBe List(
       CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
@@ -145,316 +145,316 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         CL008,
         CSRD2,
         "CountryCodesFullList",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL009,
         CSRD2,
         "CountryCodesCommonTransit",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL010,
         CSRD2,
         "CountryCodesCommunity",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL017, CSRD2, "KindOfPackages", Some("P6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL019, CSRD2, "IncidentCode", Some("P6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL030, CSRD2, "XmlErrorCodes", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL017, CSRD2, "KindOfPackages", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL019, CSRD2, "IncidentCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL030, CSRD2, "XmlErrorCodes", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL038,
         CSRD2,
         "QualifierOfIdentificationIncident",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL042,
         CSRD2,
         "DeclarationTypeAdditional",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL048, CSRD2, "CurrencyCodes", Some("P6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL056, CSRD2, "Role", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL048, CSRD2, "CurrencyCodes", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL056, CSRD2, "Role", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL076,
         CSRD2,
         "GuaranteeTypeWithReference",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL094,
         CSRD2,
         "RepresentativeStatusCode",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL112,
         CSRD2,
         "CountryCodesCTC",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL116,
         CSRD2,
         "TransportChargesMethodOfPayment",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL147,
         CSRD2,
         "CountryCustomsSecurityAgreementArea",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL165, CSRD2, "Nationality", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL165, CSRD2, "Nationality", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL167,
         CSRD2,
         "CountryCodesOptout",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL178,
         CSRD2,
         "PreviousDocumentUnionGoods",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL180,
         CSRD2,
         "FunctionalErrorCodesIeCA",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL181,
         CSRD2,
         "KindOfPackagesBulk",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL182,
         CSRD2,
         "KindOfPackagesUnpacked",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL190,
         CSRD2,
         "CountryAddressPostcodeBased",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL198,
         CSRD2,
         "CountryAddressPostcodeOnly",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL213,
         CSRD2,
         "SupportingDocumentType",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL214,
         CSRD2,
         "PreviousDocumentType",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL215,
         CSRD2,
         "RequestedDocumentType",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL217,
         CSRD2,
         "DeclarationTypeSecurity",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL218,
         CSRD2,
         "TransportModeCode",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL219,
         CSRD2,
         "TypeOfIdentificationofMeansOfTransportActive",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL226,
         CSRD2,
         "RejectionCodeDepartureExport",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL228,
         CSRD2,
         "PreviousDocumentExportType",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL229,
         CSRD2,
         "GuaranteeTypeCTC",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL230,
         CSRD2,
         "GuaranteeTypeEUNonTIR",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL232,
         CSRD2,
         "DeclarationTypeItemLevel",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL235,
         CSRD2,
         "AuthorisationTypeDeparture",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL236,
         CSRD2,
         "AuthorisationTypeDestination",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL239, CSRD2, "AdditionalInformation", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL239, CSRD2, "AdditionalInformation", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL248,
         CSRD2,
         "CountryCodesForAddress",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL251, CSRD2, "GuaranteeType", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL251, CSRD2, "GuaranteeType", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL252,
         CSRD2,
         "InvalidGuaranteeReason",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL286,
         CSRD2,
         "GuaranteeTypeWithGRN",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL296,
         CSRD2,
         "SpecificCircumstanceIndicatorCode",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL326,
         CSRD2,
         "QualifierOfTheIdentification",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL347, CSRD2, "TypeOfLocation", Some("P6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL349, CSRD2, "Unit", Some("P6"), Some("NCTS")),
-      PhaseAndDomainListConfig(CL380, CSRD2, "AdditionalReference", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL347, CSRD2, "TypeOfLocation", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL349, CSRD2, "Unit", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL380, CSRD2, "AdditionalReference", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL437,
         CSRD2,
         "FunctionErrorCodesTED",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL560,
         CSRD2,
         "BusinessRejectionTypeDepExp",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL580,
         CSRD2,
         "BusinessRejectionTypeTra",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL581,
         CSRD2,
         "RejectionCodeTransit",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL704,
         CSRD2,
         "AdditionalSupplyChainActorRoleCode",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
-      PhaseAndDomainListConfig(CL716, CSRD2, "ControlType", Some("P6"), Some("NCTS")),
+      PhaseAndDomainListConfig(CL716, CSRD2, "ControlType", "P6", "NCTS"),
       PhaseAndDomainListConfig(
         CL750,
         CSRD2,
         "TypeOfIdentificationOfMeansOfTransport",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL752,
         CSRD2,
         "AdditionalInformationCodeSubset",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       ),
       PhaseAndDomainListConfig(
         CL754,
         CSRD2,
         "TransportDocumentType",
-        Some("P6"),
-        Some("NCTS")
+        "P6",
+        "NCTS"
       )
     )
     appConfig.correspondenceListConfigs mustBe List(

@@ -67,8 +67,8 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
         CodeListCode.fromString(phaseAndDomainListConfig.getString("code")),
         CodeListOrigin.valueOf(phaseAndDomainListConfig.getString("origin")),
         phaseAndDomainListConfig.getString("keyProperty"),
-        Some(config.get[String]("import-pd-lists.phase")),
-        Some(config.get[String]("import-pd-lists.domain"))
+        config.get[String]("import-pd-lists.phase"),
+        config.get[String]("import-pd-lists.domain")
       )
     }.toList
 

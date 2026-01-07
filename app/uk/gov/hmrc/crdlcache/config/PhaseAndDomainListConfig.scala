@@ -22,6 +22,6 @@ case class PhaseAndDomainListConfig(
   code: CodeListCode,
   origin: CodeListOrigin,
   keyProperty: String,
-  phase: Option[String] = None,
-  domain: Option[String] = None
+  phase: String,
+  domain: String
 ) extends ListConfig
