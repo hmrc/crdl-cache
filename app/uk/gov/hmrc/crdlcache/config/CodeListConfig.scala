@@ -21,7 +21,5 @@ import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
 case class CodeListConfig(
   code: CodeListCode,
   origin: CodeListOrigin,
-  keyProperty: String,
-  phase: Option[String] = None,
-  domain: Option[String] = None
+  keyProperty: String
 ) extends ListConfig
