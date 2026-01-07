@@ -107,7 +107,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
 
     appConfig.importOfficesSchedule mustBe "0 30 4 * * ?"
     appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
-    appConfig.importPhaseAndDomainListsSchedule mustBe "0 30 23 ? * Tue"
+    appConfig.importPhaseAndDomainListsSchedule mustBe "0 30 23 ? * *"
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 3)
     appConfig.codeListConfigs mustBe List(
