@@ -137,7 +137,7 @@ class CodeListsControllerSpec
       Json.obj(
         "state" -> "valid"
       ),
-      Some("6"),
+      Some("P6"),
       Some("NCTS")
     ),
     CodeListEntry(
@@ -150,7 +150,7 @@ class CodeListsControllerSpec
       Json.obj(
         "state" -> "valid"
       ),
-      Some("6"),
+      Some("P6"),
       Some("NCTS")
     )
   )
