@@ -33,17 +33,17 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(using
+class PhaseAndDomainListsRepository @Inject() (mongoComponent: MongoComponent)(using
   ec: ExecutionContext
 ) extends CodeListsRepository[String, Instruction](
     mongoComponent,
-    collectionName = "codelists",
+    collectionName = "pd-lists",
     extraCodecs =
       Codecs.playFormatSumCodecs[JsValue](Format(Reads.JsValueReads, Writes.jsValueWrites)) ++
         Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("codeListCode", "key", "activeFrom"),
+        Indexes.ascending("codeListCode", "key", "activeFrom", "phase", "domain"),
         IndexOptions().unique(true)
       ),
       IndexModel(
@@ -51,7 +51,9 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           "codeListCode",
           "properties.countableFlag",
           "key",
-          "activeFrom"
+          "activeFrom",
+          "phase",
+          "domain"
         )
       )
     )

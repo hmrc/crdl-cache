@@ -52,7 +52,7 @@ class JobScheduler @Inject() (
     .build()
 
   // Phase and Domain Code Lists
-  private val phaseAndDomainListsJobDetail = newJob(classOf[ImportStandardCodeListsJob])
+  private val phaseAndDomainListsJobDetail = newJob(classOf[ImportPhaseAndDomainCodeListsJob])
     .withIdentity("import-pd-lists")
     .build()
 
