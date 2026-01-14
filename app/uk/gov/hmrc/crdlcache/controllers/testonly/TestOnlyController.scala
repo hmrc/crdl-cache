@@ -52,12 +52,12 @@ class TestOnlyController @Inject() (
     Ok(Json.toJson(jobScheduler.codeListImportStatus()))
   }
 
-  def importPhaseAndDomainCodeLists(): Action[AnyContent] = Action {
+  def importPhaseAndDomainLists(): Action[AnyContent] = Action {
     jobScheduler.startPhaseAndDomainListImport()
     Accepted
   }
 
-  def phaseAndDomainCodeListImportStatus(): Action[AnyContent] = Action {
+  def phaseAndDomainListImportStatus(): Action[AnyContent] = Action {
     Ok(Json.toJson(jobScheduler.phaseAndDomainListImportStatus()))
   }
 
