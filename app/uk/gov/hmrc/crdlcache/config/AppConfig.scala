@@ -57,18 +57,20 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
       CodeListConfig(
         CodeListCode.fromString(codeListConfig.getString("code")),
         CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-        codeListConfig.getString("keyProperty")
+        codeListConfig.getString("keyProperty"),
+        None,
+        None
       )
     }.toList
 
-  val phaseAndDomainListConfigs: List[PhaseAndDomainListConfig] =
-    loadListConfigs("import-pd-lists") { phaseAndDomainListConfig =>
-      PhaseAndDomainListConfig(
-        CodeListCode.fromString(phaseAndDomainListConfig.getString("code")),
-        CodeListOrigin.valueOf(phaseAndDomainListConfig.getString("origin")),
-        phaseAndDomainListConfig.getString("keyProperty"),
-        config.get[String]("import-pd-lists.phase"),
-        config.get[String]("import-pd-lists.domain")
+  val phaseAndDomainListConfigs: List[CodeListConfig] =
+    loadListConfigs("import-pd-lists") { codeListConfig =>
+      CodeListConfig(
+        CodeListCode.fromString(codeListConfig.getString("code")),
+        CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+        codeListConfig.getString("keyProperty"),
+        config.getOptional[String]("import-pd-lists.phase"),
+        config.getOptional[String]("import-pd-lists.domain")
       )
     }.toList
 

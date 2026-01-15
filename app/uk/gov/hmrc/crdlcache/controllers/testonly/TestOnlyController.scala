@@ -24,8 +24,7 @@ import uk.gov.hmrc.crdlcache.repositories.{
   CorrespondenceListsRepository,
   LastUpdatedRepository,
   StandardCodeListsRepository,
-  CustomsOfficeListsRepository,
-  PhaseAndDomainListsRepository
+  CustomsOfficeListsRepository
 }
 import uk.gov.hmrc.crdlcache.schedulers.JobScheduler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -39,7 +38,6 @@ class TestOnlyController @Inject() (
   jobScheduler: JobScheduler,
   lastUpdatedRepository: LastUpdatedRepository,
   codeListsRepository: StandardCodeListsRepository,
-  pdListsRepository: PhaseAndDomainListsRepository,
   correspondenceListsRepository: CorrespondenceListsRepository,
   customsOfficeListsRepository: CustomsOfficeListsRepository
 )(using ec: ExecutionContext)
@@ -80,7 +78,7 @@ class TestOnlyController @Inject() (
   }
 
   def deletePhaseAndDomainLists(): Action[AnyContent] = Action.async {
-    pdListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
+    codeListsRepository.collection.deleteMany(Filters.regex("codeListCode", "^CL")).toFuture().map {
       case result if result.wasAcknowledged() => Ok
       case _                                  => InternalServerError
     }
