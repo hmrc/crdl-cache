@@ -18,7 +18,12 @@ package uk.gov.hmrc.crdlcache.models
 
 import play.api.libs.json.Json.JsValueWrapper
 import play.api.libs.json.{JsObject, Json}
-import uk.gov.hmrc.crdlcache.config.{CodeListConfig, CorrespondenceListConfig, ListConfig}
+import uk.gov.hmrc.crdlcache.config.{
+  CodeListConfig,
+  CorrespondenceListConfig,
+  ListConfig,
+  PhaseAndDomainListConfig
+}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.DpsCodeListEntry
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{
@@ -63,7 +68,7 @@ object CodeListSnapshotEntry {
       .getOrElse(throw RequiredDataItemMissing(config.keyProperty))
 
     val value = config match {
-      case _: CodeListConfig =>
+      case _: CodeListConfig | _: PhaseAndDomainListConfig =>
         dpsEntry.language
           .find(_.lang_code.equalsIgnoreCase("en"))
           .map(_.lang_desc)
@@ -97,6 +102,8 @@ object CodeListSnapshotEntry {
           knownProperties.incl(config.keyProperty)
         case correspondence: CorrespondenceListConfig =>
           knownProperties.incl(config.keyProperty).incl(correspondence.valueProperty)
+        case phaseAndDomain: PhaseAndDomainListConfig =>
+          knownProperties.incl(config.keyProperty)
       }
 
     val builder = Json.newBuilder

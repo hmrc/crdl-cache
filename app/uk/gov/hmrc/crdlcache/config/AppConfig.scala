@@ -44,7 +44,7 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("last-updated-date.default"))
 
-  def loadListConfigs[T](configPath: String)(mapper: Config => T): List[T] = {
+  private def loadListConfigs[T](configPath: String)(mapper: Config => T): List[T] = {
     val listElementName = configPath.split("import-").last
     config
       .get[Seq[Config]](s"$configPath.$listElementName")
@@ -57,20 +57,18 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
       CodeListConfig(
         CodeListCode.fromString(codeListConfig.getString("code")),
         CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-        codeListConfig.getString("keyProperty"),
-        None,
-        None
+        codeListConfig.getString("keyProperty")
       )
     }.toList
 
-  val phaseAndDomainListConfigs: List[CodeListConfig] =
+  val phaseAndDomainListConfigs: List[PhaseAndDomainListConfig] =
     loadListConfigs("import-pd-lists") { codeListConfig =>
-      CodeListConfig(
+      PhaseAndDomainListConfig(
         CodeListCode.fromString(codeListConfig.getString("code")),
         CodeListOrigin.valueOf(codeListConfig.getString("origin")),
         codeListConfig.getString("keyProperty"),
-        config.getOptional[String]("import-pd-lists.phase"),
-        config.getOptional[String]("import-pd-lists.domain")
+        config.get[String]("import-pd-lists.phase"),
+        config.get[String]("import-pd-lists.domain")
       )
     }.toList
 
