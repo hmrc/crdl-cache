@@ -98,12 +98,10 @@ object CodeListSnapshotEntry {
 
     val usedProperties =
       config match {
-        case _: CodeListConfig =>
+        case _: CodeListConfig | _: PhaseAndDomainListConfig =>
           knownProperties.incl(config.keyProperty)
         case correspondence: CorrespondenceListConfig =>
           knownProperties.incl(config.keyProperty).incl(correspondence.valueProperty)
-        case phaseAndDomain: PhaseAndDomainListConfig =>
-          knownProperties.incl(config.keyProperty)
       }
 
     val builder = Json.newBuilder
