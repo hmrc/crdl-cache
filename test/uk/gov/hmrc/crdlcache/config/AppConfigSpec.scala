@@ -38,12 +38,26 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.clientSecret"         -> "def456",
         "last-updated-date.default"                          -> "2025-05-29",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
+        "import-pd-lists.schedule"                           -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
         "import-offices.schedule"                            -> "*/10 * * * * ?",
+        "import-pd-lists.phase"                              -> "P6",
+        "import-pd-lists.domain"                             -> "NCTS",
         "import-codelists.codelists" -> List(
-          Map("code" -> "BC08", "origin"  -> "SEED", "keyProperty"  -> "CountryCode"),
-          Map("code" -> "BC36", "origin"  -> "SEED", "keyProperty"  -> "ExciseProductCode"),
-          Map("code" -> "CL218", "origin" -> "CSRD2", "keyProperty" -> "TransportModeCode")
+          Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
+          Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode")
+        ),
+        "import-pd-lists.pd-lists" -> List(
+          Map(
+            "code"        -> "CL231",
+            "origin"      -> "CSRD2",
+            "keyProperty" -> "DeclarationTypeCode"
+          ),
+          Map(
+            "code"        -> "CL234",
+            "origin"      -> "CSRD2",
+            "keyProperty" -> "DocumentTypeExciseCode"
+          )
         ),
         "import-correspondence-lists.correspondence-lists" -> List(
           Map(
@@ -70,8 +84,11 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 5, 29)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
-      CodeListConfig(BC36, SEED, "ExciseProductCode"),
-      CodeListConfig(Unknown("CL218"), CSRD2, "TransportModeCode")
+      CodeListConfig(BC36, SEED, "ExciseProductCode")
+    )
+    appConfig.phaseAndDomainListConfigs mustBe List(
+      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExciseCode", "P6", "NCTS")
     )
     appConfig.correspondenceListConfigs mustBe List(
       CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")
@@ -90,6 +107,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
 
     appConfig.importOfficesSchedule mustBe "0 30 4 * * ?"
     appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
+    appConfig.importPhaseAndDomainListsSchedule mustBe "0 00 06 ? * *"
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 3)
     appConfig.codeListConfigs mustBe List(
@@ -120,9 +138,72 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC106, SEED, "DocumentType"),
       CodeListConfig(BC107, SEED, "ManualClosureRequestReasonCode"),
       CodeListConfig(BC108, SEED, "ManualClosureRejectionReasonCode"),
-      CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode"),
-      CodeListConfig(CL239, CSRD2, "AdditionalInformationCode"),
-      CodeListConfig(CL380, CSRD2, "DocumentType")
+      CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode")
+    )
+    appConfig.phaseAndDomainListConfigs mustBe List(
+      PhaseAndDomainListConfig(CL008, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL009, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL010, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL017, CSRD2, "KindOfPackages", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL019, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL030, CSRD2, "XmlErrorCodesCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL038, CSRD2, "QualifierOfTheIdentification", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL042, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL048, CSRD2, "Currency", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL056, CSRD2, "Role", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL076, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL094, CSRD2, "RepresentativeStatusCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL112, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL116, CSRD2, "TransportChargesMethodOfPayment", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL147, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL165, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL167, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL178, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL180, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL181, CSRD2, "KindOfPackages", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL182, CSRD2, "KindOfPackages", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL190, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL198, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL213, CSRD2, "SupportingDocumentCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL214, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL215, CSRD2, "DocumentType", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL217, CSRD2, "DeclarationTypeSecurityCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL218, CSRD2, "TransportModeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(
+        CL219,
+        CSRD2,
+        "TypeOfIdentificationofMeansOfTransportActiveCode",
+        "P6",
+        "NCTS"
+      ),
+      PhaseAndDomainListConfig(CL226, CSRD2, "RejectionDepartureExportCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL228, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL229, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL230, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL232, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL234, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL235, CSRD2, "AuthorisationType", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL236, CSRD2, "AuthorisationType", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL239, CSRD2, "AdditionalInformationCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL248, CSRD2, "CountryCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL251, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL252, CSRD2, "InvalidGuaranteeReasonCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL286, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL296, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL326, CSRD2, "QualifierOfTheIdentification", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL347, CSRD2, "TypeOfLocation", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL349, CSRD2, "Unit", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL380, CSRD2, "DocumentType", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL437, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL560, CSRD2, "BusinessRejectionTypeDepExpCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL580, CSRD2, "BusinessRejectionTypeTraCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL581, CSRD2, "RejectionCodeTransitCode", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL704, CSRD2, "Role", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL716, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL750, CSRD2, "TypeOfIdentification", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL752, CSRD2, "Code", "P6", "NCTS"),
+      PhaseAndDomainListConfig(CL754, CSRD2, "Type", "P6", "NCTS")
     )
     appConfig.correspondenceListConfigs mustBe List(
       CorrespondenceListConfig(E200, SEED, "CnCode", "ExciseProductCode")

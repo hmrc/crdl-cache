@@ -35,36 +35,51 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val dpsClientId: String     = config.get[String]("microservice.services.dps-api.clientId")
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
-  val importCodeListsSchedule: String = config.get[String]("import-codelists.schedule")
-  val importOfficesSchedule: String   = config.get[String]("import-offices.schedule")
+  val importCodeListsSchedule: String           = config.get[String]("import-codelists.schedule")
+  val importPhaseAndDomainListsSchedule: String = config.get[String]("import-pd-lists.schedule")
+  val importOfficesSchedule: String             = config.get[String]("import-offices.schedule")
   val importCorrespondenceListsSchedule: String =
     config.get[String]("import-correspondence-lists.schedule")
 
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("last-updated-date.default"))
 
-  val codeListConfigs: List[CodeListConfig] =
+  private def loadListConfigs[T](configPath: String)(mapper: Config => T): List[T] = {
+    val listElementName = configPath.split("import-").last
     config
-      .get[Seq[Config]]("import-codelists.codelists")
-      .map { codeListConfig =>
-        CodeListConfig(
-          CodeListCode.fromString(codeListConfig.getString("code")),
-          CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-          codeListConfig.getString("keyProperty")
-        )
-      }
+      .get[Seq[Config]](s"$configPath.$listElementName")
       .toList
+      .map(mapper)
+  }
+
+  val codeListConfigs: List[CodeListConfig] =
+    loadListConfigs("import-codelists") { codeListConfig =>
+      CodeListConfig(
+        CodeListCode.fromString(codeListConfig.getString("code")),
+        CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+        codeListConfig.getString("keyProperty")
+      )
+    }.toList
+
+  val phaseAndDomainListConfigs: List[PhaseAndDomainListConfig] =
+    loadListConfigs("import-pd-lists") { codeListConfig =>
+      PhaseAndDomainListConfig(
+        CodeListCode.fromString(codeListConfig.getString("code")),
+        CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+        codeListConfig.getString("keyProperty"),
+        config.get[String]("import-pd-lists.phase"),
+        config.get[String]("import-pd-lists.domain")
+      )
+    }.toList
 
   val correspondenceListConfigs: List[CorrespondenceListConfig] =
-    config
-      .get[Seq[Config]]("import-correspondence-lists.correspondence-lists")
-      .map { correspondenceListConfig =>
-        CorrespondenceListConfig(
-          CodeListCode.fromString(correspondenceListConfig.getString("code")),
-          CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
-          correspondenceListConfig.getString("keyProperty"),
-          correspondenceListConfig.getString("valueProperty")
-        )
-      }
-      .toList
+    loadListConfigs("import-correspondence-lists") { correspondenceListConfig =>
+      CorrespondenceListConfig(
+        CodeListCode.fromString(correspondenceListConfig.getString("code")),
+        CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
+        correspondenceListConfig.getString("keyProperty"),
+        correspondenceListConfig.getString("valueProperty")
+      )
+    }.toList
+
 }

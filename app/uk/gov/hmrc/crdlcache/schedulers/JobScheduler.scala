@@ -51,6 +51,19 @@ class JobScheduler @Inject() (
     .withSchedule(codeListsJobSchedule)
     .build()
 
+  // Phase and Domain Code Lists
+  private val phaseAndDomainListsJobDetail = newJob(classOf[ImportPhaseAndDomainCodeListsJob])
+    .withIdentity("import-pd-lists")
+    .build()
+
+  private val phaseAndDomainListsJobSchedule = CronScheduleBuilder
+    .cronSchedule(config.importPhaseAndDomainListsSchedule)
+
+  private val phaseAndDomainListsJobTrigger = newTrigger()
+    .forJob(phaseAndDomainListsJobDetail)
+    .withSchedule(phaseAndDomainListsJobSchedule)
+    .build()
+
   // Customs Office List
   val customsOfficeListJobDetail = newJob(classOf[ImportCustomsOfficesListJob])
     .withIdentity("import-offices")
@@ -82,6 +95,10 @@ class JobScheduler @Inject() (
     quartz.triggerJob(codeListsJobDetail.getKey)
   }
 
+  def startPhaseAndDomainListImport(): Unit = {
+    quartz.triggerJob(phaseAndDomainListsJobDetail.getKey)
+  }
+
   def startCustomsOfficeListImport(): Unit = {
     quartz.triggerJob(customsOfficeListJobDetail.getKey)
   }
@@ -96,6 +113,10 @@ class JobScheduler @Inject() (
 
   def codeListImportStatus(): JobStatus = {
     getJobStatus(codeListsJobTrigger)
+  }
+
+  def phaseAndDomainListImportStatus(): JobStatus = {
+    getJobStatus(phaseAndDomainListsJobTrigger)
   }
 
   def correspondenceListImportStatus(): JobStatus = {
@@ -115,6 +136,7 @@ class JobScheduler @Inject() (
     lifecycle.addStopHook(() => Future(quartz.shutdown()))
 
     quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
+    quartz.scheduleJob(phaseAndDomainListsJobDetail, phaseAndDomainListsJobTrigger)
     quartz.scheduleJob(correspondenceListsJobDetail, correspondenceListsJobTrigger)
     quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesJobTrigger)
     quartz.start()

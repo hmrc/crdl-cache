@@ -339,8 +339,7 @@ class CorrespondenceListsRepositorySpec
         filterKeys = Some(Set("27101944")),
         filterProperties = Some(Map("actionIdentification" -> JsString("437"))),
         activeAt = Instant.parse("2025-06-05T00:00:00Z")
-      )
-      .map(_ must contain only activeEntries(1))
+      ).map(_ must contain only activeEntries(1))
   }
 
   "CorrespondenceListsRepository.executeInstructions" should "invalidate existing entries" in withCorrespondenceListEntries(

@@ -52,6 +52,15 @@ class TestOnlyController @Inject() (
     Ok(Json.toJson(jobScheduler.codeListImportStatus()))
   }
 
+  def importPhaseAndDomainLists(): Action[AnyContent] = Action {
+    jobScheduler.startPhaseAndDomainListImport()
+    Accepted
+  }
+
+  def phaseAndDomainListImportStatus(): Action[AnyContent] = Action {
+    Ok(Json.toJson(jobScheduler.phaseAndDomainListImportStatus()))
+  }
+
   def importCorrespondenceLists(): Action[AnyContent] = Action {
     jobScheduler.startCorrespondenceListImport()
     Accepted
@@ -63,6 +72,13 @@ class TestOnlyController @Inject() (
 
   def deleteCodeLists(): Action[AnyContent] = Action.async {
     codeListsRepository.collection.deleteMany(Filters.empty()).toFuture().map {
+      case result if result.wasAcknowledged() => Ok
+      case _                                  => InternalServerError
+    }
+  }
+
+  def deletePhaseAndDomainLists(): Action[AnyContent] = Action.async {
+    codeListsRepository.collection.deleteMany(Filters.regex("codeListCode", "^CL")).toFuture().map {
       case result if result.wasAcknowledged() => Ok
       case _                                  => InternalServerError
     }

@@ -30,7 +30,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCodeLists
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, E200}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, E200, CL231}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
 import uk.gov.hmrc.crdlcache.repositories.{
   CorrespondenceListsRepository,
@@ -123,6 +123,35 @@ class CodeListsControllerSpec
       ),
       None,
       None
+    )
+  )
+
+  private val phaseAndDomainListEntries = List(
+    CodeListEntry(
+      CL231,
+      "T1",
+      "Goods not having the customs status of Union goods, which are placed under the common transit procedure.",
+      Instant.parse("2025-01-23T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-12-30T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid"
+      ),
+      Some("P6"),
+      Some("NCTS")
+    ),
+    CodeListEntry(
+      CL231,
+      "TIR",
+      "TIR carnet",
+      Instant.parse("2025-01-23T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-12-30T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid"
+      ),
+      Some("P6"),
+      Some("NCTS")
     )
   )
 
@@ -226,6 +255,45 @@ class CodeListsControllerSpec
     response.status mustBe Status.OK
   }
 
+  it should "use the correct repository for phase and domain lists like CL231" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    when(
+      codeListsRepository.fetchEntries(
+        equalTo(CL231),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant)
+      )
+    )
+      .thenReturn(Future.successful(phaseAndDomainListEntries))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${CL231.code}")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    println(response.json)
+
+    response.json mustBe Json.arr(
+      Json.obj(
+        "key"        -> "T1",
+        "value"      -> "Goods not having the customs status of Union goods, which are placed under the common transit procedure.",
+        "properties" -> Json.obj("state" -> "valid"),
+      ),
+      Json.obj(
+        "key"        -> "TIR",
+        "value"      -> "TIR carnet",
+        "properties" -> Json.obj("state" -> "valid")
+      )
+    )
+
+    response.status mustBe Status.OK
+  }
+
   it should "return 200 OK when there are no entries to return" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
@@ -285,8 +353,7 @@ class CodeListsControllerSpec
         equalTo(Some(Set("GB", "XI"))),
         equalTo(None),
         equalTo(fixedInstant)
-      )
-    )
+    ))
       .thenReturn(Future.successful(List.empty))
 
     val response =
