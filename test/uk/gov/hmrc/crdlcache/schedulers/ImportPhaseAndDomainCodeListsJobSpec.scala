@@ -28,12 +28,12 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig, PhaseAndDomainListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.*
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{CL231, CL234}
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.CSRD2
-import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
+import uk.gov.hmrc.crdlcache.models.Instruction.{RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.crdlcache.models.Operation.Update
 import uk.gov.hmrc.crdlcache.models.dps.codelist
 import uk.gov.hmrc.crdlcache.models.dps.codelist.*
@@ -47,11 +47,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ImportPhaseAndDomainCodeListsJobSpec
   extends AnyFlatSpec
-  with Matchers
-  with MockitoSugar
-  with ScalaFutures
-  with IntegrationPatience
-  with BeforeAndAfterEach {
+    with Matchers
+    with MockitoSugar
+    with ScalaFutures
+    with IntegrationPatience
+    with BeforeAndAfterEach {
   private val mongoComponent        = mock[MongoComponent]
   private val mongoClient           = mock[MongoClient]
   private val mongoDatabase         = mock[MongoDatabase]
@@ -63,8 +63,6 @@ class ImportPhaseAndDomainCodeListsJobSpec
   private val appConfig             = mock[AppConfig]
   private val fixedInstant          = Instant.parse("2025-06-03T00:00:00Z")
   private val clock                 = Clock.fixed(fixedInstant, ZoneOffset.UTC)
-  private val phase                 = Some("6")
-  private val domain                = Some("NCTS")
 
   given ActorSystem      = ActorSystem("test")
   given ExecutionContext = ExecutionContext.global
@@ -76,39 +74,35 @@ class ImportPhaseAndDomainCodeListsJobSpec
     codeListsRepository,
     dpsConnector,
     appConfig,
-    clock,
-    phase,
-    domain
+    clock
   )
 
   private val snapshotsPage1 = CodeListResponse(
     List(
       DpsCodeListSnapshot(
         CL231,
-        "DocumentTypeExcise",
+        "DeclarationType",
         1,
         List(
           DpsCodeListEntry(
             List(
               DataItem("DeclarationTypeCode", Some("T")),
-              codelist.DataItem("Action_Operation", Some("U")),
-              codelist.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              codelist.DataItem("Action_ActionIdentification", Some("823")),
-              codelist.DataItem("Action_ResponsibleDataManager", None),
-              codelist.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(LanguageDescription("en", "Saint Barthélemy"))
+            List(LanguageDescription("en", "Mixed consignments comprising both goods to be placed under external Union transit procedure and goods which are to be placed under the internal Union transit procedure."))
           ),
           DpsCodeListEntry(
             List(
-              codelist.DataItem("CountryCode", Some("BM")),
-              codelist.DataItem("Action_Operation", Some("C")),
-              codelist.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              codelist.DataItem("Action_ActionIdentification", Some("824")),
-              codelist.DataItem("Action_ResponsibleDataManager", None),
-              codelist.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codelist.DataItem("DeclarationTypeCode", Some("T1")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Bermuda"))
+            List(codelist.LanguageDescription("en", "Goods not having the customs status of Union goods, which are placed under the common transit procedure."))
           )
         )
       )
@@ -119,52 +113,110 @@ class ImportPhaseAndDomainCodeListsJobSpec
     List(
       DpsCodeListSnapshot(
         CL231,
-        "Country",
+        "DeclarationType",
         2,
         List(
           DpsCodeListEntry(
             List(
-              codelist.DataItem("CountryCode", Some("AD")),
-              codelist.DataItem("Action_Operation", Some("C")),
-              codelist.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              codelist.DataItem("Action_ActionIdentification", Some("1027")),
-              codelist.DataItem("Action_ResponsibleDataManager", None),
-              codelist.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codelist.DataItem("DeclarationTypeCode", Some("T2")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Andorra"))
+            List(codelist.LanguageDescription("en", "Goods having the customs status of Union goods, which are placed under the common transit procedure"))
           ),
           DpsCodeListEntry(
             List(
-              codelist.DataItem("CountryCode", Some("BL")),
-              codelist.DataItem("Action_Operation", Some("I")),
-              codelist.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              codelist.DataItem("Action_ActionIdentification", Some("823")),
-              codelist.DataItem("Action_ResponsibleDataManager", None),
-              codelist.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codelist.DataItem("DeclarationTypeCode", Some("T2F")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Saint Barthélemy"))
+            List(codelist.LanguageDescription("en", "Goods required to move under the internal Union transit procedure, in accordance with Article 188 of Delegated Regulation (EU) 2015/2446"))
           ),
           DpsCodeListEntry(
             List(
-              codelist.DataItem("CountryCode", Some("CX")),
-              codelist.DataItem("Action_Operation", Some("C")),
-              codelist.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              codelist.DataItem("Action_ActionIdentification", Some("848")),
-              codelist.DataItem("Action_ResponsibleDataManager", None),
-              codelist.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codelist.DataItem("DeclarationTypeCode", Some("T2SM")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Christmas Island"))
+            List(codelist.LanguageDescription("en", "Goods placed under the internal Union transit procedure, in application of Article 2 of Decision 4/92/EC of the EEC-San Marino Cooperation Committee of 22 December 1992"))
           ),
           DpsCodeListEntry(
             List(
-              codelist.DataItem("CountryCode", Some("CY")),
-              codelist.DataItem("Action_Operation", Some("C")),
-              codelist.DataItem("Action_ActivationDate", Some("17-01-2024")),
-              codelist.DataItem("Action_ActionIdentification", Some("849")),
-              codelist.DataItem("Action_ResponsibleDataManager", None),
-              codelist.DataItem("Action_ModificationDateAndTime", Some("17-01-2024"))
+              codelist.DataItem("DeclarationTypeCode", Some("TIR")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Cyprus"))
+            List(codelist.LanguageDescription("en", "TIR carnet"))
+          )
+        )
+      )
+    )
+  )
+
+  private val snapshotsPage2WithInvalidations = codelist.CodeListResponse(
+    List(
+      DpsCodeListSnapshot(
+        CL231,
+        "DeclarationType",
+        2,
+        List(
+          DpsCodeListEntry(
+            List(
+              codelist.DataItem("DeclarationTypeCode", Some("T2")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
+            ),
+            List(codelist.LanguageDescription("en", "Goods having the customs status of Union goods"))
+          ),
+          DpsCodeListEntry(
+            List(
+              codelist.DataItem("DeclarationTypeCode", Some("T2F")),
+              codelist.DataItem("RDEntryStatus_state", Some("invalid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
+            ),
+            List(codelist.LanguageDescription("en", "Goods required to move under internal transit"))
+          ),
+          DpsCodeListEntry(
+            List(
+              codelist.DataItem("DeclarationTypeCode", Some("T2SM")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
+            ),
+            List(codelist.LanguageDescription("en", "Goods placed under internal Union transit"))
+          ),
+          DpsCodeListEntry(
+            List(
+              codelist.DataItem("DeclarationTypeCode", Some("T2SM")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
+            ),
+            List(codelist.LanguageDescription("en", "Goods placed under internal Union transit"))
+          ),
+          DpsCodeListEntry(
+            List(
+              codelist.DataItem("DeclarationTypeCode", Some("TIR")),
+              codelist.DataItem("RDEntryStatus_state", Some("valid")),
+              codelist.DataItem("RDEntryStatus_activeFrom", Some("01-11-2025")),
+              codelist.DataItem("Phase", Some("P6")),
+              codelist.DataItem("Domain", Some("NCTS"))
+            ),
+            List(codelist.LanguageDescription("en", "TIR carnet"))
           )
         )
       )
@@ -222,13 +274,13 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Codelist manipulation
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(Future.successful(Set("T2", "T2F")))
 
     // Codelist configuration
-    when(appConfig.codeListConfigs).thenReturn(
+    when(appConfig.phaseAndDomainListConfigs).thenReturn(
       List(
-        CodeListConfig(CL231, CSRD2, "DeclarationType"),
-        CodeListConfig(CL234, CSRD2, "DocumentTypeExcise")
+        PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
+        PhaseAndDomainListConfig(CL234, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS")
       )
     )
 
@@ -256,13 +308,15 @@ class ImportPhaseAndDomainCodeListsJobSpec
           UpsertEntry(
             CodeListEntry(
               CL231,
-              "BL",
-              "Saint Barthélemy",
-              Instant.parse("2024-01-17T00:00:00Z"),
+              "T",
+              "Mixed consignments comprising both goods to be placed under external Union transit procedure and goods which are to be placed under the internal Union transit procedure.",
+              Instant.parse("2025-11-01T00:00:00Z"),
               None,
-              Some(Instant.parse("2024-01-17T00:00:00Z")),
+              None,
               Json.obj(
-                "actionIdentification" -> "823"
+                "state" -> "valid",
+                "phase" -> "P6",
+                "domain" -> "NCTS"
               ),
               None,
               None
@@ -271,13 +325,15 @@ class ImportPhaseAndDomainCodeListsJobSpec
           UpsertEntry(
             CodeListEntry(
               CL231,
-              "BM",
-              "Bermuda",
-              Instant.parse("2024-01-17T00:00:00Z"),
+              "T1",
+              "Goods not having the customs status of Union goods, which are placed under the common transit procedure.",
+              Instant.parse("2025-11-01T00:00:00Z"),
               None,
-              Some(Instant.parse("2024-01-17T00:00:00Z")),
+              None,
               Json.obj(
-                "actionIdentification" -> "824"
+                "state" -> "valid",
+                "phase" -> "P6",
+                "domain" -> "NCTS"
               ),
               None,
               None
@@ -286,6 +342,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
         )
       )
     )
+
 
     verify(codeListsRepository, times(2)).executeInstructions(equalTo(clientSession), any())
 
@@ -334,10 +391,10 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Codelist manipulation
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(Future.successful(Set("T2", "T2F")))
 
     // Codelist configuration
-    when(appConfig.codeListConfigs).thenReturn(
+    when(appConfig.phaseAndDomainListConfigs).thenReturn(
       List(
         CodeListConfig(CL231, CSRD2, "DeclarationType"),
         CodeListConfig(CL234, CSRD2, "DocumentTypeExcise")
@@ -360,27 +417,6 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .thenReturn(Future.unit)
 
     codeListsJob.importCodeLists().futureValue
-//
-//    // There are two snapshots for CL231, but we already have snapshot 1
-//    verify(codeListsRepository, times(1)).executeInstructions(equalTo(clientSession), any())
-//
-//    verify(lastUpdatedRepository, times(1)).setLastUpdated(
-//      equalTo(clientSession),
-//      equalTo(CL231),
-//      equalTo(2L),
-//      equalTo(fixedInstant)
-//    )
-//
-//    // There are no snapshots for CL234
-//    verify(lastUpdatedRepository, never()).setLastUpdated(
-//      equalTo(clientSession),
-//      equalTo(CL234),
-//      anyLong(),
-//      equalTo(fixedInstant)
-//    )
-//
-//    // Only one snapshot should have been committed
-//    verify(clientSession, times(1)).commitTransaction()
   }
 
   it should "roll back when there is an issue importing one of the codelist snapshots" in {
@@ -405,13 +441,13 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Codelist manipulation
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(Future.successful(Set("T2", "T2F")))
 
     // Codelist configuration
-    when(appConfig.codeListConfigs).thenReturn(
+    when(appConfig.phaseAndDomainListConfigs).thenReturn(
       List(
-        CodeListConfig(CL231, CSRD2, "DeclarationType"),
-        CodeListConfig(CL234, CSRD2, "DocumentTypeExcise")
+        CodeListConfig(CL231, CSRD2, "DeclarationTypeCode"),
+        CodeListConfig(CL234, CSRD2, "PreviousDocumentTypeCode")
       )
     )
 
@@ -440,13 +476,15 @@ class ImportPhaseAndDomainCodeListsJobSpec
           UpsertEntry(
             CodeListEntry(
               CL231,
-              "BL",
-              "Saint Barthélemy",
-              Instant.parse("2024-01-17T00:00:00Z"),
+              "T2",
+              "Goods having the customs status of Union goods, which are placed under the common transit procedure",
+              Instant.parse("2025-11-01T00:00:00Z"),
               None,
-              Some(Instant.parse("2024-01-17T00:00:00Z")),
+              None,
               Json.obj(
-                "actionIdentification" -> "823"
+                "state" -> "valid",
+                "phase" -> "P6",
+                "domain" -> "NCTS"
               ),
               None,
               None
@@ -455,13 +493,49 @@ class ImportPhaseAndDomainCodeListsJobSpec
           UpsertEntry(
             CodeListEntry(
               CL231,
-              "BM",
-              "Bermuda",
-              Instant.parse("2024-01-17T00:00:00Z"),
+              "T2F",
+              "Goods required to move under the internal Union transit procedure, in accordance with Article 188 of Delegated Regulation (EU) 2015/2446",
+              Instant.parse("2025-11-01T00:00:00Z"),
               None,
-              Some(Instant.parse("2024-01-17T00:00:00Z")),
+              None,
               Json.obj(
-                "actionIdentification" -> "824"
+                "state" -> "valid",
+                "phase" -> "P6",
+                "domain" -> "NCTS"
+              ),
+              None,
+              None
+            )
+          ),
+          UpsertEntry(
+            CodeListEntry(
+              CL231,
+              "T2SM",
+              "Goods placed under the internal Union transit procedure, in application of Article 2 of Decision 4/92/EC of the EEC-San Marino Cooperation Committee of 22 December 1992",
+              Instant.parse("2025-11-01T00:00:00Z"),
+              None,
+              None,
+              Json.obj(
+                "state" -> "valid",
+                "phase" -> "P6",
+                "domain" -> "NCTS"
+              ),
+              None,
+              None
+            )
+          ),
+          UpsertEntry(
+            CodeListEntry(
+              CL231,
+              "TIR",
+              "TIR carnet",
+              Instant.parse("2025-11-01T00:00:00Z"),
+              None,
+              None,
+              Json.obj(
+                "state" -> "valid",
+                "phase" -> "P6",
+                "domain" -> "NCTS"
               ),
               None,
               None
@@ -499,7 +573,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    val codeListConfig = CodeListConfig(CL231, CSRD2, "DeclarationType")
+    val codeListConfig = PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS")
 
     val instructions = codeListsJob
       .processSnapshot(
@@ -513,13 +587,15 @@ class ImportPhaseAndDomainCodeListsJobSpec
       UpsertEntry(
         CodeListEntry(
           CL231,
-          "BL",
-          "Saint Barthélemy",
-          Instant.parse("2024-01-17T00:00:00Z"),
+          "T",
+          "Mixed consignments comprising both goods to be placed under external Union transit procedure and goods which are to be placed under the internal Union transit procedure.",
+          Instant.parse("2025-11-01T00:00:00Z"),
           None,
-          Some(Instant.parse("2024-01-17T00:00:00Z")),
+          None,
           Json.obj(
-            "actionIdentification" -> "823"
+            "state" -> "valid",
+            "phase" -> "P6",
+            "domain" -> "NCTS"
           ),
           None,
           None
@@ -528,78 +604,51 @@ class ImportPhaseAndDomainCodeListsJobSpec
       UpsertEntry(
         CodeListEntry(
           CL231,
-          "BM",
-          "Bermuda",
-          Instant.parse("2024-01-17T00:00:00Z"),
+          "T1",
+          "Goods not having the customs status of Union goods, which are placed under the common transit procedure.",
+          Instant.parse("2025-11-01T00:00:00Z"),
           None,
-          Some(Instant.parse("2024-01-17T00:00:00Z")),
+          None,
           Json.obj(
-            "actionIdentification" -> "824"
+            "state" -> "valid",
+            "phase" -> "P6",
+            "domain" -> "NCTS"
           ),
           None,
           None
         )
       )
     )
-
   }
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(Future.successful(Set("T2F", "T")))
 
-    val codeListConfig = CodeListConfig(CL231, CSRD2, "DeclarationType")
+    val codeListConfig = PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS")
 
     val instructions = codeListsJob
       .processSnapshot(
         clientSession,
         codeListConfig,
-        CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage2.elements.head)
+        CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage2WithInvalidations.elements.head)
       )
       .futureValue
 
     instructions.sortBy(ins => (ins.key, ins.activeFrom)) mustBe List(
+      RecordMissingEntry(CL231, "T", Instant.parse("2025-06-03T00:00:00Z")),
       UpsertEntry(
         CodeListEntry(
           CL231,
-          "AD",
-          "Andorra",
-          Instant.parse("2024-01-17T00:00:00Z"),
+          "T2",
+          "Goods having the customs status of Union goods",
+          Instant.parse("2025-11-01T00:00:00Z"),
           None,
-          Some(Instant.parse("2024-01-17T00:00:00Z")),
+          None,
           Json.obj(
-            "actionIdentification" -> "1027"
-          ),
-          None,
-          None
-        )
-      ),
-      InvalidateEntry(
-        CodeListEntry(
-          CL231,
-          "BL",
-          "Saint Barthélemy",
-          Instant.parse("2024-01-17T00:00:00Z"),
-          None,
-          Some(Instant.parse("2024-01-17T00:00:00Z")),
-          Json.obj(
-            "actionIdentification" -> "823"
-          ),
-          None,
-          None
-        )
-      ),
-      RecordMissingEntry(CL231, "BM", fixedInstant),
-      UpsertEntry(
-        CodeListEntry(
-          CL231,
-          "CX",
-          "Christmas Island",
-          Instant.parse("2024-01-17T00:00:00Z"),
-          None,
-          Some(Instant.parse("2024-01-17T00:00:00Z")),
-          Json.obj(
-            "actionIdentification" -> "848"
+            "state" -> "valid",
+            "phase" -> "P6",
+            "domain" -> "NCTS"
           ),
           None,
           None
@@ -608,13 +657,49 @@ class ImportPhaseAndDomainCodeListsJobSpec
       UpsertEntry(
         CodeListEntry(
           CL231,
-          "CY",
-          "Cyprus",
-          Instant.parse("2024-01-17T00:00:00Z"),
+          "T2F",
+          "Goods required to move under internal transit",
+          Instant.parse("2025-11-01T00:00:00Z"),
           None,
-          Some(Instant.parse("2024-01-17T00:00:00Z")),
+          None,
           Json.obj(
-            "actionIdentification" -> "849"
+            "state" -> "invalid",
+            "phase" -> "P6",
+            "domain" -> "NCTS"
+          ),
+          None,
+          None
+        )
+      ),
+      UpsertEntry(
+        CodeListEntry(
+          CL231,
+          "T2SM",
+          "Goods placed under internal Union transit",
+          Instant.parse("2025-11-01T00:00:00Z"),
+          None,
+          None,
+          Json.obj(
+            "state" -> "valid",
+            "phase" -> "P6",
+            "domain" -> "NCTS"
+          ),
+          None,
+          None
+        )
+      ),
+      UpsertEntry(
+        CodeListEntry(
+          CL231,
+          "TIR",
+          "TIR carnet",
+          Instant.parse("2025-11-01T00:00:00Z"),
+          None,
+          None,
+          Json.obj(
+            "state" -> "valid",
+            "phase" -> "P6",
+            "domain" -> "NCTS"
           ),
           None,
           None

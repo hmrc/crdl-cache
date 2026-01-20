@@ -47,9 +47,7 @@ class ImportStandardCodeListsJob @Inject() (
     codeListsRepository,
     dpsConnector,
     appConfig,
-    clock,
-    None,
-    None
+    clock
   ) {
 
   override protected def listConfigs: List[ListConfig] =
