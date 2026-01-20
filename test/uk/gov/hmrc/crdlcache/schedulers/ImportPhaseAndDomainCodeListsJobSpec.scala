@@ -47,11 +47,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ImportPhaseAndDomainCodeListsJobSpec
   extends AnyFlatSpec
-    with Matchers
-    with MockitoSugar
-    with ScalaFutures
-    with IntegrationPatience
-    with BeforeAndAfterEach {
+  with Matchers
+  with MockitoSugar
+  with ScalaFutures
+  with IntegrationPatience
+  with BeforeAndAfterEach {
   private val mongoComponent        = mock[MongoComponent]
   private val mongoClient           = mock[MongoClient]
   private val mongoDatabase         = mock[MongoDatabase]
@@ -92,7 +92,12 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(LanguageDescription("en", "Mixed consignments comprising both goods to be placed under external Union transit procedure and goods which are to be placed under the internal Union transit procedure."))
+            List(
+              LanguageDescription(
+                "en",
+                "Mixed consignments comprising both goods to be placed under external Union transit procedure and goods which are to be placed under the internal Union transit procedure."
+              )
+            )
           ),
           DpsCodeListEntry(
             List(
@@ -102,7 +107,12 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Goods not having the customs status of Union goods, which are placed under the common transit procedure."))
+            List(
+              codelist.LanguageDescription(
+                "en",
+                "Goods not having the customs status of Union goods, which are placed under the common transit procedure."
+              )
+            )
           )
         )
       )
@@ -124,7 +134,12 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Goods having the customs status of Union goods, which are placed under the common transit procedure"))
+            List(
+              codelist.LanguageDescription(
+                "en",
+                "Goods having the customs status of Union goods, which are placed under the common transit procedure"
+              )
+            )
           ),
           DpsCodeListEntry(
             List(
@@ -134,7 +149,12 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Goods required to move under the internal Union transit procedure, in accordance with Article 188 of Delegated Regulation (EU) 2015/2446"))
+            List(
+              codelist.LanguageDescription(
+                "en",
+                "Goods required to move under the internal Union transit procedure, in accordance with Article 188 of Delegated Regulation (EU) 2015/2446"
+              )
+            )
           ),
           DpsCodeListEntry(
             List(
@@ -144,7 +164,12 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Goods placed under the internal Union transit procedure, in application of Article 2 of Decision 4/92/EC of the EEC-San Marino Cooperation Committee of 22 December 1992"))
+            List(
+              codelist.LanguageDescription(
+                "en",
+                "Goods placed under the internal Union transit procedure, in application of Article 2 of Decision 4/92/EC of the EEC-San Marino Cooperation Committee of 22 December 1992"
+              )
+            )
           ),
           DpsCodeListEntry(
             List(
@@ -176,7 +201,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Goods having the customs status of Union goods"))
+            List(
+              codelist.LanguageDescription("en", "Goods having the customs status of Union goods")
+            )
           ),
           DpsCodeListEntry(
             List(
@@ -186,7 +213,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
               codelist.DataItem("Phase", Some("P6")),
               codelist.DataItem("Domain", Some("NCTS"))
             ),
-            List(codelist.LanguageDescription("en", "Goods required to move under internal transit"))
+            List(
+              codelist.LanguageDescription("en", "Goods required to move under internal transit")
+            )
           ),
           DpsCodeListEntry(
             List(
@@ -314,8 +343,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               None,
               None,
               Json.obj(
-                "state" -> "valid",
-                "phase" -> "P6",
+                "state"  -> "valid",
+                "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
               None,
@@ -331,8 +360,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               None,
               None,
               Json.obj(
-                "state" -> "valid",
-                "phase" -> "P6",
+                "state"  -> "valid",
+                "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
               None,
@@ -342,7 +371,6 @@ class ImportPhaseAndDomainCodeListsJobSpec
         )
       )
     )
-
 
     verify(codeListsRepository, times(2)).executeInstructions(equalTo(clientSession), any())
 
@@ -482,8 +510,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               None,
               None,
               Json.obj(
-                "state" -> "valid",
-                "phase" -> "P6",
+                "state"  -> "valid",
+                "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
               None,
@@ -499,8 +527,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               None,
               None,
               Json.obj(
-                "state" -> "valid",
-                "phase" -> "P6",
+                "state"  -> "valid",
+                "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
               None,
@@ -516,8 +544,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               None,
               None,
               Json.obj(
-                "state" -> "valid",
-                "phase" -> "P6",
+                "state"  -> "valid",
+                "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
               None,
@@ -533,8 +561,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               None,
               None,
               Json.obj(
-                "state" -> "valid",
-                "phase" -> "P6",
+                "state"  -> "valid",
+                "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
               None,
@@ -593,8 +621,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           None,
           None,
           Json.obj(
-            "state" -> "valid",
-            "phase" -> "P6",
+            "state"  -> "valid",
+            "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
           None,
@@ -610,8 +638,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           None,
           None,
           Json.obj(
-            "state" -> "valid",
-            "phase" -> "P6",
+            "state"  -> "valid",
+            "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
           None,
@@ -631,7 +659,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .processSnapshot(
         clientSession,
         codeListConfig,
-        CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage2WithInvalidations.elements.head)
+        CodeListSnapshot
+          .fromDpsSnapshot(codeListConfig, snapshotsPage2WithInvalidations.elements.head)
       )
       .futureValue
 
@@ -646,8 +675,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           None,
           None,
           Json.obj(
-            "state" -> "valid",
-            "phase" -> "P6",
+            "state"  -> "valid",
+            "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
           None,
@@ -663,8 +692,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           None,
           None,
           Json.obj(
-            "state" -> "invalid",
-            "phase" -> "P6",
+            "state"  -> "invalid",
+            "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
           None,
@@ -680,8 +709,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           None,
           None,
           Json.obj(
-            "state" -> "valid",
-            "phase" -> "P6",
+            "state"  -> "valid",
+            "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
           None,
@@ -697,8 +726,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           None,
           None,
           Json.obj(
-            "state" -> "valid",
-            "phase" -> "P6",
+            "state"  -> "valid",
+            "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
           None,
