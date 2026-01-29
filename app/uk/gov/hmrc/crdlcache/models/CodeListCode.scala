@@ -85,6 +85,7 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case CL009 extends CodeListCode("CL009", listType = PD)
   // CL010 (Country Codes Community)
   case CL010 extends CodeListCode("CL010", listType = PD)
+  case CL016 extends CodeListCode("CL016", listType = PD)
   // CL017
   case CL017 extends CodeListCode("CL017", listType = PD)
   // CL019
@@ -103,12 +104,14 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case CL076 extends CodeListCode("CL076", listType = PD)
   // CL094
   case CL094 extends CodeListCode("CL094", listType = PD)
+  case CL101 extends CodeListCode("CL101", listType = PD)
   // CL112
   case CL112 extends CodeListCode("CL112", listType = PD)
   // CL116
   case CL116 extends CodeListCode("CL116", listType = PD)
   // CL147
   case CL147 extends CodeListCode("CL147", listType = PD)
+  case CL152 extends CodeListCode("CL152", listType = PD)
   // CL165
   case CL165 extends CodeListCode("CL165", listType = PD)
   // CL167
@@ -157,6 +160,7 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case CL236 extends CodeListCode("CL236", listType = PD)
   // CL239 (Additional Information)
   case CL239 extends CodeListCode("CL239", listType = PD)
+  case CL244 extends CodeListCode("CL244", listType = PD)
   // CL248
   case CL248 extends CodeListCode("CL248", listType = PD)
   // CL251
@@ -177,6 +181,7 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case CL380 extends CodeListCode("CL380", listType = PD)
   // CL437
   case CL437 extends CodeListCode("CL437", listType = PD)
+  case CL505 extends CodeListCode("CL505", listType = PD)
   // CL560
   case CL560 extends CodeListCode("CL560", listType = PD)
   // CL580
@@ -233,6 +238,7 @@ object CodeListCode {
       CL008,
       CL009,
       CL010,
+      CL016,
       CL017,
       CL019,
       CL030,
@@ -242,10 +248,12 @@ object CodeListCode {
       CL056,
       CL076,
       CL094,
+      CL101,
       CL112,
       CL116,
       CL141,
       CL147,
+      CL152,
       CL165,
       CL167,
       CL178,
@@ -270,6 +278,7 @@ object CodeListCode {
       CL235,
       CL236,
       CL239,
+      CL244,
       CL248,
       CL251,
       CL252,
@@ -280,6 +289,7 @@ object CodeListCode {
       CL349,
       CL380,
       CL437,
+      CL505,
       CL560,
       CL580,
       CL581,
