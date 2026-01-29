@@ -71,15 +71,21 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   private def fetchCodeListSnapshot(
     code: CodeListCode,
     lastUpdatedDate: Instant,
-    startIndex: Int
+    startIndex: Int,
+    businessDomainPhase: Option[String] = None,
+    businessDomain: Option[String] = None
   )(using ec: ExecutionContext): Future[CodeListResponse] = {
-    val queryParams = Map(
+    val baseQueryParams = Map(
       "code_list_code"    -> code.code,
       "last_updated_date" -> dateFormatter.format(lastUpdatedDate),
       "$start_index"      -> startIndex,
       "$count"            -> 10,
       "$orderby"          -> "snapshotversion ASC"
     )
+
+    val queryParams = baseQueryParams ++
+      businessDomainPhase.map("business_domain_phase" -> _).toMap ++
+      businessDomain.map("business_domain" -> _).toMap
 
     val dpsUrl        = url"$baseRefDataUrl?$queryParams"
     val correlationId = UUID.randomUUID().toString
@@ -112,16 +118,22 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     fetchResult
   }
 
-  def fetchCodeListSnapshots(code: CodeListCode, lastUpdatedDate: Instant)(using
+  def fetchCodeListSnapshots(
+    code: CodeListCode,
+    lastUpdatedDate: Instant,
+    businessDomainPhase: Option[String] = None,
+    businessDomain: Option[String] = None
+  )(using
     ec: ExecutionContext
   ): Source[CodeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
-      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex).map { response =>
-        if (response.elements.isEmpty)
-          None
-        else
-          Some((startIndex + 10, response))
-      }
+      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex, businessDomainPhase, businessDomain)
+        .map { response =>
+          if (response.elements.isEmpty)
+            None
+          else
+            Some((startIndex + 10, response))
+        }
     }
 
   def fetchCustomsOfficeLists(using
