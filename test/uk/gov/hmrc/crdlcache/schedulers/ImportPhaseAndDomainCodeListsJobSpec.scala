@@ -315,12 +315,22 @@ class ImportPhaseAndDomainCodeListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(CL231), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(CL231),
+        equalTo(lastUpdatedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(CL234), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(CL234),
+        equalTo(lastUpdatedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )(using any())
     )
       .thenReturn(Source.empty)
 
@@ -424,19 +434,29 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Codelist configuration
     when(appConfig.phaseAndDomainListConfigs).thenReturn(
       List(
-        CodeListConfig(CL231, CSRD2, "DeclarationType"),
-        CodeListConfig(CL234, CSRD2, "DocumentTypeExcise")
+        PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationType", "P6", "NCTS"),
+        PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExcise", "P6", "NCTS")
       )
     )
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(CL231), equalTo(storedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(CL231),
+        equalTo(storedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(CL234), equalTo(storedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(CL234),
+        equalTo(storedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )(using any())
     )
       .thenReturn(Source.empty)
 
@@ -474,19 +494,29 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Codelist configuration
     when(appConfig.phaseAndDomainListConfigs).thenReturn(
       List(
-        CodeListConfig(CL231, CSRD2, "DeclarationTypeCode"),
-        CodeListConfig(CL234, CSRD2, "PreviousDocumentTypeCode")
+        PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS"),
+        PhaseAndDomainListConfig(CL234, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS")
       )
     )
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(CL231), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(CL231),
+        equalTo(lastUpdatedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(CL234), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(CL234),
+        equalTo(lastUpdatedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )(using any())
     )
       .thenReturn(Source.empty)
 

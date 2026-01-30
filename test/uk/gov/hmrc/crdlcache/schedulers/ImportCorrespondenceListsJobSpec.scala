@@ -267,7 +267,12 @@ class ImportCorrespondenceListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(E200), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(E200),
+        equalTo(lastUpdatedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
@@ -354,7 +359,12 @@ class ImportCorrespondenceListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(E200), equalTo(storedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(E200),
+        equalTo(storedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
@@ -442,7 +452,12 @@ class ImportCorrespondenceListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(E200), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(E200),
+        equalTo(lastUpdatedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
