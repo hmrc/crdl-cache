@@ -607,7 +607,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .processSnapshot(
         clientSession,
         codeListConfig,
-        CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage1.elements.head)
+        CodeListSnapshot.fromDpsSnapshot(codeListConfig, snapshotsPage1.elements.head),
+        Some(codeListConfig.phase),
+        Some(codeListConfig.domain)
       )
       .futureValue
 
@@ -625,8 +627,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
             "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       ),
       UpsertEntry(
@@ -642,8 +644,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
             "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       )
     )
@@ -660,7 +662,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
         clientSession,
         codeListConfig,
         CodeListSnapshot
-          .fromDpsSnapshot(codeListConfig, snapshotsPage2WithInvalidations.elements.head)
+          .fromDpsSnapshot(codeListConfig, snapshotsPage2WithInvalidations.elements.head),
+        Some(codeListConfig.phase),
+        Some(codeListConfig.domain)
       )
       .futureValue
 
@@ -679,8 +683,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
             "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       ),
       UpsertEntry(
@@ -696,8 +700,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
             "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       ),
       UpsertEntry(
@@ -713,8 +717,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
             "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       ),
       UpsertEntry(
@@ -730,8 +734,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
             "phase"  -> "P6",
             "domain" -> "NCTS"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       )
     )
@@ -741,7 +745,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL234)))
       .thenReturn(Future.successful(Set("E470")))
 
-    val codeListConfig = CodeListConfig(CL234, CSRD2, "DocumentTypeExcise")
+    val codeListConfig = PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExcise", "P6", "NCTS")
 
     val instructions = codeListsJob
       .processSnapshot(
@@ -773,8 +777,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               Json.obj(
                 "actionIdentification" -> "1096"
               ),
-              None,
-              None
+              Some("P6"),
+              Some("NCTS")
             ),
             CodeListSnapshotEntry(
               "E470",
@@ -785,8 +789,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
               Json.obj(
                 "actionIdentification" -> "1099"
               ),
-              None,
-              None
+              Some("P6"),
+              Some("NCTS")
             )
           )
         )
@@ -805,8 +809,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
           Json.obj(
             "actionIdentification" -> "1099"
           ),
-          None,
-          None
+          Some("P6"),
+          Some("NCTS")
         )
       )
     )
