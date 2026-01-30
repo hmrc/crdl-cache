@@ -73,38 +73,39 @@ abstract class ImportCodeListsJob[K, I](
     logger.info(
       s"Importing ${listConfig.origin} codelist ${listConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
     )
+    (phase, domain) match {
+      case (Some(_), Some(_)) | (None, None) =>
 
-    repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>
-      val incomingKeySet = newSnapshot.entries.map(keyOfEntry)
-      val mergedKeySet   = currentKeySet.union(incomingKeySet)
+        repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>
+          val incomingKeySet = newSnapshot.entries.map(keyOfEntry)
+          val mergedKeySet   = currentKeySet.union(incomingKeySet)
 
-      val groupedEntries = newSnapshot.entries.toList.groupBy(keyOfEntry)
+          val groupedEntries = newSnapshot.entries.toList.groupBy(keyOfEntry)
 
-      val instructions = List.newBuilder[I]
+          val instructions = List.newBuilder[I]
 
-      for (key <- mergedKeySet) {
-        val hasExistingEntry = currentKeySet.contains(key)
-        val maybeNewEntries  = groupedEntries.get(key)
+          for (key <- mergedKeySet) {
+            val hasExistingEntry = currentKeySet.contains(key)
+            val maybeNewEntries  = groupedEntries.get(key)
 
-        // In case of multiple entries for a given key with the same activation date,
-        // the one with the latest modification timestamp and latest action ID is used.
-        val entriesByDate = maybeNewEntries.map { newEntries =>
-          newEntries
-            .groupBy(_.activeFrom) // Group by activation date
-            .view
-            .mapValues(
-              _.maxBy(entry =>
-                (
-                  entry.updatedAt,
-                  entry.properties.value.get("actionIdentification").flatMap(_.asOpt[String])
-                )
-              )
-            ) // Pick the latest modification and SEED "ActionIdentification"
-            .values
-            .toSet
-        }
-        (phase, domain) match {
-          case (Some(_), Some(_)) | (None, None) =>
+            // In case of multiple entries for a given key with the same activation date,
+            // the one with the latest modification timestamp and latest action ID is used.
+            val entriesByDate = maybeNewEntries.map { newEntries =>
+              newEntries
+                .groupBy(_.activeFrom) // Group by activation date
+                .view
+                .mapValues(
+                  _.maxBy(entry =>
+                    (
+                      entry.updatedAt,
+                      entry.properties.value.get("actionIdentification").flatMap(_.asOpt[String])
+                    )
+                  )
+                ) // Pick the latest modification and SEED "ActionIdentification"
+                .values
+                .toSet
+            }
+
             (hasExistingEntry, entriesByDate) match {
               case (_, Some(newEntries)) =>
                 val pDEntries = (phase, domain) match {
@@ -125,14 +126,13 @@ abstract class ImportCodeListsJob[K, I](
                   "Impossible case - we have neither a new nor existing entry for a key"
                 )
             }
-          case _ =>
-            throw IllegalArgumentException(
-              "Impossible case - we need to have both phase and domain or neither"
-            )
+          }
+          instructions.result()
         }
-      }
-
-      instructions.result()
+      case _ =>
+        throw IllegalArgumentException(
+          "Impossible case - we need to have both phase and domain or neither"
+        )
     }
   }
 
