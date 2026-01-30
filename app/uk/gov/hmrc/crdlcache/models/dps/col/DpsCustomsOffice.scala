@@ -42,7 +42,9 @@ case class DpsCustomsOffice(
   dedicatedtradername: Option[String],
   customsofficespecificnotes: List[SpecificNotes],
   customsofficelsd: List[DpsCustomsOfficeDetail],
-  customsofficetimetable: DpsCustomsOfficeTimetable
+  customsofficetimetable: DpsCustomsOfficeTimetable,
+  phase: Option[String],
+  domain: Option[String]
 )
 
 object DpsCustomsOffice {
