@@ -103,25 +103,31 @@ abstract class ImportCodeListsJob[K, I](
             .values
             .toSet
         }
+        (phase, domain) match {
+          case (Some(_), Some(_)) | (None, None) =>
+            (hasExistingEntry, entriesByDate) match {
+              case (_, Some(newEntries)) =>
+                val pDEntries = (phase, domain) match {
+                  case (Some(phase), Some(domain)) =>
+                    newEntries.map(_.copy(phase = Some(phase), domain = Some(domain)))
+                  case _ =>
+                    newEntries
+                }
+                instructions ++= pDEntries.map(
+                  processEntry(listConfig.code, _)
+                )
 
-        (hasExistingEntry, entriesByDate) match {
-          case (_, Some(newEntries)) =>
-            val pDEntries = (phase, domain) match {
-              case (Some(phase), Some(domain)) =>
-                newEntries.map(_.copy(phase = Some(phase), domain = Some(domain)))
+              case (true, None) =>
+                instructions += recordMissing(listConfig.code, key)
+
               case _ =>
-                newEntries
+                throw IllegalStateException(
+                  "Impossible case - we have neither a new nor existing entry for a key"
+                )
             }
-            instructions ++= pDEntries.map(
-              processEntry(listConfig.code, _)
-            )
-
-          case (true, None) =>
-            instructions += recordMissing(listConfig.code, key)
-
           case _ =>
-            throw IllegalStateException(
-              "Impossible case - we have neither a new nor existing entry for a key"
+            throw IllegalArgumentException(
+              "Impossible case - we need to have both phase and domain or neither"
             )
         }
       }
