@@ -22,7 +22,7 @@ import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervis
 import org.mongodb.scala.ClientSession
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
-import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig, PhaseAndDomainListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListSnapshot, CodeListSnapshotEntry}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
@@ -147,6 +147,13 @@ abstract class ImportCodeListsJob[K, I](
         s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated"
       )
 
+      (phase, domain) = codeListConfig match {
+        case pdListConfig: PhaseAndDomainListConfig =>
+          (Some(pdListConfig.phase), Some(pdListConfig.domain))
+        case _ =>
+          (None, None)
+      }
+
       _ <- dpsConnector
         .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
         // Add a delay between calls to avoid overwhelming DPS
@@ -161,7 +168,7 @@ abstract class ImportCodeListsJob[K, I](
           // Ensure that we roll back if something goes wrong processing the snapshot
           withSessionAndTransaction { session =>
             for {
-              instructions <- processSnapshot(session, codeListConfig, snapshot)
+              instructions <- processSnapshot(session, codeListConfig, snapshot, phase, domain)
               _            <- repository.executeInstructions(session, instructions)
               _ <- lastUpdatedRepository.setLastUpdated(
                 session,
