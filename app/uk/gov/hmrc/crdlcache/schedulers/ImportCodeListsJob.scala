@@ -104,18 +104,19 @@ abstract class ImportCodeListsJob[K, I](
             .toSet
         }
 
-        (hasExistingEntry, entriesByDate, phase, domain) match {
-          case (_, Some(newEntries), None, None) =>
-            instructions ++= newEntries.map(
+        (hasExistingEntry, entriesByDate) match {
+          case (_, Some(newEntries)) =>
+            val pDEntries = (phase, domain) match {
+              case (Some(phase), Some(domain)) =>
+                newEntries.map(_.copy(phase = Some(phase), domain = Some(domain)))
+              case _ =>
+                newEntries
+            }
+            instructions ++= pDEntries.map(
               processEntry(listConfig.code, _)
             )
-          case (_, Some(newEntries), Some(phase), Some(domain)) =>
-            instructions ++= newEntries.map(newEntry =>
-              val pdNewEntry = newEntry.copy(phase = Some(phase), domain = Some(domain))
-              processEntry(listConfig.code, pdNewEntry)
-            )
 
-          case (true, None, None, None) | (true, None, Some(_), Some(_)) =>
+          case (true, None) =>
             instructions += recordMissing(listConfig.code, key)
 
           case _ =>
