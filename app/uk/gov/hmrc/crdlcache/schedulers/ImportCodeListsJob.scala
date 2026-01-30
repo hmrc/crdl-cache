@@ -66,7 +66,9 @@ abstract class ImportCodeListsJob[K, I](
   def processSnapshot(
     session: ClientSession,
     listConfig: ListConfig,
-    newSnapshot: CodeListSnapshot
+    newSnapshot: CodeListSnapshot,
+    phase: Option[String] = None,
+    domain: Option[String] = None
   ): Future[List[I]] = {
     logger.info(
       s"Importing ${listConfig.origin} codelist ${listConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
@@ -102,13 +104,18 @@ abstract class ImportCodeListsJob[K, I](
             .toSet
         }
 
-        (hasExistingEntry, entriesByDate) match {
-          case (_, Some(newEntries)) =>
+        (hasExistingEntry, entriesByDate, phase, domain) match {
+          case (_, Some(newEntries), None, None) =>
             instructions ++= newEntries.map(
               processEntry(listConfig.code, _)
             )
+          case (_, Some(newEntries), Some(phase), Some(domain)) =>
+            instructions ++= newEntries.map(newEntry =>
+              val pdNewEntry = newEntry.copy(phase = Some(phase), domain = Some(domain))
+              processEntry(listConfig.code, pdNewEntry)
+            )
 
-          case (true, None) =>
+          case (true, None, None, None) | (true, None, Some(_), Some(_)) =>
             instructions += recordMissing(listConfig.code, key)
 
           case _ =>
