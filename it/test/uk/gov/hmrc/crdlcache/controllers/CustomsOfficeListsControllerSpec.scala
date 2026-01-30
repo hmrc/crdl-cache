@@ -151,7 +151,9 @@ class CustomsOfficeListsControllerSpec
             )
           )
         )
-      )
+      ),
+      None,
+      None
     )
   )
 
