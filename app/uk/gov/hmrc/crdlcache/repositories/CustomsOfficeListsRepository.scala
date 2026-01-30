@@ -54,15 +54,20 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     collectionName = "customsOfficeLists",
     domainFormat = MongoFormats.customsOfficeFormat,
     indexes = Seq(
-      IndexModel(Indexes.ascending("referenceNumber", "activeFrom"), IndexOptions().unique(true)),
       IndexModel(
-        Indexes.ascending("countryCode", "referenceNumber", "activeFrom")
+        Indexes.ascending("referenceNumber", "activeFrom", "phase", "domain"),
+        IndexOptions().unique(true)
+      ),
+      IndexModel(
+        Indexes.ascending("countryCode", "referenceNumber", "activeFrom", "phase", "domain")
       ),
       IndexModel(
         Indexes.ascending(
           "customsOfficeTimetable.customsOfficeTimetableLine.customsOfficeRoleTrafficCompetence.roleName",
           "referenceNumber",
-          "activeFrom"
+          "activeFrom",
+          "phase",
+          "domain"
         )
       ),
       IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS))

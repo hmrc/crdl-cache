@@ -147,7 +147,9 @@ class CustomsOfficeListsRepositorySpec
           )
         )
       )
-    )
+    ),
+    None,
+    None
   )
 
   val invalidatedoffice = CustomsOffice(
@@ -217,7 +219,9 @@ class CustomsOfficeListsRepositorySpec
         )
       )
     )
-  )
+  ),
+    None,
+    None
   )
 
   val newOffice = CustomsOffice(
@@ -289,7 +293,10 @@ class CustomsOfficeListsRepositorySpec
         )
       )
     )
-  ))
+  ),
+    None,
+    None
+  )
 
   val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
 

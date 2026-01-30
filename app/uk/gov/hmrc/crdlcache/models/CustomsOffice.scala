@@ -50,7 +50,9 @@ case class CustomsOffice(
   dedicatedTraderName: Option[String],
   customsOfficeSpecificNotesCodes: List[String],
   customsOfficeLsd: CustomsOfficeDetail,
-  customsOfficeTimetable: List[CustomsOfficeTimetable]
+  customsOfficeTimetable: List[CustomsOfficeTimetable],
+  phase: Option[String],
+  domain: Option[String]
 )
 
 object CustomsOffice {
@@ -91,8 +93,9 @@ object CustomsOffice {
           .orElse(dpsCustomOfficeList.customsofficelsd.headOption)
           .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
       ),
-      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate)
+      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate),
+      dpsCustomOfficeList.phase,
+      dpsCustomOfficeList.domain
     )
-
   }
 }
