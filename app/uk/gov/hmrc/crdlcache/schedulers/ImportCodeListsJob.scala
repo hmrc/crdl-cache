@@ -74,8 +74,11 @@ abstract class ImportCodeListsJob[K, I](
       s"Importing ${listConfig.origin} codelist ${listConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
     )
     (phase, domain) match {
-      case (Some(_), Some(_)) | (None, None) =>
-
+      case (Some(_), None) | (None, Some(_)) =>
+        throw IllegalArgumentException(
+          "Impossible case - we need to have both phase and domain or neither"
+        )
+      case _ =>
         repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>
           val incomingKeySet = newSnapshot.entries.map(keyOfEntry)
           val mergedKeySet   = currentKeySet.union(incomingKeySet)
@@ -129,10 +132,6 @@ abstract class ImportCodeListsJob[K, I](
           }
           instructions.result()
         }
-      case _ =>
-        throw IllegalArgumentException(
-          "Impossible case - we need to have both phase and domain or neither"
-        )
     }
   }
 
