@@ -143,9 +143,7 @@ class ImportCustomsOfficesListJobSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       ),
       DpsCustomsOffice(
         RDEntryStatus("valid", "01-05-2025"),
@@ -218,9 +216,7 @@ class ImportCustomsOfficesListJobSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       )
     )
   )
@@ -297,9 +293,7 @@ class ImportCustomsOfficesListJobSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       ),
       DpsCustomsOffice(
         RDEntryStatus("valid", "22-03-2025"),
@@ -369,9 +363,7 @@ class ImportCustomsOfficesListJobSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       )
     )
   )

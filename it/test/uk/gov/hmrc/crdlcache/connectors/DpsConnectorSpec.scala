@@ -218,9 +218,7 @@ class DpsConnectorSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       ),
       DpsCustomsOffice(
         RDEntryStatus("valid", "01-05-2025"),
@@ -293,9 +291,7 @@ class DpsConnectorSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       )
     )
   )
@@ -372,9 +368,7 @@ class DpsConnectorSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       ),
       DpsCustomsOffice(
         RDEntryStatus("valid", "22-03-2025"),
@@ -444,9 +438,7 @@ class DpsConnectorSpec
               )
             )
           )
-        ),
-        None,
-        None
+        )
       )
     )
   )

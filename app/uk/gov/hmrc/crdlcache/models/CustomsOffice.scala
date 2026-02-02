@@ -60,7 +60,11 @@ object CustomsOffice {
   private val ukLocalDate  = DateTimeFormatter.ofPattern("dd-MM-yyyy")
   private val basicIsoDate = DateTimeFormatter.BASIC_ISO_DATE
 
-  def fromDpsCustomOfficeList(dpsCustomOfficeList: DpsCustomsOffice, phase: Option[String], domain: Option[String]): CustomsOffice = {
+  def fromDpsCustomOfficeList(
+    dpsCustomOfficeList: DpsCustomsOffice,
+    phase: Option[String] = None,
+    domain: Option[String] = None
+  ): CustomsOffice = {
     CustomsOffice(
       dpsCustomOfficeList.referencenumber,
       parseDateToInstant(dpsCustomOfficeList.rdentrystatus.activefrom, ukLocalDate),
