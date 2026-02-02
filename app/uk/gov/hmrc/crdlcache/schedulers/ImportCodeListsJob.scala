@@ -22,7 +22,7 @@ import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervis
 import org.mongodb.scala.ClientSession
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
-import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig, PhaseAndDomainListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListSnapshot, CodeListSnapshotEntry}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
@@ -133,8 +133,13 @@ abstract class ImportCodeListsJob[K, I](
         s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated"
       )
 
+      (phase, domain) = codeListConfig match {
+        case pd: PhaseAndDomainListConfig => (Some(pd.phase), Some(pd.domain))
+        case _                            => (None, None)
+      }
+
       _ <- dpsConnector
-        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
+        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated, phase, domain)
         // Add a delay between calls to avoid overwhelming DPS
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
