@@ -147,14 +147,12 @@ abstract class ImportCodeListsJob[K, I](
       )
 
       (phase, domain) = codeListConfig match {
-        case pdListConfig: PhaseAndDomainListConfig =>
-          (Some(pdListConfig.phase), Some(pdListConfig.domain))
-        case _ =>
-          (None, None)
+        case pd: PhaseAndDomainListConfig => (Some(pd.phase), Some(pd.domain))
+        case _                            => (None, None)
       }
 
       _ <- dpsConnector
-        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated)
+        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated, phase, domain)
         // Add a delay between calls to avoid overwhelming DPS
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)

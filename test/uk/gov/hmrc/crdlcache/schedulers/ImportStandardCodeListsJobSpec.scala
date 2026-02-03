@@ -231,12 +231,22 @@ class ImportStandardCodeListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC08), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(BC08),
+        equalTo(lastUpdatedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC66), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(BC66),
+        equalTo(lastUpdatedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source.empty)
 
@@ -343,12 +353,22 @@ class ImportStandardCodeListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC08), equalTo(storedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(BC08),
+        equalTo(storedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC66), equalTo(storedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(BC66),
+        equalTo(storedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source.empty)
 
@@ -414,12 +434,22 @@ class ImportStandardCodeListsJobSpec
 
     // DPS connector responses
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC08), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(BC08),
+        equalTo(lastUpdatedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
 
     when(
-      dpsConnector.fetchCodeListSnapshots(equalTo(BC66), equalTo(lastUpdatedInstant))(using any())
+      dpsConnector.fetchCodeListSnapshots(
+        equalTo(BC66),
+        equalTo(lastUpdatedInstant),
+        equalTo(None),
+        equalTo(None)
+      )(using any())
     )
       .thenReturn(Source.empty)
 
