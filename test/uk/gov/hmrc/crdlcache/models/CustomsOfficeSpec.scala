@@ -125,7 +125,9 @@ class CustomsOfficeSpec extends AnyFlatSpec with Matchers with TestData {
           )
         )
       )
-    )
+    ),
+    None,
+    None
   )
 
   val mongoJson = Json.obj(

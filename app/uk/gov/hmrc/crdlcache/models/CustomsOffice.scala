@@ -50,7 +50,9 @@ case class CustomsOffice(
   dedicatedTraderName: Option[String],
   customsOfficeSpecificNotesCodes: List[String],
   customsOfficeLsd: CustomsOfficeDetail,
-  customsOfficeTimetable: List[CustomsOfficeTimetable]
+  customsOfficeTimetable: List[CustomsOfficeTimetable],
+  phase: Option[String],
+  domain: Option[String]
 )
 
 object CustomsOffice {
@@ -58,7 +60,11 @@ object CustomsOffice {
   private val ukLocalDate  = DateTimeFormatter.ofPattern("dd-MM-yyyy")
   private val basicIsoDate = DateTimeFormatter.BASIC_ISO_DATE
 
-  def fromDpsCustomOfficeList(dpsCustomOfficeList: DpsCustomsOffice): CustomsOffice = {
+  def fromDpsCustomOfficeList(
+    dpsCustomOfficeList: DpsCustomsOffice,
+    phase: Option[String] = None,
+    domain: Option[String] = None
+  ): CustomsOffice = {
     CustomsOffice(
       dpsCustomOfficeList.referencenumber,
       parseDateToInstant(dpsCustomOfficeList.rdentrystatus.activefrom, ukLocalDate),
@@ -91,8 +97,9 @@ object CustomsOffice {
           .orElse(dpsCustomOfficeList.customsofficelsd.headOption)
           .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
       ),
-      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate)
+      fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate),
+      phase,
+      domain
     )
-
   }
 }
