@@ -544,8 +544,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
                 "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
-              None,
-              None
+              Some("P6"),
+              Some("NCTS")
             )
           ),
           UpsertEntry(
@@ -561,8 +561,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
                 "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
-              None,
-              None
+              Some("P6"),
+              Some("NCTS")
             )
           ),
           UpsertEntry(
@@ -578,8 +578,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
                 "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
-              None,
-              None
+              Some("P6"),
+              Some("NCTS")
             )
           ),
           UpsertEntry(
@@ -595,8 +595,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
                 "phase"  -> "P6",
                 "domain" -> "NCTS"
               ),
-              None,
-              None
+              Some("P6"),
+              Some("NCTS")
             )
           )
         )
