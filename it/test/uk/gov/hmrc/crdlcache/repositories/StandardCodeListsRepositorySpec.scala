@@ -40,12 +40,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class StandardCodeListsRepositorySpec
   extends AnyFlatSpec
-  with PlayMongoRepositorySupport[CodeListEntry]
-  with CleanMongoCollectionSupport
-  with IndexedMongoQueriesSupport
-  with Matchers
-  with OptionValues
-  with ScalaFutures {
+    with PlayMongoRepositorySupport[CodeListEntry]
+    with CleanMongoCollectionSupport
+    with IndexedMongoQueriesSupport
+    with Matchers
+    with OptionValues
+    with ScalaFutures {
 
   given TransactionConfiguration = TransactionConfiguration.strict
   given ec: ExecutionContext     = ExecutionContext.global
@@ -217,9 +217,87 @@ class StandardCodeListsRepositorySpec
     None
   )
 
+  private val phaseAndDomainEntries = Seq(
+    CodeListEntry(
+      BC08,
+      "T1",
+      "Transit Type 1",
+      Instant.parse("2024-01-17T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-01-17T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid",
+        "phase" -> "P6",
+        "domain" -> "NCTS"
+      ),
+      Some("P6"),
+      Some("NCTS")
+    ),
+    CodeListEntry(
+      BC08,
+      "T2",
+      "Transit Type 2",
+      Instant.parse("2024-01-17T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-01-17T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid",
+        "phase" -> "P6",
+        "domain" -> "NCTS"
+      ),
+      Some("P6"),
+      Some("NCTS")
+    ),
+    CodeListEntry(
+      BC08,
+      "T3",
+      "Transit Type 3",
+      Instant.parse("2024-01-17T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-01-17T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid",
+        "phase" -> "P5",
+        "domain" -> "NCTS"
+      ),
+      Some("P5"),
+      Some("NCTS")
+    )
+  )
+
+  private val entriesWithoutPhaseDomain = Seq(
+    CodeListEntry(
+      BC08,
+      "NO1",
+      "No Phase Domain 1",
+      Instant.parse("2024-01-17T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-01-17T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid"
+      ),
+      None,
+      None
+    ),
+    CodeListEntry(
+      BC08,
+      "NO2",
+      "No Phase Domain 2",
+      Instant.parse("2024-01-17T00:00:00Z"),
+      None,
+      Some(Instant.parse("2024-01-17T00:00:00Z")),
+      Json.obj(
+        "state" -> "valid"
+      ),
+      None,
+      None
+    )
+  )
+
+
   def withCodeListEntries(
-    entries: Seq[CodeListEntry]
-  )(test: ClientSession => Future[Assertion]): Unit = {
+                           entries: Seq[CodeListEntry]
+                         )(test: ClientSession => Future[Assertion]): Unit = {
     repository.collection.insertMany(entries).toFuture.futureValue
     repository.withSessionAndTransaction(test).futureValue
   }
@@ -264,7 +342,9 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain allElementsOf activeCodelistEntries)
   }
@@ -277,7 +357,9 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = Some(Set("AW", "BL")),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain allElementsOf activeCodelistEntries.take(2))
   }
@@ -290,7 +372,9 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = Some(Set.empty),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain allElementsOf activeCodelistEntries)
   }
@@ -301,7 +385,9 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain noElementsOf differentCodeListEntries)
   }
@@ -314,7 +400,9 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = Some(Set("B")),
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain noElementsOf differentCodeListEntries)
   }
@@ -326,7 +414,9 @@ class StandardCodeListsRepositorySpec
           BC08,
           filterKeys = None,
           filterProperties = None,
-          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+          None,
+          None
         )
         .map(_ must contain noElementsOf supersededCodeListEntries)
   }
@@ -338,7 +428,9 @@ class StandardCodeListsRepositorySpec
           BC08,
           filterKeys = None,
           filterProperties = None,
-          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+          None,
+          None
         )
         .map(_ mustNot contain(postDatedEntry))
   }
@@ -351,7 +443,9 @@ class StandardCodeListsRepositorySpec
         BC08,
         filterKeys = None,
         filterProperties = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain(invalidatedIoEntry))
   }
@@ -420,7 +514,9 @@ class StandardCodeListsRepositorySpec
         BC36,
         filterKeys = Some(Set("B000", "W200")),
         filterProperties = Some(Map("exciseProductsCategoryCode" -> JsString("W"))),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        None,
+        None
       )
       .map(_ must contain only exciseProductEntries.last)
   }
@@ -434,7 +530,9 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = None,
           filterProperties = Some(Map("alcoholicStrengthApplicabilityFlag" -> JsTrue)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+          None,
+          None
         )
 
       filteredEntriesWithFlag <- repository
@@ -442,7 +540,9 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = Some(Set("B000", "W200")),
           filterProperties = Some(Map("degreePlatoApplicabilityFlag" -> JsTrue)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+          None,
+          None
         )
     } yield {
       allEntriesWithFlag must contain allOf (exciseProductEntries.head, exciseProductEntries.last)
@@ -459,7 +559,9 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = None,
           filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+          None,
+          None
         )
 
       filteredEntriesWithNull <- repository
@@ -467,13 +569,125 @@ class StandardCodeListsRepositorySpec
           BC36,
           filterKeys = Some(Set("B000", "W200")),
           filterProperties = Some(Map("responsibleDataManager" -> JsNull)),
-          activeAt = Instant.parse("2025-06-05T00:00:00Z")
+          activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+          None,
+          None
         )
     } yield {
       allEntriesWithNull must contain allElementsOf exciseProductEntries.init
       filteredEntriesWithNull must contain only exciseProductEntries.head
     }
   }
+
+  it should "return only entries with matching phase and domain when both are provided" in withCodeListEntries(
+    phaseAndDomainEntries
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map(_ must contain allElementsOf phaseAndDomainEntries.take(2))
+  }
+
+  it should "filter by phase and domain and exclude entries with different phase" in withCodeListEntries(
+    phaseAndDomainEntries
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P5"),
+        domain = Some("NCTS")
+      )
+      .map(_ must contain only phaseAndDomainEntries.last)
+  }
+
+  it should "return only entries without phase and domain when neither is provided" in withCodeListEntries(
+    phaseAndDomainEntries ++ entriesWithoutPhaseDomain
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
+      )
+      .map(_ must contain allElementsOf entriesWithoutPhaseDomain)
+  }
+
+  it should "exclude entries with phase and domain when neither filter is provided" in withCodeListEntries(
+    phaseAndDomainEntries ++ entriesWithoutPhaseDomain
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
+      )
+      .map { result =>
+        result mustNot contain(phaseAndDomainEntries.head)
+        result mustNot contain(phaseAndDomainEntries(1))
+        result mustNot contain(phaseAndDomainEntries.last)
+      }
+  }
+
+  it should "combine phase/domain filter with key filter" in withCodeListEntries(
+    phaseAndDomainEntries
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = Some(Set("T1", "T2")),
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map(_ must contain allElementsOf phaseAndDomainEntries.take(2))
+  }
+
+  it should "combine phase/domain filter with property filter" in withCodeListEntries(
+    phaseAndDomainEntries
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = Some(Map("state" -> JsString("valid"))),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map(_ must contain allElementsOf phaseAndDomainEntries.take(2))
+  }
+
+  it should "return empty when phase/domain combination does not match any entries" in withCodeListEntries(
+    phaseAndDomainEntries
+  ) { _ =>
+    repository
+      .fetchEntries(
+        BC08,
+        filterKeys = None,
+        filterProperties = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P99"),
+        domain = Some("UNKNOWN")
+      )
+      .map(_ mustBe empty)
+  }
+
 
   "StandardCodeListsRepository.executeInstructions" should "invalidate existing entries" in withCodeListEntries(
     activeCodelistEntries :+ activeIoEntry

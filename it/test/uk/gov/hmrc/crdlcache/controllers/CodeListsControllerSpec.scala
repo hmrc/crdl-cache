@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.crdlcache.controllers
 
-import org.mockito.ArgumentMatchers.eq as equalTo
+import org.mockito.ArgumentMatchers.{any, eq as equalTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -30,13 +30,9 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCodeLists
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, E200, CL231}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66, CL231, E200}
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, LastUpdated}
-import uk.gov.hmrc.crdlcache.repositories.{
-  CorrespondenceListsRepository,
-  LastUpdatedRepository,
-  StandardCodeListsRepository
-}
+import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, LastUpdatedRepository, StandardCodeListsRepository}
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
@@ -50,13 +46,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CodeListsControllerSpec
   extends AnyFlatSpec
-  with Matchers
-  with MockitoSugar
-  with ScalaFutures
-  with IntegrationPatience
-  with HttpClientV2Support
-  with GuiceOneServerPerSuite
-  with BeforeAndAfterEach {
+    with Matchers
+    with MockitoSugar
+    with ScalaFutures
+    with IntegrationPatience
+    with HttpClientV2Support
+    with GuiceOneServerPerSuite
+    with BeforeAndAfterEach {
 
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
@@ -190,7 +186,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(codeListEntries))
@@ -227,7 +225,9 @@ class CodeListsControllerSpec
         equalTo(E200),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(correspondenceListEntries))
@@ -264,7 +264,9 @@ class CodeListsControllerSpec
         equalTo(CL231),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(phaseAndDomainListEntries))
@@ -303,7 +305,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -328,7 +332,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -352,8 +358,10 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(None),
-        equalTo(fixedInstant)
-    ))
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
+      ))
       .thenReturn(Future.successful(List.empty))
 
     val response =
@@ -375,7 +383,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -399,7 +409,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set.empty)),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -423,7 +435,9 @@ class CodeListsControllerSpec
         equalTo(BC36),
         equalTo(Some(Set("B000"))),
         equalTo(Some(Map("alcoholicStrengthApplicabilityFlag" -> JsBoolean(true)))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -449,7 +463,9 @@ class CodeListsControllerSpec
         equalTo(BC66),
         equalTo(Some(Set("B"))),
         equalTo(Some(Map("responsibleDataManager" -> JsNull))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -475,7 +491,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(Some(Set("GB"))),
         equalTo(Some(Map("actionIdentification" -> JsString("384")))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -565,6 +583,76 @@ class CodeListsControllerSpec
     response.status mustBe Status.BAD_REQUEST
   }
 
+  it should "return 200 OK when both phase and domain are provided" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    when(
+      codeListsRepository.fetchEntries(
+        equalTo(CL231),
+        equalTo(None),
+        any(),
+        equalTo(fixedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
+      .thenReturn(Future.successful(phaseAndDomainListEntries))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${CL231.code}?phase=P6&domain=NCTS")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.arr(
+      Json.obj(
+        "key"        -> "T1",
+        "value"      -> "Goods not having the customs status of Union goods, which are placed under the common transit procedure.",
+        "properties" -> Json.obj("state" -> "valid")
+      ),
+      Json.obj(
+        "key"        -> "TIR",
+        "value"      -> "TIR carnet",
+        "properties" -> Json.obj("state" -> "valid")
+      )
+    )
+
+    response.status mustBe Status.OK
+  }
+
+  it should "return 400 Bad Request when only phase is provided without domain" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${CL231.code}?phase=P6")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.status mustBe Status.BAD_REQUEST
+  }
+
+  it should "return 400 Bad Request when only domain is provided without phase" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/lists/${CL231.code}?domain=NCTS")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.status mustBe Status.BAD_REQUEST
+  }
+
+
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
@@ -574,7 +662,9 @@ class CodeListsControllerSpec
         equalTo(BC08),
         equalTo(None),
         equalTo(None),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
