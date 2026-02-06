@@ -137,10 +137,12 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     }
 
   def fetchCustomsOfficeLists(using
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    phase: Option[String] = None,
+    domain: Option[String] = None
   ): Source[CustomsOfficeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CustomsOfficeListResponse](0) { startIndex =>
-      fetchCustomsOfficeList(startIndex).map { response =>
+      fetchCustomsOfficeList(startIndex, phase, domain).map { response =>
         if (response.elements.isEmpty)
           None
         else
@@ -149,12 +151,19 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     }
 
   private def fetchCustomsOfficeList(
-    startIndex: Int
+    startIndex: Int,
+    phase: Option[String] = None,
+    domain: Option[String] = None
   )(using ec: ExecutionContext): Future[CustomsOfficeListResponse] = {
-    val queryParams = Map(
+    val baseQueryParams = Map(
       "$start_index" -> startIndex,
       "$count"       -> 10
     )
+
+    val queryParams = baseQueryParams ++
+      phase.map("business_domain_phase" -> _).toMap ++
+      domain.map("business_domain" -> _).toMap
+
     val correlationId = UUID.randomUUID().toString
     val dpsUrl        = url"$baseCustomsOfficeUrl?$queryParams"
 

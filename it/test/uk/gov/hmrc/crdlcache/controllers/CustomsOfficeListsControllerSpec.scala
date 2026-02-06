@@ -271,7 +271,7 @@ class CustomsOfficeListsControllerSpec
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
     when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(office))
 
     val response = httpClientV2
@@ -286,7 +286,7 @@ class CustomsOfficeListsControllerSpec
   it should "return 200 OK when there are no offices to return" in {
     when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
@@ -321,7 +321,9 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("IT223100"))),
         equalTo(Some(Set("GB"))),
         equalTo(Some(Set("AUT"))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -344,7 +346,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("IT223100", "IT223101"))),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(Some(Set("AUT", "CCA"))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant), equalTo(None), equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -367,7 +369,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("IT223100", "IT223101", "DK003102", "IT314102"))),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(Some(Set("AUT", "CCA", "ACE", "RSS"))),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant), equalTo(None), equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -390,7 +392,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
-        equalTo(fixedInstant)
+        equalTo(fixedInstant), equalTo(None), equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -408,7 +410,7 @@ class CustomsOfficeListsControllerSpec
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
     when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =

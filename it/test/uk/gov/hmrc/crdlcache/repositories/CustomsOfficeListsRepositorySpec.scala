@@ -474,7 +474,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = None,
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ must contain(DK003102))
   }
@@ -487,7 +489,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = None,
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustNot contain(invalidatedoffice))
   }
@@ -500,7 +504,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = None,
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustNot contain(postDatedOffice))
   }
@@ -513,7 +519,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = None,
         roles = None,
-        activeAt = Instant.parse("2025-04-05T00:00:00Z")
+        activeAt = Instant.parse("2025-04-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ must contain(invalidatedoffice))
   }
@@ -526,7 +534,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = Some(Set("IT223101")),
         countryCodes = None,
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustBe List(newOffice))
   }
@@ -539,7 +549,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = Some(Set("DK")),
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ must contain(DK003102))
   }
@@ -552,7 +564,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = None,
         roles = Some(Set("EXL")),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustBe List(DK003102))
   }
@@ -565,7 +579,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = Some(Set.empty),
         countryCodes = Some(Set.empty),
         roles = Some(Set.empty),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ must contain allElementsOf List(DK003102, newOffice))
   }
@@ -578,7 +594,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = Some(Set("IT223101")),
         countryCodes = None,
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustNot contain(DK003102))
   }
@@ -591,7 +609,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = Some(Set("IT")),
         roles = None,
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustNot contain(DK003102))
   }
@@ -604,7 +624,9 @@ class CustomsOfficeListsRepositorySpec
         referenceNumbers = None,
         countryCodes = None,
         roles = Some(Set("EIN")),
-        activeAt = Instant.parse("2025-06-05T00:00:00Z")
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
       )
       .map(_ mustNot contain(DK003102))
   }

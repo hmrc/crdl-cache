@@ -58,62 +58,82 @@ class ImportCustomsOfficesListJob @Inject() (
 
   private[schedulers] def processCustomsOffices(
     session: ClientSession,
-    customsOffices: List[CustomsOffice]
+    customsOffices: List[CustomsOffice],
+    phase: Option[String] = None,
+    domain: Option[String] = None
   ): Future[List[CustomsOfficeListsInstruction]] = {
     logger.info("Importing customs office lists")
-    customsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers(session).flatMap {
-      existingReferenceNumbers =>
-        val incomingCustomsOffices   = customsOffices.groupBy(_.referenceNumber)
-        val incomingReferenceNumbers = incomingCustomsOffices.keySet
-        val mergedReferenceNumbers   = existingReferenceNumbers.union(incomingReferenceNumbers)
+    (phase, domain) match {
+      case (Some(_), None) | (None, Some(_)) =>
+        throw IllegalArgumentException(
+          "Both phase and domain must be provided together, or neither should be provided"
+        )
+      case _ =>
+        customsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers(session).flatMap {
+          existingReferenceNumbers =>
+            val incomingCustomsOffices   = customsOffices.groupBy(_.referenceNumber)
+            val incomingReferenceNumbers = incomingCustomsOffices.keySet
+            val mergedReferenceNumbers   = existingReferenceNumbers.union(incomingReferenceNumbers)
 
-        val instructions = List.newBuilder[CustomsOfficeListsInstruction]
+            val instructions = List.newBuilder[CustomsOfficeListsInstruction]
 
-        for (referenceNumber <- mergedReferenceNumbers) {
+            for (referenceNumber <- mergedReferenceNumbers) {
 
-          val hasExistingOffice = existingReferenceNumbers.contains(referenceNumber)
-          val maybeNewOffice    = incomingCustomsOffices.get(referenceNumber).flatMap(_.headOption)
+              val hasExistingOffice = existingReferenceNumbers.contains(referenceNumber)
+              val maybeNewOffice = incomingCustomsOffices.get(referenceNumber).flatMap(_.headOption)
 
-          (hasExistingOffice, maybeNewOffice) match {
-            // First case is when there may or may not be an existing office with the reference number and new office details are available, we would Upsert.
-            case (_, Some(newOffice)) => instructions += UpsertCustomsOffice(newOffice)
-            // Second case is when we have an existing office and don't have new office details, we would need to mark this reference number as missing and expire it.
-            case (true, None) =>
-              val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
-              instructions += RecordMissingCustomsOffice(referenceNumber, startOfToday.toInstant)
-            case (false, None) =>
-              throw IllegalStateException(
-                "Impossible case - we have neither a new nor existing entry for a key"
-              )
-          }
+              (hasExistingOffice, maybeNewOffice) match {
+                // First case is when there may or may not be an existing office with the reference number and new office details are available, we would Upsert.
+                case (_, Some(newOffice)) =>
+                  val pDOffice = (phase, domain) match {
+                    case (Some(phase), Some(domain)) =>
+                      newOffice.copy(phase = Some(phase), domain = Some(domain))
+                    case _ =>
+                      newOffice
+                  }
+                  instructions += UpsertCustomsOffice(pDOffice)
+                // Second case is when we have an existing office and don't have new office details, we would need to mark this reference number as missing and expire it.
+                case (true, None) =>
+                  val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
+                  instructions += RecordMissingCustomsOffice(
+                    referenceNumber,
+                    startOfToday.toInstant
+                  )
+                case (false, None) =>
+                  throw IllegalStateException(
+                    "Impossible case - we have neither a new nor existing entry for a key"
+                  )
+              }
+            }
+            Future.successful(instructions.result())
         }
-        Future.successful(instructions.result())
     }
   }
 
-  private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
-    val job = for {
-      customOfficeLists <- dpsConnector.fetchCustomsOfficeLists
-        .delay(1.second, DelayOverflowStrategy.backpressure)
-        .mapConcat(_.elements)
-        .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList))
-        .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
-          logger.error(
-            s"Stopping customs office list import job due to exception",
-            err
-          )
-          Supervision.stop
-        })
-        .runWith(Sink.seq)
-      _ <- withSessionAndTransaction { session =>
-        for {
-          instructions <- processCustomsOffices(session, customOfficeLists.toList)
-          _            <- customsOfficeListsRepository.executeInstructions(session, instructions)
-        } yield ()
-      }
-    } yield ()
+  protected def importCustomsOfficeList(customsOfficeConfig: CustomsOffice): Future[Unit] = for {
+    customOfficeLists <- dpsConnector.fetchCustomsOfficeLists(ec, customsOfficeConfig.phase, customsOfficeConfig.domain)
+      .delay(1.second, DelayOverflowStrategy.backpressure)
+      .mapConcat(_.elements)
+      .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList))
+      .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
+        logger.error(
+          s"Stopping customs office list import job due to exception",
+          err
+        )
+        Supervision.stop
+      })
+      .runWith(Sink.seq)
+    _ <- withSessionAndTransaction { session =>
+      for {
+        instructions <- processCustomsOffices(session, customOfficeLists.toList)
+        _            <- customsOfficeListsRepository.executeInstructions(session, instructions)
+      } yield ()
+    }
+  } yield ()
 
-    job.map { _ =>
+  private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
+    val importCustomsOfficeList = importCustomsOfficeLists()
+    importCustomsOfficeList.map { _ =>
       logger.info("Import customs offices job completed successfully")
     }
   }
