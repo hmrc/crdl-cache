@@ -76,7 +76,7 @@ abstract class ImportCodeListsJob[K, I](
     (phase, domain) match {
       case (Some(_), None) | (None, Some(_)) =>
         throw IllegalArgumentException(
-          "Impossible case - we need to have both phase and domain or neither"
+          "Both phase and domain must be provided together, or neither should be provided"
         )
       case _ =>
         repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>

@@ -72,12 +72,17 @@ class DpsConnectorSpec
       "import-pd-lists.schedule"                           -> "* * * * * ?",
       "import-offices.schedule"                            -> "* * * * * ?",
       "import-correspondence-lists.schedule"               -> "* * * * * ?",
+      "import-offices.phase"                               -> "P6",
+      "import-offices.domain"                              -> "NCTS",
       "import-codelists.codelists"                         -> List.empty,
       "import-pd-lists.pd-lists"                           -> List.empty,
       "import-correspondence-lists.correspondence-lists"   -> List.empty,
       "http-verbs.retries.intervals"                       -> List("1.millis")
     )
   )
+  
+  private val phase: Option[String] = Some("P6")
+  private val domain: Option[String] = Some("NCTS")
 
   private val connector =
     new DpsConnector(
@@ -812,7 +817,7 @@ class DpsConnectorSpec
         )
     )
 
-    connector.fetchCustomsOfficeLists
+    connector.fetchCustomsOfficeLists(phase, domain)
       .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
       .map(_ mustBe List(customsOfficeListPage1, customsOfficeListPage2))
   }
@@ -830,7 +835,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists(phase, domain)
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -848,7 +853,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists(phase, domain)
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -879,7 +884,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists(phase, domain)
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -912,7 +917,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists(phase, domain)
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -953,7 +958,7 @@ class DpsConnectorSpec
     )
 
     recoverToSucceededIf[UpstreamErrorResponse] {
-      connector.fetchCustomsOfficeLists
+      connector.fetchCustomsOfficeLists(phase, domain)
         .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
     }
   }
@@ -1021,7 +1026,7 @@ class DpsConnectorSpec
         )
     )
 
-    connector.fetchCustomsOfficeLists
+    connector.fetchCustomsOfficeLists(phase, domain)
       .runWith(Sink.collection[CustomsOfficeListResponse, List[CustomsOfficeListResponse]])
       .map(_ mustBe List(customsOfficeListPage1, customsOfficeListPage2))
   }

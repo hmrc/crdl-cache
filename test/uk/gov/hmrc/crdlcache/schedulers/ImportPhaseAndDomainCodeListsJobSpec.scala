@@ -28,7 +28,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.Json
-import uk.gov.hmrc.crdlcache.config.{AppConfig, CodeListConfig, PhaseAndDomainListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, PhaseAndDomainListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.*
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{CL231, CL234}
