@@ -136,10 +136,11 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
         }
     }
 
-  def fetchCustomsOfficeLists(using
-    ec: ExecutionContext,
+  def fetchCustomsOfficeLists(
     phase: Option[String] = None,
     domain: Option[String] = None
+  )(using
+    ec: ExecutionContext
   ): Source[CustomsOfficeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CustomsOfficeListResponse](0) { startIndex =>
       fetchCustomsOfficeList(startIndex, phase, domain).map { response =>

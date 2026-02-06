@@ -399,7 +399,7 @@ class ImportCustomsOfficesListJobSpec
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    when(dpsConnector.fetchCustomsOfficeLists(using any(), any(), any()))
+    when(dpsConnector.fetchCustomsOfficeLists(any(), any())(using any()))
       .thenReturn(Source(List(customsOfficeListPage1, customsOfficeListPage2)))
 
     when(
@@ -456,7 +456,7 @@ class ImportCustomsOfficesListJobSpec
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    when(dpsConnector.fetchCustomsOfficeLists(using any(), any(), any()))
+    when(dpsConnector.fetchCustomsOfficeLists(any(), any())(using any()))
       .thenReturn(Source(List(invalidCustomsOfficeResponse)))
 
     customsOfficeListsJob

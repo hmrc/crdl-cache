@@ -111,7 +111,8 @@ class ImportCustomsOfficesListJob @Inject() (
   }
 
   protected def importCustomsOfficeList(customsOfficeConfig: CustomsOffice): Future[Unit] = for {
-    customOfficeLists <- dpsConnector.fetchCustomsOfficeLists(ec, customsOfficeConfig.phase, customsOfficeConfig.domain)
+    customOfficeLists <- dpsConnector
+      .fetchCustomsOfficeLists(customsOfficeConfig.phase, customsOfficeConfig.domain)
       .delay(1.second, DelayOverflowStrategy.backpressure)
       .mapConcat(_.elements)
       .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList))
