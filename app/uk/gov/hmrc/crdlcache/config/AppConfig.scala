@@ -41,6 +41,9 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val importCorrespondenceListsSchedule: String =
     config.get[String]("import-correspondence-lists.schedule")
 
+  val importOfficesJobPhase: Option[String]  = config.get[Option[String]]("import-offices.phase")
+  val importOfficesJobDomain: Option[String] = config.get[Option[String]]("import-offices.domain")
+
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("last-updated-date.default"))
 

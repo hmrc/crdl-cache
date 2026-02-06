@@ -22,6 +22,7 @@ import org.apache.pekko.stream.scaladsl.Sink
 import org.mongodb.scala.ClientSession
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
+import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
@@ -44,12 +45,16 @@ class ImportCustomsOfficesListJob @Inject() (
   val lockRepository: MongoLockRepository,
   customsOfficeListsRepository: CustomsOfficeListsRepository,
   dpsConnector: DpsConnector,
+  appConfig: AppConfig,
   clock: Clock
 )(using system: ActorSystem, ec: ExecutionContext)
   extends Job
   with LockService
   with Logging
   with Transactions {
+
+  protected val phase: Option[String]  = appConfig.importOfficesJobPhase
+  protected val domain: Option[String] = appConfig.importOfficesJobDomain
 
   given TransactionConfiguration = TransactionConfiguration.strict
 
@@ -110,36 +115,37 @@ class ImportCustomsOfficesListJob @Inject() (
     }
   }
 
-  protected def importCustomsOfficeList(customsOfficeConfig: CustomsOffice): Future[Unit] = for {
-    customOfficeLists <- dpsConnector
-      .fetchCustomsOfficeLists(customsOfficeConfig.phase, customsOfficeConfig.domain)
-      .delay(1.second, DelayOverflowStrategy.backpressure)
-      .mapConcat(_.elements)
-      .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList))
-      .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
-        logger.error(
-          s"Stopping customs office list import job due to exception",
-          err
-        )
-        Supervision.stop
-      })
-      .runWith(Sink.seq)
-    _ <- withSessionAndTransaction { session =>
-      for {
-        instructions <- processCustomsOffices(session, customOfficeLists.toList)
-        _            <- customsOfficeListsRepository.executeInstructions(session, instructions)
-      } yield ()
-    }
-  } yield ()
-
   private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
-    val importCustomsOfficeList = importCustomsOfficeLists()
-    importCustomsOfficeList.map { _ =>
+    val job = for {
+      customOfficeLists <- dpsConnector
+        .fetchCustomsOfficeLists(phase, domain)
+        .delay(1.second, DelayOverflowStrategy.backpressure)
+        .mapConcat(_.elements)
+        .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList))
+        .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
+          logger.error(
+            s"Stopping customs office list import job due to exception",
+            err
+          )
+          Supervision.stop
+        })
+        .runWith(Sink.seq)
+      _ <- withSessionAndTransaction { session =>
+        for {
+          instructions <- processCustomsOffices(session, customOfficeLists.toList)
+          _            <- customsOfficeListsRepository.executeInstructions(session, instructions)
+        } yield ()
+
+      }
+    } yield ()
+    job.map { _ =>
       logger.info("Import customs offices job completed successfully")
     }
   }
 
-  def execute(context: JobExecutionContext): Unit =
+  def execute(
+    context: JobExecutionContext
+  ): Unit =
     Await.result(
       withLock(importCustomsOfficeLists()).map {
         _.getOrElse { logger.info("Import Customs offices job lock could not be obtained") }
