@@ -26,6 +26,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.CustomsOffice.fromDpsCustomOfficeList
 import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
@@ -64,6 +65,7 @@ class ImportCustomsOfficesListJobSpec
   private val lockRepository              = mock[MongoLockRepository]
   private val customsOfficeListRepository = mock[CustomsOfficeListsRepository]
   private val dpsConnector                = mock[DpsConnector]
+  private val appConfig                   = mock[AppConfig]
   private val fixedInstant                = Instant.parse("2025-06-03T00:00:00Z")
   private val clock                       = Clock.fixed(fixedInstant, ZoneOffset.UTC)
 
@@ -75,6 +77,7 @@ class ImportCustomsOfficesListJobSpec
     lockRepository,
     customsOfficeListRepository,
     dpsConnector,
+    appConfig,
     clock
   )
 

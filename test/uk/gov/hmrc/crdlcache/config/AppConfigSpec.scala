@@ -43,6 +43,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "import-offices.schedule"                            -> "*/10 * * * * ?",
         "import-pd-lists.phase"                              -> "P6",
         "import-pd-lists.domain"                             -> "NCTS",
+        "import-offices.phase"                               -> "P6",
+        "import-offices.domain"                              -> "NCTS",
         "import-codelists.codelists" -> List(
           Map("code" -> "BC08", "origin" -> "SEED", "keyProperty" -> "CountryCode"),
           Map("code" -> "BC36", "origin" -> "SEED", "keyProperty" -> "ExciseProductCode")
@@ -109,6 +111,10 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.importPhaseAndDomainListsSchedule mustBe "0 00 06 ? * *"
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
+
+    appConfig.importOfficesJobPhase mustBe Some("P6")
+    appConfig.importOfficesJobDomain mustBe Some("NCTS")
+
     appConfig.defaultLastUpdated mustBe LocalDate.of(2026, 2, 5)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
