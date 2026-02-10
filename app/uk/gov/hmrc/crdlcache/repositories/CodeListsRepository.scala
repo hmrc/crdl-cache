@@ -80,7 +80,9 @@ abstract class CodeListsRepository[K, I](
     code: CodeListCode,
     filterKeys: Option[Set[String]],
     filterProperties: Option[Map[String, JsValue]],
-    activeAt: Instant
+    activeAt: Instant,
+    phase: Option[String],
+    domain: Option[String]
   ): Future[Seq[CodeListEntry]] = {
     val mandatoryFilters = List(
       equal("codeListCode", code.code),
@@ -104,7 +106,13 @@ abstract class CodeListsRepository[K, I](
       }
       .getOrElse(List.empty)
 
-    val allFilters = mandatoryFilters ++ keyFilters ++ propertyFilters
+    val phaseDomainFilters = (phase, domain) match {
+      case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
+      case (None, None)       => List(exists("phase", false), exists("domain", false))
+      case _                  => List.empty
+    }
+
+    val allFilters = mandatoryFilters ++ keyFilters ++ propertyFilters ++ phaseDomainFilters
 
     collection
       .find(and(allFilters*))

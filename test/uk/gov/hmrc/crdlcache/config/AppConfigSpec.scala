@@ -36,7 +36,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.customs-offices-path" -> "views/iv_crdl_customs_office",
         "microservice.services.dps-api.clientId"             -> "abc123",
         "microservice.services.dps-api.clientSecret"         -> "def456",
-        "last-updated-date.default"                          -> "2026-02-05",
+        "last-updated-date.default"                          -> "2026-01-19",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
         "import-pd-lists.schedule"                           -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
@@ -83,7 +83,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCodeListsSchedule mustBe "*/10 * * * * ?"
     appConfig.importOfficesSchedule mustBe "*/10 * * * * ?"
     appConfig.importCorrespondenceListsSchedule mustBe "*/10 * * * * ?"
-    appConfig.defaultLastUpdated mustBe LocalDate.of(2026, 2, 5)
+    appConfig.defaultLastUpdated mustBe LocalDate.of(2026, 1, 19)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode")
@@ -111,11 +111,9 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCodeListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.importPhaseAndDomainListsSchedule mustBe "0 00 06 ? * *"
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
-
     appConfig.importOfficesJobPhase mustBe Some("P6")
     appConfig.importOfficesJobDomain mustBe Some("NCTS")
-
-    appConfig.defaultLastUpdated mustBe LocalDate.of(2026, 2, 5)
+    appConfig.defaultLastUpdated mustBe LocalDate.of(2026, 1, 19)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
       CodeListConfig(BC03, SEED, "AcoActionNotPossibleReasonCode"),
@@ -150,7 +148,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       PhaseAndDomainListConfig(CL008, CSRD2, "CountryCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL009, CSRD2, "CountryCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL010, CSRD2, "CountryCode", "P6", "NCTS"),
-      PhaseAndDomainListConfig(CL016, CSRD2, "CUSCode", "P6", "NCTS"),
+      // PhaseAndDomainListConfig(CL016, CSRD2, "CUSCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL017, CSRD2, "KindOfPackages", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL019, CSRD2, "Code", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL030, CSRD2, "XmlErrorCodesCode", "P6", "NCTS"),
@@ -160,11 +158,11 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       PhaseAndDomainListConfig(CL056, CSRD2, "Role", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL076, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL094, CSRD2, "RepresentativeStatusCode", "P6", "NCTS"),
-      PhaseAndDomainListConfig(CL101, CSRD2, "UnDangerousGoodsCode", "P6", "NCTS"),
+      // PhaseAndDomainListConfig(CL101, CSRD2, "UnDangerousGoodsCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL112, CSRD2, "CountryCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL116, CSRD2, "TransportChargesMethodOfPayment", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL147, CSRD2, "CountryCode", "P6", "NCTS"),
-      PhaseAndDomainListConfig(CL152, CSRD2, "Code", "P6", "NCTS"),
+      // PhaseAndDomainListConfig(CL152, CSRD2, "Code", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL165, CSRD2, "CountryCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL167, CSRD2, "CountryCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL178, CSRD2, "PreviousDocumentTypeCode", "P6", "NCTS"),
@@ -195,7 +193,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       PhaseAndDomainListConfig(CL235, CSRD2, "AuthorisationType", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL236, CSRD2, "AuthorisationType", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL239, CSRD2, "AdditionalInformationCode", "P6", "NCTS"),
-      PhaseAndDomainListConfig(CL244, CSRD2, "UnLocodeExtendedCode", "P6", "NCTS"),
+      // PhaseAndDomainListConfig(CL244, CSRD2, "UnLocodeExtendedCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL248, CSRD2, "CountryCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL251, CSRD2, "GuaranteeTypeCode", "P6", "NCTS"),
       PhaseAndDomainListConfig(CL252, CSRD2, "InvalidGuaranteeReasonCode", "P6", "NCTS"),

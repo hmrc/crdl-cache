@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.controllers
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCodeLists
-import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, STANDARD, PD}
+import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, PD, STANDARD}
 import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
 import uk.gov.hmrc.crdlcache.models.CodeListCode
 import uk.gov.hmrc.crdlcache.repositories.{
@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class CodeListsController @Inject() (
@@ -46,6 +46,13 @@ class CodeListsController @Inject() (
   extends BackendController(cc)
   with HttpFormats {
 
+  private def validatePhaseDomain(phase: Option[String], domain: Option[String]): Option[String] =
+    (phase, domain) match {
+      case (Some(_), None) | (None, Some(_)) =>
+        Some("Both phase and domain must be provided together, or neither should be provided")
+      case _ => None
+    }
+
   def fetchCodeListEntries(
     codeListCode: CodeListCode,
     filterKeys: Option[Set[String]],
@@ -55,35 +62,48 @@ class CodeListsController @Inject() (
     domain: Option[String]
   ): Action[AnyContent] =
     auth.authorizedAction(ReadCodeLists).async { _ =>
-      val codeListEntries = codeListCode.listType match {
-        case STANDARD =>
-          codeListsRepository
-            .fetchEntries(
-              codeListCode,
-              filterKeys,
-              filterProperties,
-              activeAt.getOrElse(clock.instant())
-            )
-        case CORRESPONDENCE =>
-          correspondenceListsRepository
-            .fetchEntries(
-              codeListCode,
-              filterKeys,
-              filterProperties,
-              activeAt.getOrElse(clock.instant())
-            )
-        case PD =>
-          codeListsRepository
-            .fetchEntries(
-              codeListCode,
-              filterKeys,
-              filterProperties,
-              activeAt.getOrElse(clock.instant())
-            )
-      }
+      validatePhaseDomain(phase, domain) match {
+        case Some(errorMessage) =>
+          Future.successful(
+            BadRequest(Json.obj("error" -> errorMessage))
+          )
+        case None =>
+          val codeListEntries = codeListCode.listType match {
+            case STANDARD =>
+              codeListsRepository
+                .fetchEntries(
+                  codeListCode,
+                  filterKeys,
+                  filterProperties,
+                  activeAt.getOrElse(clock.instant()),
+                  phase,
+                  domain
+                )
+            case CORRESPONDENCE =>
+              correspondenceListsRepository
+                .fetchEntries(
+                  codeListCode,
+                  filterKeys,
+                  filterProperties,
+                  activeAt.getOrElse(clock.instant()),
+                  phase,
+                  domain
+                )
+            case PD =>
+              codeListsRepository
+                .fetchEntries(
+                  codeListCode,
+                  filterKeys,
+                  filterProperties,
+                  activeAt.getOrElse(clock.instant()),
+                  phase,
+                  domain
+                )
+          }
 
-      codeListEntries.map { entries =>
-        Ok(Json.toJson(entries))
+          codeListEntries.map { entries =>
+            Ok(Json.toJson(entries))
+          }
       }
     }
 
