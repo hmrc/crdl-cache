@@ -399,6 +399,8 @@ class ImportCustomsOfficesListJobSpec
   }
 
   "ImportCustomsOfficeListJob.importCustomsOfficeLists" should "import the customs office lists" in {
+    val phase = appConfig.importOfficesJobPhase
+    val domain = appConfig.importOfficesJobDomain
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
@@ -419,10 +421,10 @@ class ImportCustomsOfficesListJobSpec
       equalTo(clientSession),
       equalTo(
         List(
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.head)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head))
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last, phase, domain)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last, phase, domain)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.head, phase, domain)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head, phase, domain))
         )
       )
     )

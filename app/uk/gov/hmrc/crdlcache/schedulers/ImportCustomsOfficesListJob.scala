@@ -121,7 +121,7 @@ class ImportCustomsOfficesListJob @Inject() (
         .fetchCustomsOfficeLists(phase, domain)
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
-        .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList))
+        .map(customsOfficeList => CustomsOffice.fromDpsCustomOfficeList(customsOfficeList, phase, domain))
         .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
           logger.error(
             s"Stopping customs office list import job due to exception",
