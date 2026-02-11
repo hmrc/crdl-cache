@@ -101,13 +101,15 @@ class BindersSpec
     }
   }
 
-  "Binders.bindableJsValueMap" should "bind query parameters into a Map from String to JsValue, ignoring the keys parameter" in {
+  "Binders.bindableJsValueMap" should "bind query parameters into a Map from String to JsValue, ignoring reserved parameters" in {
     Binders.bindableJsValueMap.bind(
       "",
       Map(
-        // "keys" and "activeAt" should be ignored in the output
+        // "keys", "activeAt", "phase" and "domain" should be ignored in the output
         "keys"                         -> Seq("GB,XI"),
         "activeAt"                     -> Seq("2025-06-05T00:00:00Z"),
+        "phase"                        -> Seq("P6"),
+        "domain"                       -> Seq("NCTS"),
         "degreePlatoApplicabilityFlag" -> Seq("true"),
         "responsibleDataManager"       -> Seq("null"),
         "actionIdentification"         -> Seq("823"),
