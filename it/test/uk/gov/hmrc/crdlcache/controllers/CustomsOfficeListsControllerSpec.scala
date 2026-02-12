@@ -375,7 +375,6 @@ class CustomsOfficeListsControllerSpec
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
-    println(s" 555555555555555 ${response.json}")
     response.json mustBe Json.arr(responseJson)
   }
 
