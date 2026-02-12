@@ -26,6 +26,8 @@ object Binders {
   private val formatter     = DateTimeFormatter.ISO_INSTANT
   private val KeysParam     = "keys"
   private val ActiveAtParam = "activeAt"
+  private val PhaseParam    = "phase"
+  private val DomainParam   = "domain"
 
   given bindableInstant: QueryStringBindable[Instant] = new QueryStringBindable.Parsing[Instant](
     Instant.parse,
@@ -69,6 +71,8 @@ object Binders {
           (propName, propValues) <- params
             .removed(KeysParam)
             .removed(ActiveAtParam) // Ignore the "keys" and "activeAt" query parameters
+            .removed(PhaseParam)
+            .removed(DomainParam)
           propValue <- propValues.headOption
           if propValue.nonEmpty
         } yield propName -> parsePropValue(propValue)
