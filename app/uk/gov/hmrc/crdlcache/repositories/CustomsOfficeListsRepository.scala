@@ -160,7 +160,9 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
-    activeAt: Instant
+    activeAt: Instant,
+    phase: Option[String],
+    domain: Option[String]
   ): Future[Seq[CustomsOffice]] = {
     val mandatoryFilters =
       List(lte("activeFrom", activeAt), or(equal("activeTo", null), gt("activeTo", activeAt)))
@@ -191,7 +193,14 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       )
       .getOrElse(List.empty)
 
-    val allFilters = mandatoryFilters ++ referenceNumberFilters ++ countryCodeFilters ++ roleFilters
+    val phaseDomainFilter = (phase, domain) match {
+      case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
+      case (None, None)       => List(exists("phase", false), exists("domain", false))
+      case _                  => List.empty
+    }
+
+    val allFilters =
+      mandatoryFilters ++ referenceNumberFilters ++ countryCodeFilters ++ roleFilters ++ phaseDomainFilter
 
     collection
       .find(and(allFilters*))

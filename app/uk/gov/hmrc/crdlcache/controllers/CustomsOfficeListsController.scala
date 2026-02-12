@@ -26,7 +26,7 @@ import uk.gov.hmrc.internalauth.client.*
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class CustomsOfficeListsController @Inject() (
@@ -37,21 +37,38 @@ class CustomsOfficeListsController @Inject() (
 )(using ec: ExecutionContext)
   extends BackendController(cc)
   with HttpFormats {
+
+  private def validatePhaseDomain(phase: Option[String], domain: Option[String]): Option[String] =
+    (phase, domain) match {
+      case (Some(_), None) | (None, Some(_)) =>
+        Some("Both phase and domain must be provided together, or neither should be provided")
+      case _ => None
+    }
+
   def fetchCustomsOfficeLists(
     referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
-    activeAt: Option[Instant]
+    activeAt: Option[Instant],
+    phase: Option[String],
+    domain: Option[String]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
-    customsOfficeListsRepository
-      .fetchCustomsOfficeLists(
-        referenceNumbers,
-        countryCodes,
-        roles,
-        activeAt.getOrElse(clock.instant())
-      )
-      .map { customsOfficeLists =>
-        Ok(Json.toJson(customsOfficeLists))
-      }
+    validatePhaseDomain(phase, domain) match {
+      case Some(errorMessage) =>
+        Future.successful(BadRequest(Json.obj("error" -> errorMessage)))
+      case None =>
+        customsOfficeListsRepository
+          .fetchCustomsOfficeLists(
+            referenceNumbers,
+            countryCodes,
+            roles,
+            activeAt.getOrElse(clock.instant()),
+            phase,
+            domain
+          )
+          .map { customsOfficeLists =>
+            Ok(Json.toJson(customsOfficeLists))
+          }
+    }
   }
 }
