@@ -41,14 +41,18 @@ class CustomsOfficeListsController @Inject() (
     referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
-    activeAt: Option[Instant]
+    activeAt: Option[Instant],
+    phase: Option[String],
+    domain: Option[String]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
     customsOfficeListsRepository
       .fetchCustomsOfficeLists(
         referenceNumbers,
         countryCodes,
         roles,
-        activeAt.getOrElse(clock.instant())
+        activeAt.getOrElse(clock.instant()),
+        phase,
+        domain
       )
       .map { customsOfficeLists =>
         Ok(Json.toJson(customsOfficeLists))
