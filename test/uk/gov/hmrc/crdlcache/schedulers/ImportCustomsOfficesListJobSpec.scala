@@ -26,6 +26,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.crdlcache.config.AppConfig
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.CustomsOffice.fromDpsCustomOfficeList
 import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
@@ -64,6 +65,7 @@ class ImportCustomsOfficesListJobSpec
   private val lockRepository              = mock[MongoLockRepository]
   private val customsOfficeListRepository = mock[CustomsOfficeListsRepository]
   private val dpsConnector                = mock[DpsConnector]
+  private val appConfig                   = mock[AppConfig]
   private val fixedInstant                = Instant.parse("2025-06-03T00:00:00Z")
   private val clock                       = Clock.fixed(fixedInstant, ZoneOffset.UTC)
 
@@ -75,6 +77,7 @@ class ImportCustomsOfficesListJobSpec
     lockRepository,
     customsOfficeListRepository,
     dpsConnector,
+    appConfig,
     clock
   )
 
@@ -396,10 +399,12 @@ class ImportCustomsOfficesListJobSpec
   }
 
   "ImportCustomsOfficeListJob.importCustomsOfficeLists" should "import the customs office lists" in {
+    val phase = appConfig.importOfficesJobPhase
+    val domain = appConfig.importOfficesJobDomain
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    when(dpsConnector.fetchCustomsOfficeLists(using any()))
+    when(dpsConnector.fetchCustomsOfficeLists(any(), any())(using any()))
       .thenReturn(Source(List(customsOfficeListPage1, customsOfficeListPage2)))
 
     when(
@@ -416,10 +421,10 @@ class ImportCustomsOfficesListJobSpec
       equalTo(clientSession),
       equalTo(
         List(
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.head)),
-          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head))
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.last, phase, domain)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.last, phase, domain)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage1.elements.head, phase, domain)),
+          UpsertCustomsOffice(fromDpsCustomOfficeList(customsOfficeListPage2.elements.head, phase, domain))
         )
       )
     )
@@ -456,7 +461,7 @@ class ImportCustomsOfficesListJobSpec
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    when(dpsConnector.fetchCustomsOfficeLists(using any()))
+    when(dpsConnector.fetchCustomsOfficeLists(any(), any())(using any()))
       .thenReturn(Source(List(invalidCustomsOfficeResponse)))
 
     customsOfficeListsJob
