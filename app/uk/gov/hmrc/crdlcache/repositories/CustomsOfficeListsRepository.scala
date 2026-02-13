@@ -41,7 +41,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.mongo.transaction.Transactions
 
-import java.time.Instant
+import java.time.{Instant, LocalDate, ZoneOffset}
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -162,7 +162,8 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     roles: Option[Set[String]],
     activeAt: Instant,
     phase: Option[String],
-    domain: Option[String]
+    domain: Option[String],
+    roleDate: Option[LocalDate] = None
   ): Future[Seq[CustomsOffice]] = {
     val mandatoryFilters =
       List(lte("activeFrom", activeAt), or(equal("activeTo", null), gt("activeTo", activeAt)))
@@ -180,18 +181,31 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       )
       .getOrElse(List.empty)
 
-    val roleFilters = roles
-      .map(roles =>
-        if roles.nonEmpty then
-          List(
-            in(
-              "customsOfficeTimetable.customsOfficeTimetableLine.customsOfficeRoleTrafficCompetence.roleName",
-              roles.toSeq*
+    val roleFilters = (roles, roleDate) match {
+      case (Some(r), Some(date)) if r.nonEmpty =>
+        val roleDateInstant = date.atStartOfDay(ZoneOffset.UTC).toInstant
+        List(
+          Filters.elemMatch(
+            "customsOfficeTimetable",
+            and(
+              lte("seasonStartDate", roleDateInstant),
+              gte("seasonEndDate", roleDateInstant),
+              in(
+                "customsOfficeTimetableLine.customsOfficeRoleTrafficCompetence.roleName",
+                r.toSeq*
+              )
             )
           )
-        else List.empty
-      )
-      .getOrElse(List.empty)
+        )
+      case (Some(r), None) if r.nonEmpty =>
+        List(
+          in(
+            "customsOfficeTimetable.customsOfficeTimetableLine.customsOfficeRoleTrafficCompetence.roleName",
+            r.toSeq*
+          )
+        )
+      case _ => List.empty
+    }
 
     val pdFilters = (phase, domain) match {
       case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))

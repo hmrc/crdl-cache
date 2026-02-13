@@ -18,13 +18,15 @@ package uk.gov.hmrc.crdlcache.models
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
+import uk.gov.hmrc.crdlcache.models.dps.col.DpsTimetableLine
 import uk.gov.hmrc.crdlcache.models.errors.ImportError.{InvalidDayFormat, InvalidTimeFormat}
 
 import java.time.format.DateTimeFormatter
 import java.time.{DayOfWeek, LocalTime}
 
 class TimeTableLineSpec extends AnyFlatSpec with Matchers with TestData {
-  val inputTimeTableLine = DK003102.customsofficetimetable.customsofficetimetableline
+  val inputTimeTableLine: List[DpsTimetableLine] =
+    DK003102.customsofficetimetable.head.customsofficetimetableline
 
   "TimeTableLine.fromDpsTimetableLine" should "convert a DpsTimetableLine to the crdl-cacle TimetableLine model" in {
     val timeTableLine = inputTimeTableLine.head.copy(

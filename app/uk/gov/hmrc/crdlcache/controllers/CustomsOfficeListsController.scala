@@ -24,9 +24,9 @@ import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
 import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
 import uk.gov.hmrc.internalauth.client.*
 
-import java.time.{Clock, Instant}
+import java.time.{Clock, Instant, LocalDate}
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
 class CustomsOfficeListsController @Inject() (
@@ -43,19 +43,28 @@ class CustomsOfficeListsController @Inject() (
     roles: Option[Set[String]],
     activeAt: Option[Instant],
     phase: Option[String],
-    domain: Option[String]
+    domain: Option[String],
+    roleDate: Option[LocalDate]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
-    customsOfficeListsRepository
-      .fetchCustomsOfficeLists(
-        referenceNumbers,
-        countryCodes,
-        roles,
-        activeAt.getOrElse(clock.instant()),
-        phase,
-        domain
+    if (roleDate.isDefined && roles.isEmpty)
+      Future.successful(
+        BadRequest(
+          Json.obj("statusCode" -> 400, "message" -> "roleDate requires roles to be specified")
+        )
       )
-      .map { customsOfficeLists =>
-        Ok(Json.toJson(customsOfficeLists))
-      }
+    else
+      customsOfficeListsRepository
+        .fetchCustomsOfficeLists(
+          referenceNumbers,
+          countryCodes,
+          roles,
+          activeAt.getOrElse(clock.instant()),
+          phase,
+          domain,
+          roleDate
+        )
+        .map { customsOfficeLists =>
+          Ok(Json.toJson(customsOfficeLists))
+        }
   }
 }

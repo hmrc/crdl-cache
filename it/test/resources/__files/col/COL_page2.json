@@ -42,7 +42,7 @@
           "streetandnumber": "Dalsagervej 7"
         }
       ],
-      "customsofficetimetable": {
+      "customsofficetimetable": [{
         "seasoncode": "1",
         "seasonname": null,
         "seasonstartdate": "20180101",
@@ -123,7 +123,7 @@
             ]
           }
         ]
-      }
+      }]
     },
     {
       "rdentrystatus": {
@@ -162,7 +162,7 @@
           "streetandnumber": "Prima Strada, 5"
         }
       ],
-      "customsofficetimetable": {
+      "customsofficetimetable": [{
         "seasoncode": "1",
         "seasonname": "ALL YEAR",
         "seasonstartdate": "20240101",
@@ -235,7 +235,7 @@
             ]
           }
         ]
-      }
+      }]
     }
   ],
   "links": [
