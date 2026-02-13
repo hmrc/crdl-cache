@@ -38,7 +38,7 @@
           "streetandnumber": "VIALE PIETRAMELLARA, 1/2"
         }
       ],
-      "customsofficetimetable": {
+      "customsofficetimetable": [{
         "seasoncode": "1",
         "seasonname": "ALL YEAR",
         "seasonstartdate": "20180101",
@@ -91,7 +91,7 @@
             ]
           }
         ]
-      }
+      }]
     },
     {
       "rdentrystatus": {
@@ -130,7 +130,7 @@
           "streetandnumber": "VIA DELL'AEROPORTO, 1"
         }
       ],
-      "customsofficetimetable": {
+      "customsofficetimetable": [{
         "seasoncode": "1",
         "seasonname": "ALL YEAR",
         "seasonstartdate": "20180101",
@@ -215,7 +215,7 @@
             ]
           }
         ]
-      }
+      }]
     }
   ],
   "links": [

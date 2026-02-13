@@ -30,7 +30,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, Upstream
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
-import org.mockito.ArgumentMatchers.eq as equalTo
+import org.mockito.ArgumentMatchers.{any, eq as equalTo}
 import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.{HeaderNames, Status}
@@ -271,7 +271,7 @@ class CustomsOfficeListsControllerSpec
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
     when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(office))
 
     val response = httpClientV2
@@ -286,7 +286,7 @@ class CustomsOfficeListsControllerSpec
   it should "return 200 OK when there are no offices to return" in {
     when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
@@ -323,6 +323,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("AUT"))),
         equalTo(fixedInstant),
         equalTo(None),
+        equalTo(None),
         equalTo(None)
       )
     )
@@ -346,7 +347,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("IT223100", "IT223101"))),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(Some(Set("AUT", "CCA"))),
-        equalTo(fixedInstant), equalTo(None), equalTo(None)
+        equalTo(fixedInstant), equalTo(None), equalTo(None), equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -369,7 +370,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("IT223100", "IT223101", "DK003102", "IT314102"))),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(Some(Set("AUT", "CCA", "ACE", "RSS"))),
-        equalTo(fixedInstant), equalTo(None), equalTo(None)
+        equalTo(fixedInstant), equalTo(None), equalTo(None), equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -392,7 +393,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
-        equalTo(fixedInstant), equalTo(None), equalTo(None)
+        equalTo(fixedInstant), equalTo(None), equalTo(None), equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -410,7 +411,7 @@ class CustomsOfficeListsControllerSpec
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
     when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
+    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None), equalTo(None)))
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
@@ -479,6 +480,45 @@ class CustomsOfficeListsControllerSpec
         .futureValue
 
     response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  it should "return 400 Bad Request when roleDate is provided without roles" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?roleDate=2025-06-15")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.BAD_REQUEST
+    response.json mustBe Json.obj("statusCode" -> 400, "message" -> "roleDate requires roles to be specified")
+  }
+
+  it should "return 200 OK when roles and roleDate are both provided" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(None),
+        equalTo(None),
+        equalTo(Some(Set("TRA"))),
+        equalTo(fixedInstant), equalTo(None), equalTo(None),
+        equalTo(Some(LocalDate.parse("2025-06-15")))
+      )
+    )
+      .thenReturn(Future.successful(office))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?roles=TRA&roleDate=2025-06-15")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
   }
 
 }

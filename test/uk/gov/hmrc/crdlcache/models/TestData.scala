@@ -108,7 +108,7 @@ trait TestData {
       |          "streetandnumber": "Dalsagervej 7"
       |        }
       |      ],
-      |      "customsofficetimetable": {
+      |      "customsofficetimetable": [{
       |        "seasoncode": "1",
       |        "seasonname": null,
       |        "seasonstartdate": "20180101",
@@ -189,7 +189,7 @@ trait TestData {
       |            ]
       |          }
       |        ]
-      |      }
+      |      }]
       |    }""".stripMargin
       )
     )
