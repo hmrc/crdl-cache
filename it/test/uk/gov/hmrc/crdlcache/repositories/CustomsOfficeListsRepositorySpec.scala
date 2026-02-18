@@ -152,6 +152,298 @@ class CustomsOfficeListsRepositorySpec
     None
   )
 
+  val DK003103_P6D = CustomsOffice(
+    "DK003103",
+    Instant.parse("2025-03-22T00:00:00Z"),
+    None,
+    None,
+    None,
+    Some("DK003103"),
+    Some("DK003103"),
+    None,
+    "DK",
+    Some("test@dk"),
+    None,
+    None,
+    None,
+    "9850",
+    Some("+45 342234 34543"),
+    None,
+    None,
+    None,
+    None,
+    false,
+    None,
+    None,
+    List("SN0009"),
+    CustomsOfficeDetail(
+      "Hirtshals Toldekspedition",
+      "DA",
+      "Hirtshals",
+      false,
+      None,
+      None,
+      false,
+      "Dalsagervej 7"
+    ),
+    List(
+      CustomsOfficeTimetable(
+        1,
+        None,
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("16:00", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
+          )
+        )
+      )
+    ),
+    Some("P6"),
+    Some("NCTS")
+  )
+
+  val DK003104_P5D = CustomsOffice(
+    "DK003104",
+    Instant.parse("2025-03-22T00:00:00Z"),
+    None,
+    None,
+    None,
+    Some("DK003104"),
+    Some("DK003104"),
+    None,
+    "DK",
+    Some("test@dk"),
+    None,
+    None,
+    None,
+    "9850",
+    Some("+45 342234 34543"),
+    None,
+    None,
+    None,
+    None,
+    false,
+    None,
+    None,
+    List("SN0009"),
+    CustomsOfficeDetail(
+      "Hirtshals Toldekspedition",
+      "DA",
+      "Hirtshals",
+      false,
+      None,
+      None,
+      false,
+      "Dalsagervej 7"
+    ),
+    List(
+      CustomsOfficeTimetable(
+        1,
+        None,
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("16:00", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
+          )
+        )
+      )
+    ),
+    Some("P5"),
+    Some("NCTS")
+  )
+
+  val DK003105_P6D = CustomsOffice(
+    "DK003105",
+    Instant.parse("2025-03-22T00:00:00Z"),
+    None,
+    None,
+    None,
+    Some("DK003105"),
+    Some("DK003105"),
+    None,
+    "DK",
+    Some("test@dk"),
+    None,
+    None,
+    None,
+    "9850",
+    Some("+45 342234 34543"),
+    None,
+    None,
+    None,
+    None,
+    false,
+    None,
+    None,
+    List("SN0009"),
+    CustomsOfficeDetail(
+      "Hirtshals Toldekspedition",
+      "DA",
+      "Hirtshals",
+      false,
+      None,
+      None,
+      false,
+      "Dalsagervej 7"
+    ),
+    List(
+      CustomsOfficeTimetable(
+        1,
+        None,
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("16:00", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
+          )
+        )
+      )
+    ),
+    Some("P6"),
+    Some("NCTS")
+  )
+
+  val IT223102_P6D = CustomsOffice(
+    "IT223102",
+    Instant.parse("2025-03-22T00:00:00Z"),
+    None,
+    None,
+    None,
+    Some("IT223102"),
+    Some("IT223102"),
+    None,
+    "IT",
+    Some("test@dk"),
+    None,
+    None,
+    None,
+    "9850",
+    Some("+45 342234 34543"),
+    None,
+    None,
+    None,
+    None,
+    false,
+    None,
+    None,
+    List("SN0009"),
+    CustomsOfficeDetail(
+      "AEROPORTO DI BOLOGNA",
+      "IT",
+      "BOLOGNA",
+      false,
+      Some("A"),
+      None,
+      true,
+      "VIA DELL'AEROPORTO, 1"
+    ),
+    List(
+      CustomsOfficeTimetable(
+        1,
+        None,
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("16:00", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("EXL", "P"),
+              RoleTrafficCompetence("EXL", "R"),
+              RoleTrafficCompetence("EXP", "P"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EXT", "P"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("PLA", "R"),
+              RoleTrafficCompetence("RFC", "R"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("ENQ", "P"),
+              RoleTrafficCompetence("ENQ", "R"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("REC", "P"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("REC", "N/A")
+            )
+          )
+        )
+      )
+    ),
+    Some("P6"),
+    Some("NCTS")
+  )
+
   val invalidatedoffice = CustomsOffice(
     "IT314102",
     Instant.parse("2025-03-22T00:00:00Z"),
@@ -187,39 +479,39 @@ class CustomsOfficeListsRepositorySpec
       "Prima Strada, 5"
     ),
     List(
-    CustomsOfficeTimetable(
-      1,
-      Some("ALL YEAR"),
-      LocalDate.parse("20180101", dateFormat),
-      LocalDate.parse("99991231", dateFormat),
-      List(
-        TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("08:00", timeFormat),
-          LocalTime.parse("18:00", timeFormat),
-          DayOfWeek.of(5),
-          None,
-          None,
-          List(
-            RoleTrafficCompetence("DEP", "R"),
-            RoleTrafficCompetence("INC", "R"),
-            RoleTrafficCompetence("TRA", "R"),
-            RoleTrafficCompetence("EXP", "R"),
-            RoleTrafficCompetence("EIN", "R"),
-            RoleTrafficCompetence("ENT", "R"),
-            RoleTrafficCompetence("EXC", "R"),
-            RoleTrafficCompetence("DES", "R"),
-            RoleTrafficCompetence("GUA", "R"),
-            RoleTrafficCompetence("EXT", "R"),
-            RoleTrafficCompetence("REG", "R"),
-            RoleTrafficCompetence("REC", "R"),
-            RoleTrafficCompetence("IPR", "N/A"),
-            RoleTrafficCompetence("ENQ", "N/A")
+      CustomsOfficeTimetable(
+        1,
+        Some("ALL YEAR"),
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("99991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("08:00", timeFormat),
+            LocalTime.parse("18:00", timeFormat),
+            DayOfWeek.of(5),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("DEP", "R"),
+              RoleTrafficCompetence("INC", "R"),
+              RoleTrafficCompetence("TRA", "R"),
+              RoleTrafficCompetence("EXP", "R"),
+              RoleTrafficCompetence("EIN", "R"),
+              RoleTrafficCompetence("ENT", "R"),
+              RoleTrafficCompetence("EXC", "R"),
+              RoleTrafficCompetence("DES", "R"),
+              RoleTrafficCompetence("GUA", "R"),
+              RoleTrafficCompetence("EXT", "R"),
+              RoleTrafficCompetence("REG", "R"),
+              RoleTrafficCompetence("REC", "R"),
+              RoleTrafficCompetence("IPR", "N/A"),
+              RoleTrafficCompetence("ENQ", "N/A")
+            )
           )
         )
       )
-    )
-  ),
+    ),
     None,
     None
   )
@@ -258,42 +550,43 @@ class CustomsOfficeListsRepositorySpec
       true,
       "VIA DELL'AEROPORTO, 1"
     ),
-    List(CustomsOfficeTimetable(
-      1,
-      Some("ALL YEAR"),
-      LocalDate.parse("20180101", dateFormat),
-      LocalDate.parse("20991231", dateFormat),
-      List(
-        TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("00:00", timeFormat),
-          LocalTime.parse("23:59", timeFormat),
-          DayOfWeek.of(6),
-          None,
-          None,
-          List(
-            RoleTrafficCompetence("DEP", "AIR"),
-            RoleTrafficCompetence("INC", "AIR"),
-            RoleTrafficCompetence("TXT", "AIR"),
-            RoleTrafficCompetence("DES", "AIR"),
-            RoleTrafficCompetence("ENQ", "N/A"),
-            RoleTrafficCompetence("ENT", "AIR"),
-            RoleTrafficCompetence("EXC", "N/A"),
-            RoleTrafficCompetence("EXP", "AIR"),
-            RoleTrafficCompetence("EXT", "AIR"),
-            RoleTrafficCompetence("REC", "N/A"),
-            RoleTrafficCompetence("REG", "N/A"),
-            RoleTrafficCompetence("TRA", "AIR"),
-            RoleTrafficCompetence("EIN", "AIR"),
-            RoleTrafficCompetence("PLA", "N/A"),
-            RoleTrafficCompetence("DIS", "N/A"),
-            RoleTrafficCompetence("RFC", "N/A"),
-            RoleTrafficCompetence("IPR", "N/A")
+    List(
+      CustomsOfficeTimetable(
+        1,
+        Some("ALL YEAR"),
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("00:00", timeFormat),
+            LocalTime.parse("23:59", timeFormat),
+            DayOfWeek.of(6),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("DEP", "AIR"),
+              RoleTrafficCompetence("INC", "AIR"),
+              RoleTrafficCompetence("TXT", "AIR"),
+              RoleTrafficCompetence("DES", "AIR"),
+              RoleTrafficCompetence("ENQ", "N/A"),
+              RoleTrafficCompetence("ENT", "AIR"),
+              RoleTrafficCompetence("EXC", "N/A"),
+              RoleTrafficCompetence("EXP", "AIR"),
+              RoleTrafficCompetence("EXT", "AIR"),
+              RoleTrafficCompetence("REC", "N/A"),
+              RoleTrafficCompetence("REG", "N/A"),
+              RoleTrafficCompetence("TRA", "AIR"),
+              RoleTrafficCompetence("EIN", "AIR"),
+              RoleTrafficCompetence("PLA", "N/A"),
+              RoleTrafficCompetence("DIS", "N/A"),
+              RoleTrafficCompetence("RFC", "N/A"),
+              RoleTrafficCompetence("IPR", "N/A")
+            )
           )
         )
       )
-    )
-  ),
+    ),
     None,
     None
   )
@@ -301,27 +594,39 @@ class CustomsOfficeListsRepositorySpec
   val postDatedOffice = newOffice.copy(activeFrom = Instant.parse("2026-05-01T00:00:00Z"))
 
   val officeWithACERole = newOffice.copy(
-    customsOfficeTimetable = List(CustomsOfficeTimetable(
-      1,
-      Some("ALL YEAR"),
-      LocalDate.parse("20180101", dateFormat),
-      LocalDate.parse("20991231", dateFormat),
-      List(
-        TimetableLine(
-          DayOfWeek.of(1),
-          LocalTime.parse("00:00", timeFormat),
-          LocalTime.parse("23:59", timeFormat),
-          DayOfWeek.of(6),
-          None,
-          None,
-          List(
-            RoleTrafficCompetence("ACE", "AIR"),
+    customsOfficeTimetable = List(
+      CustomsOfficeTimetable(
+        1,
+        Some("ALL YEAR"),
+        LocalDate.parse("20180101", dateFormat),
+        LocalDate.parse("20991231", dateFormat),
+        List(
+          TimetableLine(
+            DayOfWeek.of(1),
+            LocalTime.parse("00:00", timeFormat),
+            LocalTime.parse("23:59", timeFormat),
+            DayOfWeek.of(6),
+            None,
+            None,
+            List(
+              RoleTrafficCompetence("ACE", "AIR")
+            )
           )
         )
       )
     )
   )
-  )
+
+  private val customsOffices =
+    Seq(
+      DK003102,
+      DK003103_P6D,
+      DK003104_P5D,
+      DK003105_P6D,
+      IT223102_P6D,
+      invalidatedoffice,
+      postDatedOffice
+    )
 
   // Test date for roleDate filtering: 2026-01-01
   // Test role: TRA
@@ -434,7 +739,6 @@ class CustomsOfficeListsRepositorySpec
       makeTimetable("20250101", "20261231", List("EXP"))
     )
   )
-  private val customsOffices = Seq(DK003102, invalidatedoffice, postDatedOffice)
 
   val defaultActiveAt = Instant.parse("2025-06-05T00:00:00Z")
 
@@ -666,6 +970,129 @@ class CustomsOfficeListsRepositorySpec
         domain = None
       )
       .map(_ must contain(DK003102))
+  }
+
+  it should "return only return entries matching matching phase and domain when both are provided" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map { result =>
+        result must contain allOf (DK003103_P6D, DK003105_P6D, IT223102_P6D)
+        result mustNot contain allOf (DK003102, DK003104_P5D)
+      }
+  }
+
+  it should "it should filter by phase and domain and exclude entries with different phase" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P5"),
+        domain = Some("NCTS")
+      )
+      .map { result =>
+        result must contain(DK003104_P5D)
+        result mustNot contain allOf (DK003102, DK003103_P6D, DK003105_P6D, IT223102_P6D)
+      }
+  }
+
+  it should "only return entries without phase and domain if neither are provided" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = Some(Set("DK")),
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = None,
+        domain = None
+      )
+      .map { result =>
+        result must contain(DK003102)
+        result mustNot contain allOf (DK003103_P6D, DK003104_P5D, DK003105_P6D, IT223102_P6D)
+      }
+  }
+
+  it should "combine phase/domain filter with reference number filter" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = Some(Set("DK003105")),
+        countryCodes = None,
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map { result =>
+        result must contain(DK003105_P6D)
+        result mustNot contain allOf (DK003102, DK003103_P6D, DK003104_P5D, IT223102_P6D)
+      }
+  }
+
+  it should "combine phase/domain filter with country codes filter" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = Some(Set("IT")),
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map { result =>
+        result must contain(IT223102_P6D)
+        result mustNot contain allOf (DK003102, DK003103_P6D, DK003104_P5D, DK003105_P6D)
+      }
+  }
+
+  it should "combine phase/domain filter with roles filter" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = None,
+        roles = Some(Set("PLA")),
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P6"),
+        domain = Some("NCTS")
+      )
+      .map { result =>
+        result must contain allOf (DK003103_P6D, IT223102_P6D)
+        result mustNot contain allOf (DK003102, DK003104_P5D, DK003105_P6D)
+      }
+  }
+
+  it should "return empty if phase and domain combination do not match entries" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None,
+        countryCodes = Some(Set("DK")),
+        roles = None,
+        activeAt = Instant.parse("2025-06-05T00:00:00Z"),
+        phase = Some("P20"),
+        domain = Some("INVALID")
+      )
+      .map(_ mustBe empty)
   }
 
   it should "apply filtering of offices according to the supplied roles" in withCustomsOfficeEntries(
@@ -912,12 +1339,18 @@ class CustomsOfficeListsRepositorySpec
   "CustomsOfficesListsRepository.fetchCustomsOfficeSummaries" should "return only the summary fields of the Customs Office as a CustomsOfficeSumamry" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
-    val expectedSummary = CustomsOfficeSummary(customsOffices(0).referenceNumber, customsOffices(0).countryCode, customsOffices(0).customsOfficeLsd.customsOfficeUsualName)
+    val expectedSummary = CustomsOfficeSummary(
+      customsOffices(0).referenceNumber,
+      customsOffices(0).countryCode,
+      customsOffices(0).customsOfficeLsd.customsOfficeUsualName
+    )
     repository
       .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length)
-      .map{results => {
-        results(0) mustBe expectedSummary
-      }}
+      .map { results =>
+        {
+          results(0) mustBe expectedSummary
+        }
+      }
   }
 
   "CustomsOfficesListsRepository.customsOfficesCount" should s"return equal the number of documents in the store: ${customsOffices.length}" in withCustomsOfficeEntries(

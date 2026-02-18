@@ -207,14 +207,14 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       case _ => List.empty
     }
 
-    val pdFilters = (phase, domain) match {
+    val phaseDomainFilter = (phase, domain) match {
       case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
       case (None, None)       => List(exists("phase", false), exists("domain", false))
       case _                  => List.empty
     }
 
     val allFilters =
-      mandatoryFilters ++ referenceNumberFilters ++ countryCodeFilters ++ roleFilters ++ pdFilters
+      mandatoryFilters ++ referenceNumberFilters ++ countryCodeFilters ++ roleFilters ++ phaseDomainFilter
 
     collection
       .find(and(allFilters*))

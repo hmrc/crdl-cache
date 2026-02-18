@@ -37,6 +37,14 @@ class CustomsOfficeListsController @Inject() (
 )(using ec: ExecutionContext)
   extends BackendController(cc)
   with HttpFormats {
+
+  private def validatePhaseDomain(phase: Option[String], domain: Option[String]): Option[String] =
+    (phase, domain) match {
+      case (Some(_), None) | (None, Some(_)) =>
+        Some("Both phase and domain must be provided together, or neither should be provided")
+      case _ => None
+    }
+
   def fetchCustomsOfficeLists(
     referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],
@@ -53,18 +61,23 @@ class CustomsOfficeListsController @Inject() (
         )
       )
     else
-      customsOfficeListsRepository
-        .fetchCustomsOfficeLists(
-          referenceNumbers,
-          countryCodes,
-          roles,
-          activeAt.getOrElse(clock.instant()),
-          phase,
-          domain,
-          roleDate
-        )
-        .map { customsOfficeLists =>
-          Ok(Json.toJson(customsOfficeLists))
-        }
+      validatePhaseDomain(phase, domain) match {
+        case Some(errorMessage) =>
+          Future.successful(BadRequest(Json.obj("error" -> errorMessage)))
+        case None =>
+          customsOfficeListsRepository
+            .fetchCustomsOfficeLists(
+              referenceNumbers,
+              countryCodes,
+              roles,
+              activeAt.getOrElse(clock.instant()),
+              phase,
+              domain,
+              roleDate
+            )
+            .map { customsOfficeLists =>
+              Ok(Json.toJson(customsOfficeLists))
+            }
+      }
   }
 }
