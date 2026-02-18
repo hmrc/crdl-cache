@@ -24,6 +24,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.bind
+import play.api.libs.json.Json._
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
@@ -31,7 +32,13 @@ import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.test.HttpClientV2Support
 import org.mockito.ArgumentMatchers.eq as equalTo
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeDetail,
+  CustomsOfficeTimetable,
+  RoleTrafficCompetence,
+  TimetableLine
+}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
@@ -57,7 +64,7 @@ class CustomsOfficeListsControllerSpec
   given ExecutionContext = ExecutionContext.global
   given HeaderCarrier    = HeaderCarrier()
 
-  private val authStub = mock[StubBehaviour]
+  private val authStub   = mock[StubBehaviour]
   private val repository = mock[CustomsOfficeListsRepository]
 
   private val fixedInstant = Instant.parse("2025-06-05T00:00:00Z")
@@ -157,6 +164,82 @@ class CustomsOfficeListsControllerSpec
     )
   )
 
+  private val officePD = List(
+    CustomsOffice(
+      "DK003102",
+      Instant.parse("2025-03-22T00:00:00Z"),
+      None,
+      None,
+      None,
+      Some("DK003102"),
+      Some("DK003102"),
+      None,
+      "DK",
+      Some("test@dk"),
+      None,
+      None,
+      None,
+      "9850",
+      Some("+45 342234 34543"),
+      None,
+      None,
+      None,
+      None,
+      false,
+      None,
+      None,
+      List("SN0009"),
+      CustomsOfficeDetail(
+        "Hirtshals Toldekspedition",
+        "DA",
+        "Hirtshals",
+        false,
+        None,
+        None,
+        false,
+        "Dalsagervej 7"
+      ),
+      List(
+        CustomsOfficeTimetable(
+          1,
+          None,
+          LocalDate.parse("20180101", dateFormat),
+          LocalDate.parse("20991231", dateFormat),
+          List(
+            TimetableLine(
+              DayOfWeek.of(1),
+              LocalTime.parse("08:00", timeFormat),
+              LocalTime.parse("16:00", timeFormat),
+              DayOfWeek.of(5),
+              None,
+              None,
+              List(
+                RoleTrafficCompetence("EXL", "P"),
+                RoleTrafficCompetence("EXL", "R"),
+                RoleTrafficCompetence("EXP", "P"),
+                RoleTrafficCompetence("EXP", "R"),
+                RoleTrafficCompetence("EXT", "P"),
+                RoleTrafficCompetence("EXT", "R"),
+                RoleTrafficCompetence("PLA", "R"),
+                RoleTrafficCompetence("RFC", "R"),
+                RoleTrafficCompetence("DIS", "N/A"),
+                RoleTrafficCompetence("IPR", "N/A"),
+                RoleTrafficCompetence("ENQ", "P"),
+                RoleTrafficCompetence("ENQ", "R"),
+                RoleTrafficCompetence("ENQ", "N/A"),
+                RoleTrafficCompetence("REC", "P"),
+                RoleTrafficCompetence("REC", "R"),
+                RoleTrafficCompetence("REC", "N/A")
+              )
+            )
+          )
+        )
+      ),
+      Some("P6"),
+      Some("NCTS")
+    )
+  )
+
   val responseJson = Json.obj(
     "referenceNumber"                             -> "DK003102",
     "referenceNumberMainOffice"                   -> null,
@@ -187,91 +270,104 @@ class CustomsOfficeListsControllerSpec
       "prefixSuffixFlag"       -> false,
       "streetAndNumber"        -> "Dalsagervej 7"
     ),
-    "customsOfficeTimetable" -> Json.arr(Json.obj(
-      "seasonCode"      -> 1,
-      "seasonStartDate" -> "2018-01-01",
-      "seasonEndDate"   -> "2099-12-31",
-      "customsOfficeTimetableLine" -> Json.arr(
-        Json.obj(
-          "dayInTheWeekEndDay"              -> 5,
-          "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
-          "dayInTheWeekBeginDay"            -> 1,
-          "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
-          "customsOfficeRoleTrafficCompetence" -> Json.arr(
-            Json.obj(
-              "roleName"    -> "EXL",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "EXL",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "EXP",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "EXP",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "EXT",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "EXT",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "PLA",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "RFC",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "DIS",
-              "trafficType" -> "N/A"
-            ),
-            Json.obj(
-              "roleName"    -> "IPR",
-              "trafficType" -> "N/A"
-            ),
-            Json.obj(
-              "roleName"    -> "ENQ",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "ENQ",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "ENQ",
-              "trafficType" -> "N/A"
-            ),
-            Json.obj(
-              "roleName"    -> "REC",
-              "trafficType" -> "P"
-            ),
-            Json.obj(
-              "roleName"    -> "REC",
-              "trafficType" -> "R"
-            ),
-            Json.obj(
-              "roleName"    -> "REC",
-              "trafficType" -> "N/A"
+    "customsOfficeTimetable" -> Json.arr(
+      Json.obj(
+        "seasonCode"      -> 1,
+        "seasonStartDate" -> "2018-01-01",
+        "seasonEndDate"   -> "2099-12-31",
+        "customsOfficeTimetableLine" -> Json.arr(
+          Json.obj(
+            "dayInTheWeekEndDay"              -> 5,
+            "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
+            "dayInTheWeekBeginDay"            -> 1,
+            "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
+            "customsOfficeRoleTrafficCompetence" -> Json.arr(
+              Json.obj(
+                "roleName"    -> "EXL",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXL",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "EXP",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXP",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "EXT",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXT",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "PLA",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "RFC",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "DIS",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "IPR",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "N/A"
+              )
             )
           )
         )
       )
     )
-  ))
-
+  )
+  
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(None),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(office))
 
     val response = httpClientV2
@@ -279,14 +375,82 @@ class CustomsOfficeListsControllerSpec
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
-
     response.json mustBe Json.arr(responseJson)
   }
 
-  it should "return 200 OK when there are no offices to return" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+  "CustomsOfficeListsController" should "return 200 OK when there are no errors and phase and domain are provided" in {
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(None),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
+      .thenReturn(Future.successful(officePD))
+
+    val response = httpClientV2
+      .get(url"http://localhost:$port/crdl-cache/offices?phase=P6&domain=NCTS")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+      .execute[HttpResponse]
+      .futureValue
+    
+    response.json mustBe Json.arr(responseJson)
+  }
+
+  "CustomsOfficeListsController" should "return 400 Bad Request when there are no errors but only Phase provided" in {
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
+      .thenReturn(Future.unit)
+
+    val response = httpClientV2
+      .get(url"http://localhost:$port/crdl-cache/offices?phase=P6")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+      .execute[HttpResponse]
+      .futureValue
+
+    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.status mustBe Status.BAD_REQUEST
+  }
+
+  "CustomsOfficeListsController" should "return 400 Bad Request when there are no errors but only Domain provided" in {
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
+      .thenReturn(Future.unit)
+
+    val response = httpClientV2
+      .get(url"http://localhost:$port/crdl-cache/offices?domain=NCTS")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+      .execute[HttpResponse]
+      .futureValue
+
+    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.status mustBe Status.BAD_REQUEST
+  }
+
+  it should "return 200 OK when there are no offices to return" in {
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
+      .thenReturn(Future.unit)
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(None),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(List.empty))
 
     val response = httpClientV2
@@ -300,7 +464,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 400 Bad Request when the user provides an invalid activeAt timestamp" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     val response =
       httpClientV2
@@ -314,7 +480,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countryCodes and roles from a query parameter when there is only one country and role" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
@@ -330,7 +498,9 @@ class CustomsOfficeListsControllerSpec
 
     val response =
       httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100&countryCodes=GB&roles=AUT")
+        .get(
+          url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100&countryCodes=GB&roles=AUT"
+        )
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -339,21 +509,27 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countryCodes and roles from a query parameter when there are multiple countries and roles" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set("IT223100", "IT223101"))),
         equalTo(Some(Set("GB", "XI"))),
         equalTo(Some(Set("AUT", "CCA"))),
-        equalTo(fixedInstant), equalTo(None), equalTo(None)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
 
     val response =
       httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100,IT223101&countryCodes=GB,XI&roles=AUT,CCA")
+        .get(
+          url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100,IT223101&countryCodes=GB,XI&roles=AUT,CCA"
+        )
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -362,21 +538,27 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countryCodes and roles when there are multiple declarations of the query parameter" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set("IT223100", "IT223101", "DK003102", "IT314102"))),
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(Some(Set("AUT", "CCA", "ACE", "RSS"))),
-        equalTo(fixedInstant), equalTo(None), equalTo(None)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
 
     val response =
       httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100,IT223101&referenceNumbers=DK003102,IT314102&countryCodes=GB,XI&countryCodes=AW,BL&roles=AUT,CCA&roles=ACE,RSS")
+        .get(
+          url"http://localhost:$port/crdl-cache/offices?referenceNumbers=IT223100,IT223101&referenceNumbers=DK003102,IT314102&countryCodes=GB,XI&countryCodes=AW,BL&roles=AUT,CCA&roles=ACE,RSS"
+        )
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -385,14 +567,18 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "parse comma-separated reference numbers, countries and roles when there is no value declared for the query parameter" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
-        equalTo(fixedInstant), equalTo(None), equalTo(None)
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -408,9 +594,20 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
-    when(repository.fetchCustomsOfficeLists(equalTo(None), equalTo(None), equalTo(None), equalTo(fixedInstant), equalTo(None), equalTo(None)))
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(None),
+        equalTo(None),
+        equalTo(None),
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val response =
@@ -424,7 +621,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 401 Unauthorized when the user provides no Authorization header" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
 
     val response =
@@ -438,7 +637,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 401 Unauthorized when the user's token does not provide the appropriate permissions" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.failed(UpstreamErrorResponse("Unauthorized", Status.UNAUTHORIZED)))
 
     val response =
@@ -453,7 +654,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 403 Forbidden when the user's token cannot be validated" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.failed(UpstreamErrorResponse("Forbidden", Status.FORBIDDEN)))
 
     val response =
@@ -468,7 +671,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 500 Internal Server Error when there is an error communicating with internal-auth" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.failed(UpstreamErrorResponse("Internal Server Error", 500)))
 
     val response =
