@@ -19,21 +19,29 @@ package uk.gov.hmrc.crdlcache.models
 import play.api.libs.json.*
 import play.api.mvc.QueryStringBindable
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.time.format.DateTimeFormatter
 
 object Binders {
-  private val formatter     = DateTimeFormatter.ISO_INSTANT
-  private val KeysParam     = "keys"
-  private val ActiveAtParam = "activeAt"
-  private val PhaseParam    = "phase"
-  private val DomainParam   = "domain"
+  private val formatter          = DateTimeFormatter.ISO_INSTANT
+  private val localDateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+  private val KeysParam          = "keys"
+  private val ActiveAtParam      = "activeAt"
+  private val PhaseParam         = "phase"
+  private val DomainParam        = "domain"
 
   given bindableInstant: QueryStringBindable[Instant] = new QueryStringBindable.Parsing[Instant](
     Instant.parse,
     formatter.format,
     (key, e) => s"Cannot parse parameter $key as Instant: ${e.getMessage}"
   )
+
+  given bindableLocalDate: QueryStringBindable[LocalDate] =
+    new QueryStringBindable.Parsing[LocalDate](
+      LocalDate.parse(_, localDateFormatter),
+      localDateFormatter.format,
+      (key, e) => s"Cannot parse parameter $key as LocalDate: ${e.getMessage}"
+    )
 
   given bindableSet[A: QueryStringBindable]: QueryStringBindable[Set[A]] =
     new QueryStringBindable[Set[A]] {

@@ -25,9 +25,11 @@ lazy val microservice = Project("crdl-cache", file("."))
     ),
     routesImport ++= Seq(
       "java.time.Instant",
+      "java.time.LocalDate",
       "play.api.libs.json.JsValue",
       "uk.gov.hmrc.crdlcache.models.*",
       "uk.gov.hmrc.crdlcache.models.Binders.bindableInstant",
+      "uk.gov.hmrc.crdlcache.models.Binders.bindableLocalDate",
       "uk.gov.hmrc.crdlcache.models.Binders.bindableJsValueMap",
       "uk.gov.hmrc.crdlcache.models.Binders.bindableSet"
     ),

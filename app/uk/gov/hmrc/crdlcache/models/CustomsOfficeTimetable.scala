@@ -32,10 +32,10 @@ case class CustomsOfficeTimetable(
 
 object CustomsOfficeTimetable {
   def fromDpsCustomsOfficeTimetable(
-    dpsCustomsOfficeTimetable: DpsCustomsOfficeTimetable,
+    dpsCustomsOfficeTimetables: List[DpsCustomsOfficeTimetable],
     dateFormat: DateTimeFormatter
-  ): List[CustomsOfficeTimetable] = {
-    List(
+  ): List[CustomsOfficeTimetable] =
+    dpsCustomsOfficeTimetables.map { dpsCustomsOfficeTimetable =>
       CustomsOfficeTimetable(
         dpsCustomsOfficeTimetable.seasoncode.toInt,
         dpsCustomsOfficeTimetable.seasonname,
@@ -43,6 +43,5 @@ object CustomsOfficeTimetable {
         parseDate(dpsCustomsOfficeTimetable.seasonenddate, dateFormat),
         dpsCustomsOfficeTimetable.customsofficetimetableline.flatMap(fromDpsTimetableLine)
       )
-    )
-  }
+    }
 }

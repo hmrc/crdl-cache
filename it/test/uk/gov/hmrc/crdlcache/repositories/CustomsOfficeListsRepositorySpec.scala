@@ -616,6 +616,7 @@ class CustomsOfficeListsRepositorySpec
       )
     )
   )
+
   private val customsOffices =
     Seq(
       DK003102,
@@ -626,6 +627,118 @@ class CustomsOfficeListsRepositorySpec
       invalidatedoffice,
       postDatedOffice
     )
+
+  // Test date for roleDate filtering: 2026-01-01
+  // Test role: TRA
+  private val testDate = LocalDate.parse("20260101", dateFormat)
+  private val testActiveAt = Instant.parse("2025-06-05T00:00:00Z")
+
+  private def makeTimetable(seasonStart: String, seasonEnd: String, roles: List[String]): CustomsOfficeTimetable =
+    CustomsOfficeTimetable(
+      1,
+      Some("SEASON"),
+      LocalDate.parse(seasonStart, dateFormat),
+      LocalDate.parse(seasonEnd, dateFormat),
+      List(
+        TimetableLine(
+          DayOfWeek.of(1),
+          LocalTime.parse("08:00", timeFormat),
+          LocalTime.parse("18:00", timeFormat),
+          DayOfWeek.of(5),
+          None,
+          None,
+          roles.map(RoleTrafficCompetence(_, "R"))
+        )
+      )
+    )
+
+  // 1. Single valid timetable — role matches, season includes test date
+  val singleValidOffice = newOffice.copy(
+    referenceNumber = "DE000001",
+    countryCode = "DE",
+    customsOfficeTimetable = List(makeTimetable("20250101", "20261231", List("TRA")))
+  )
+
+  // 2. Single invalid timetable — past — role matches, season ends before test date
+  val singleInvalidPastOffice = newOffice.copy(
+    referenceNumber = "DE000002",
+    countryCode = "DE",
+    customsOfficeTimetable = List(makeTimetable("20240101", "20251231", List("TRA")))
+  )
+
+  // 3. Single invalid timetable — future — role matches, season starts after test date
+  val singleInvalidFutureOffice = newOffice.copy(
+    referenceNumber = "DE000003",
+    countryCode = "DE",
+    customsOfficeTimetable = List(makeTimetable("20260201", "20261231", List("TRA")))
+  )
+
+  // 4. Single invalid timetable — no role — season includes test date but role does not match
+  val singleInvalidNoRoleOffice = newOffice.copy(
+    referenceNumber = "DE000004",
+    countryCode = "DE",
+    customsOfficeTimetable = List(makeTimetable("20250101", "20261231", List("DEP")))
+  )
+
+  // 5. Multiple timetables — both valid — both contain role, both season includes test date
+  val multipleBothValidOffice = newOffice.copy(
+    referenceNumber = "DE000005",
+    countryCode = "DE",
+    customsOfficeTimetable = List(
+      makeTimetable("20250101", "20261231", List("TRA")),
+      makeTimetable("20250601", "20260601", List("TRA"))
+    )
+  )
+
+  // 6. Multiple timetables — one valid/one invalid past
+  val multipleOneValidOnePastOffice = newOffice.copy(
+    referenceNumber = "DE000006",
+    countryCode = "DE",
+    customsOfficeTimetable = List(
+      makeTimetable("20250101", "20261231", List("TRA")),
+      makeTimetable("20240101", "20251231", List("TRA"))
+    )
+  )
+
+  // 7. Multiple timetables — one valid/one invalid future
+  val multipleOneValidOneFutureOffice = newOffice.copy(
+    referenceNumber = "DE000007",
+    countryCode = "DE",
+    customsOfficeTimetable = List(
+      makeTimetable("20250101", "20261231", List("TRA")),
+      makeTimetable("20260201", "20261231", List("TRA"))
+    )
+  )
+
+  // 8. Multiple timetables — one valid/one invalid no role
+  val multipleOneValidOneNoRoleOffice = newOffice.copy(
+    referenceNumber = "DE000008",
+    countryCode = "DE",
+    customsOfficeTimetable = List(
+      makeTimetable("20250101", "20261231", List("TRA")),
+      makeTimetable("20250101", "20261231", List("DEP"))
+    )
+  )
+
+  // 9. Multiple timetables — both invalid — past and future
+  val multipleBothInvalidPastFutureOffice = newOffice.copy(
+    referenceNumber = "DE000009",
+    countryCode = "DE",
+    customsOfficeTimetable = List(
+      makeTimetable("20240101", "20251231", List("TRA")),
+      makeTimetable("20260201", "20261231", List("TRA"))
+    )
+  )
+
+  // 10. Multiple timetables — both invalid — no roles
+  val multipleBothInvalidNoRolesOffice = newOffice.copy(
+    referenceNumber = "DE000010",
+    countryCode = "DE",
+    customsOfficeTimetable = List(
+      makeTimetable("20250101", "20261231", List("DEP")),
+      makeTimetable("20250101", "20261231", List("EXP"))
+    )
+  )
 
   val defaultActiveAt = Instant.parse("2025-06-05T00:00:00Z")
 
@@ -1055,6 +1168,171 @@ class CustomsOfficeListsRepositorySpec
         domain = None
       )
       .map(_ mustNot contain(DK003102))
+  }
+
+  // Scenario 1: Single valid timetable — role matches, season includes test date → Yes
+  it should "return office with single valid timetable when role and roleDate match" in withCustomsOfficeEntries(
+    customsOffices :+ singleValidOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ must contain(singleValidOffice))
+  }
+
+  // Scenario 2: Single invalid timetable — past — season ends before test date → No
+  it should "not return office with single past timetable when roleDate is after season end" in withCustomsOfficeEntries(
+    customsOffices :+ singleInvalidPastOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ mustNot contain(singleInvalidPastOffice))
+  }
+
+  // Scenario 3: Single invalid timetable — future — season starts after test date → No
+  it should "not return office with single future timetable when roleDate is before season start" in withCustomsOfficeEntries(
+    customsOffices :+ singleInvalidFutureOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ mustNot contain(singleInvalidFutureOffice))
+  }
+
+  // Scenario 4: Single invalid timetable — no role — season includes test date but role doesn't match → No
+  it should "not return office when season includes roleDate but role does not match" in withCustomsOfficeEntries(
+    customsOffices :+ singleInvalidNoRoleOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ mustNot contain(singleInvalidNoRoleOffice))
+  }
+
+  // Scenario 5: Multiple timetables — both valid — both contain role, both season includes test date → Yes
+  it should "return office with multiple valid timetables both matching role and date" in withCustomsOfficeEntries(
+    customsOffices :+ multipleBothValidOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ must contain(multipleBothValidOffice))
+  }
+
+  // Scenario 6: Multiple timetables — one valid/one invalid past → Yes
+  it should "return office when one timetable is valid and another is past" in withCustomsOfficeEntries(
+    customsOffices :+ multipleOneValidOnePastOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ must contain(multipleOneValidOnePastOffice))
+  }
+
+  // Scenario 7: Multiple timetables — one valid/one invalid future → Yes
+  it should "return office when one timetable is valid and another is future" in withCustomsOfficeEntries(
+    customsOffices :+ multipleOneValidOneFutureOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ must contain(multipleOneValidOneFutureOffice))
+  }
+
+  // Scenario 8: Multiple timetables — one valid/one invalid no role → Yes
+  it should "return office when one timetable matches role+date and another has wrong role" in withCustomsOfficeEntries(
+    customsOffices :+ multipleOneValidOneNoRoleOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ must contain(multipleOneValidOneNoRoleOffice))
+  }
+
+  // Scenario 9: Multiple timetables — both invalid — past and future → No
+  it should "not return office when both timetables have role but neither season covers roleDate" in withCustomsOfficeEntries(
+    customsOffices :+ multipleBothInvalidPastFutureOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ mustNot contain(multipleBothInvalidPastFutureOffice))
+  }
+
+  // Scenario 10: Multiple timetables — both invalid — no roles → No
+  it should "not return office when both timetables cover roleDate but neither has the role" in withCustomsOfficeEntries(
+    customsOffices :+ multipleBothInvalidNoRolesOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = Some(testDate)
+      )
+      .map(_ mustNot contain(multipleBothInvalidNoRolesOffice))
+  }
+
+  // Verify roles-only filtering still works without roleDate (existing behaviour)
+  it should "return offices filtered by roles only when no roleDate is specified (ignores season dates)" in withCustomsOfficeEntries(
+    customsOffices :+ singleInvalidPastOffice
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeLists(
+        referenceNumbers = None, countryCodes = None,
+        roles = Some(Set("TRA")), activeAt = testActiveAt,
+        phase = None,
+        domain = None,
+        roleDate = None
+      )
+      .map(_ must contain(singleInvalidPastOffice))
   }
 
   // V2 functionality
