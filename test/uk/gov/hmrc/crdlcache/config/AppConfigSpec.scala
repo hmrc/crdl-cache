@@ -36,7 +36,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.customs-offices-path" -> "views/iv_crdl_customs_office",
         "microservice.services.dps-api.clientId"             -> "abc123",
         "microservice.services.dps-api.clientSecret"         -> "def456",
-        "last-updated-date.default"                          -> "2025-11-01",
+        "last-updated-date.default"                          -> "2025-12-01",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
         "import-pd-lists.schedule"                           -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
@@ -83,7 +83,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCodeListsSchedule mustBe "*/10 * * * * ?"
     appConfig.importOfficesSchedule mustBe "*/10 * * * * ?"
     appConfig.importCorrespondenceListsSchedule mustBe "*/10 * * * * ?"
-    appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 1)
+    appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 12, 1)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC08, SEED, "CountryCode"),
       CodeListConfig(BC36, SEED, "ExciseProductCode")
@@ -113,7 +113,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importCorrespondenceListsSchedule mustBe "0 30 23 ? * Tue"
     appConfig.importOfficesJobPhase mustBe Some("P6")
     appConfig.importOfficesJobDomain mustBe Some("NCTS")
-    appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 1)
+    appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 12, 1)
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
       CodeListConfig(BC03, SEED, "AcoActionNotPossibleReasonCode"),
