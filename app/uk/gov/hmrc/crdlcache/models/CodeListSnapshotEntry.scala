@@ -65,7 +65,7 @@ object CodeListSnapshotEntry {
     val key = dpsEntry
       .getProperty(config.keyProperty)
       .flatMap(_.dataitem_value)
-      .getOrElse(throw RequiredDataItemMissing(config.keyProperty))
+      .getOrElse(throw RequiredDataItemMissing(config.keyProperty, config.code.code))
 
     val value = config match {
       case _: CodeListConfig | _: PhaseAndDomainListConfig =>
@@ -77,14 +77,19 @@ object CodeListSnapshotEntry {
         dpsEntry
           .getProperty(correspondence.valueProperty)
           .flatMap(_.dataitem_value)
-          .getOrElse(throw RequiredDataItemMissing(correspondence.valueProperty))
+          .getOrElse(throw RequiredDataItemMissing(correspondence.valueProperty, config.code.code))
     }
 
     val activeFrom = dpsEntry
       .getProperty(config.origin.activeDateProperty)
       .flatMap(_.dataitem_value)
       .map(parseDateToInstant(_, dateFormat))
-      .getOrElse(throw RequiredDataItemsMissing(CodeListOrigin.values.map(_.activeDateProperty)*))
+      .getOrElse(
+        throw RequiredDataItemsMissing(
+          config.code.code,
+          CodeListOrigin.values.map(_.activeDateProperty)*
+        )
+      )
 
     val updatedAt = config.origin.modificationDateProperty
       .flatMap(dpsEntry.getProperty)

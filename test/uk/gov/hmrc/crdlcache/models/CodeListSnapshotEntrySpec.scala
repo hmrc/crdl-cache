@@ -84,6 +84,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
     )
 
     dataItemMissing.itemName mustBe BC08Config.keyProperty
+    dataItemMissing.listKey mustBe BC08Config.code.code
   }
 
   it should "fail when the language description is missing" in {
@@ -115,6 +116,7 @@ class CodeListSnapshotEntrySpec extends AnyFlatSpec with Matchers with TestData 
       )
 
     dataItemsMissing.itemNames mustBe Seq("Action_ActivationDate", "RDEntryStatus_activeFrom")
+    dataItemsMissing.listKey mustBe BC08Config.code.code
   }
 
   it should "succeed when the operation property is missing" in {

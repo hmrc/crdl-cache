@@ -19,14 +19,14 @@ package uk.gov.hmrc.crdlcache.models.errors
 enum ImportError(val message: String, val cause: Throwable = null)
   extends Exception(message, cause) {
 
-  case RequiredDataItemMissing(itemName: String)
+  case RequiredDataItemMissing(itemName: String, listKey: String)
     extends ImportError(
-      s"A data item with name '$itemName' is required, but missing from a reference data entry"
+      s"A data item with name '$itemName' is required, but missing from a reference data entry in list '$listKey'"
     )
 
-  case RequiredDataItemsMissing(itemNames: String*)
+  case RequiredDataItemsMissing(listKey: String, itemNames: String*)
     extends ImportError(
-      s"A data item with one of the following names is required, but missing from a reference data entry: ${itemNames.mkString("'", "', '", "'")}"
+      s"A data item with one of the following names is required, but missing from a reference data entry in list '$listKey': ${itemNames.mkString("'", "', '", "'")}"
     )
 
   case UnknownOperation(code: String)
