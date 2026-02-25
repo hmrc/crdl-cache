@@ -39,6 +39,8 @@ import uk.gov.hmrc.crdlcache.models.{
   RoleTrafficCompetence,
   TimetableLine
 }
+import org.mockito.ArgumentMatchers.{any, eq as equalTo}
+import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
@@ -352,7 +354,7 @@ class CustomsOfficeListsControllerSpec
       )
     )
   )
-  
+
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
     when(
       authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
@@ -364,6 +366,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant),
+        equalTo(None),
         equalTo(None),
         equalTo(None)
       )
@@ -390,7 +393,8 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(fixedInstant),
         equalTo(Some("P6")),
-        equalTo(Some("NCTS"))
+        equalTo(Some("NCTS")),
+        equalTo(None),
       )
     )
       .thenReturn(Future.successful(officePD))
@@ -400,7 +404,7 @@ class CustomsOfficeListsControllerSpec
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
-    
+
     response.json mustBe Json.arr(responseJson)
   }
 
@@ -448,7 +452,8 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(fixedInstant),
         equalTo(None),
-        equalTo(None)
+        equalTo(None),
+        equalTo(None),
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -491,6 +496,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("AUT"))),
         equalTo(fixedInstant),
         equalTo(None),
+        equalTo(None),
         equalTo(None)
       )
     )
@@ -519,6 +525,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("GB", "XI"))),
         equalTo(Some(Set("AUT", "CCA"))),
         equalTo(fixedInstant),
+        equalTo(None),
         equalTo(None),
         equalTo(None)
       )
@@ -549,6 +556,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("AUT", "CCA", "ACE", "RSS"))),
         equalTo(fixedInstant),
         equalTo(None),
+        equalTo(None),
         equalTo(None)
       )
     )
@@ -578,6 +586,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set.empty)),
         equalTo(fixedInstant),
         equalTo(None),
+        equalTo(None),
         equalTo(None)
       )
     )
@@ -604,6 +613,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant),
+        equalTo(None),
         equalTo(None),
         equalTo(None)
       )
@@ -684,6 +694,45 @@ class CustomsOfficeListsControllerSpec
         .futureValue
 
     response.status mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  it should "return 400 Bad Request when roleDate is provided without roles" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?roleDate=2025-06-15")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.BAD_REQUEST
+    response.json mustBe Json.obj("statusCode" -> 400, "message" -> "roleDate requires roles to be specified")
+  }
+
+  it should "return 200 OK when roles and roleDate are both provided" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+    when(
+      repository.fetchCustomsOfficeLists(
+        equalTo(None),
+        equalTo(None),
+        equalTo(Some(Set("TRA"))),
+        equalTo(fixedInstant), equalTo(None), equalTo(None),
+        equalTo(Some(LocalDate.parse("2025-06-15")))
+      )
+    )
+      .thenReturn(Future.successful(office))
+
+    val response =
+      httpClientV2
+        .get(url"http://localhost:$port/crdl-cache/offices?roles=TRA&roleDate=2025-06-15")
+        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+        .execute[HttpResponse]
+        .futureValue
+
+    response.status mustBe Status.OK
   }
 
 }

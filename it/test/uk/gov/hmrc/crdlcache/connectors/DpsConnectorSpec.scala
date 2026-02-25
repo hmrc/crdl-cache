@@ -80,7 +80,7 @@ class DpsConnectorSpec
       "http-verbs.retries.intervals"                       -> List("1.millis")
     )
   )
-  
+
   private val phase: Option[String] = Some("P6")
   private val domain: Option[String] = Some("NCTS")
 
@@ -195,7 +195,7 @@ class DpsConnectorSpec
             "VIALE PIETRAMELLARA, 1/2"
           )
         ),
-        DpsCustomsOfficeTimetable(
+        List(DpsCustomsOfficeTimetable(
           "1",
           Some("ALL YEAR"),
           "20180101",
@@ -223,7 +223,7 @@ class DpsConnectorSpec
               )
             )
           )
-        )
+        ))
       ),
       DpsCustomsOffice(
         RDEntryStatus("valid", "01-05-2025"),
@@ -260,7 +260,7 @@ class DpsConnectorSpec
             "VIA DELL'AEROPORTO, 1"
           )
         ),
-        DpsCustomsOfficeTimetable(
+        List(DpsCustomsOfficeTimetable(
           "1",
           Some("ALL YEAR"),
           "20180101",
@@ -296,7 +296,7 @@ class DpsConnectorSpec
               )
             )
           )
-        )
+        ))
       )
     )
   )
@@ -338,7 +338,7 @@ class DpsConnectorSpec
             "Dalsagervej 7"
           )
         ),
-        DpsCustomsOfficeTimetable(
+        List(DpsCustomsOfficeTimetable(
           "1",
           None,
           "20180101",
@@ -373,7 +373,7 @@ class DpsConnectorSpec
               )
             )
           )
-        )
+        ))
       ),
       DpsCustomsOffice(
         RDEntryStatus("valid", "22-03-2025"),
@@ -410,7 +410,7 @@ class DpsConnectorSpec
             "Prima Strada, 5"
           )
         ),
-        DpsCustomsOfficeTimetable(
+        List(DpsCustomsOfficeTimetable(
           "1",
           Some("ALL YEAR"),
           "20240101",
@@ -443,7 +443,7 @@ class DpsConnectorSpec
               )
             )
           )
-        )
+        ))
       )
     )
   )
