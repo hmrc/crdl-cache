@@ -63,13 +63,11 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     lastUpdated: Instant
   ): Future[Unit] = {
     val filter = (phase, domain) match {
-      case (Some(phase), Some(domain)) => {
-        and(
+      case (Some(phase), Some(domain)) => and(
           equal("codeListCode", codeListCode.code),
           equal("phase", phase),
           equal("domain", domain)
         )
-      }
       case (None, None) => equal("codeListCode", codeListCode.code)
       case _ =>
         throw Exception(
