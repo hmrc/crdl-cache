@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.repositories
 import com.mongodb.client.model.{IndexModel, IndexOptions, UpdateOptions}
 import org.mongodb.scala.*
 import org.mongodb.scala.bson.BsonNull
-import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Filters.*
 import org.mongodb.scala.model.{Filters, Indexes, Updates}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
@@ -58,12 +58,29 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     session: ClientSession,
     codeListCode: CodeListCode,
     snapshotVersion: Long,
+    phase: Option[String],
+    domain: Option[String],
     lastUpdated: Instant
   ): Future[Unit] = {
+    val filter = (phase, domain) match {
+      case (Some(phase), Some(domain)) => {
+        and(
+          equal("codeListCode", codeListCode.code),
+          equal("phase", phase),
+          equal("domain", domain)
+        )
+      }
+      case (None, None) => equal("codeListCode", codeListCode.code)
+      case _ =>
+        throw Exception(
+          "Both phase and domain must be provided together, or neither should be provided"
+        )
+    }
+
     collection
       .updateOne(
         session,
-        equal("codeListCode", codeListCode.code),
+        filter,
         Updates.combine(
           Updates.set("lastUpdated", lastUpdated),
           Updates.set("snapshotVersion", snapshotVersion)

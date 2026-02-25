@@ -171,6 +171,8 @@ abstract class ImportCodeListsJob[K, I](
                 session,
                 codeListConfig.code,
                 snapshot.version,
+                phase,
+                domain,
                 clock.instant()
               )
             } yield ()
