@@ -278,8 +278,6 @@ class CodeListsControllerSpec
         .execute[HttpResponse]
         .futureValue
 
-    println(response.json)
-
     response.json mustBe Json.arr(
       Json.obj(
         "key"        -> "T1",
