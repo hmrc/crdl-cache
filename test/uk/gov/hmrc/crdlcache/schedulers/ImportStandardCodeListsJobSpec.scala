@@ -211,6 +211,8 @@ class ImportStandardCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
+        equalTo(None),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -301,6 +303,8 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC08),
       anyLong(),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
@@ -309,6 +313,8 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC66),
       anyLong(),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
@@ -323,16 +329,18 @@ class ImportStandardCodeListsJobSpec
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
     when(lastUpdatedRepository.fetchLastUpdated(BC08))
-      .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, storedInstant))))
+      .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, None, None, storedInstant))))
 
     when(lastUpdatedRepository.fetchLastUpdated(BC66))
-      .thenReturn(Future.successful(Some(LastUpdated(BC66, 1, storedInstant))))
+      .thenReturn(Future.successful(Some(LastUpdated(BC66, 1, None, None, storedInstant))))
 
     when(
       lastUpdatedRepository.setLastUpdated(
         equalTo(clientSession),
         any(),
         anyLong(),
+        equalTo(None),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -385,6 +393,8 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC08),
       equalTo(2L),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
@@ -393,6 +403,8 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC66),
       anyLong(),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
@@ -414,6 +426,8 @@ class ImportStandardCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
+        equalTo(None),
+        equalTo(None),
         equalTo(fixedInstant)
       )
     )
@@ -505,6 +519,8 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC08),
       equalTo(1L),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
@@ -513,6 +529,8 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC66),
       anyLong(),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
