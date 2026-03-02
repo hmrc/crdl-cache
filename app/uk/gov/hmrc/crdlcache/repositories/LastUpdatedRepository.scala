@@ -60,10 +60,11 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     snapshotVersion: Long,
     phase: Option[String],
     domain: Option[String],
-    lastUpdated: Instant
+    lastUpdated: Option[Instant]
   ): Future[Unit] = {
     val filter = (phase, domain) match {
-      case (Some(phase), Some(domain)) => and(
+      case (Some(phase), Some(domain)) =>
+        and(
           equal("codeListCode", codeListCode.code),
           equal("phase", phase),
           equal("domain", domain)
@@ -80,7 +81,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
         session,
         filter,
         Updates.combine(
-          Updates.set("lastUpdated", lastUpdated),
+          Updates.set("lastUpdated", lastUpdated.get),
           Updates.set("snapshotVersion", snapshotVersion)
         ),
         UpdateOptions().upsert(true)

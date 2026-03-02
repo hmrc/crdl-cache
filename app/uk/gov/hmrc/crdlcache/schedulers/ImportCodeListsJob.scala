@@ -173,7 +173,7 @@ abstract class ImportCodeListsJob[K, I](
                 snapshot.version,
                 phase,
                 domain,
-                clock.instant()
+                Some(clock.instant())
               )
             } yield ()
           }

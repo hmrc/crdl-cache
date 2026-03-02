@@ -297,7 +297,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
         anyLong(),
         equalTo(Some("P6")),
         equalTo(Some("NCTS")),
-        equalTo(fixedInstant)
+        equalTo(Some(fixedInstant))
       )
     )
       .thenReturn(Future.unit)
@@ -393,7 +393,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
       anyLong(),
       equalTo(Some("P6")),
       equalTo(Some("NCTS")),
-      equalTo(fixedInstant)
+      equalTo(Some(fixedInstant))
     )
 
     // There are no snapshots for CL234
@@ -403,7 +403,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
       anyLong(),
       equalTo(Some("P6")),
       equalTo(Some("NCTS")),
-      equalTo(fixedInstant)
+      equalTo(Some(fixedInstant))
     )
 
     // Two snapshots should have been committed
@@ -433,7 +433,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
         anyLong(),
         equalTo(Some("P6")),
         equalTo(Some("NCTS")),
-        equalTo(fixedInstant)
+        equalTo(Some(fixedInstant))
       )
     )
       .thenReturn(Future.unit)
@@ -495,7 +495,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
         anyLong(),
         equalTo(Some("P6")),
         equalTo(Some("NCTS")),
-        equalTo(fixedInstant)
+        equalTo(Some(fixedInstant))
       )
     )
       .thenReturn(Future.unit)
@@ -626,7 +626,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
       equalTo(1L),
       equalTo(Some("P6")),
       equalTo(Some("NCTS")),
-      equalTo(fixedInstant)
+      equalTo(Some(fixedInstant))
     )
 
     // There are no snapshots for CL234
@@ -636,7 +636,7 @@ class ImportPhaseAndDomainCodeListsJobSpec
       anyLong(),
       equalTo(Some("P6")),
       equalTo(Some("NCTS")),
-      equalTo(fixedInstant)
+      equalTo(Some(fixedInstant))
     )
 
     // The first snapshot should have been committed, but the second should be rolled back
