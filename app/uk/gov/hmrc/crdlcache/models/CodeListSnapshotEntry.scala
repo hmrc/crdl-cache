@@ -46,7 +46,7 @@ case class CodeListSnapshotEntry(
   properties: JsObject,
   phase: Option[String],
   domain: Option[String]
-)
+) 
 
 object CodeListSnapshotEntry {
   private val dateFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy[ HH:mm:ss]")

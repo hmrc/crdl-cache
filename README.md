@@ -300,6 +300,11 @@ sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
     ```shell
     curl -X POST http://localhost:7252/crdl-cache/test-only/correspondence-lists
     ```
+  
+* For **Phase & Domain list**:
+    ```shell
+    curl -X POST http://localhost:7252/crdl-cache/test-only/pd-lists
+    ```
 
 * In cases when you need a fresh import you can use the **DELETE** test-only endpoints to clear the data that has been previously imported. Here are the delete endpoints for customs office, codelists, correspondence lists and last updated respectively.
 
