@@ -304,7 +304,7 @@ class ImportCorrespondenceListsJobSpec
       anyLong(),
       any(),
       any(),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // Two snapshots should have been committed
@@ -392,7 +392,7 @@ class ImportCorrespondenceListsJobSpec
       anyLong(),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(correspondenceListsJob.SeedExtractDate))
+      equalTo(correspondenceListsJob.SeedExtractDate)
     )
 
     verify(correspondenceListsRepository, never()).saveEntries(
@@ -411,7 +411,7 @@ class ImportCorrespondenceListsJobSpec
       equalTo(2L),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // Only one snapshot should have been committed
@@ -500,7 +500,7 @@ class ImportCorrespondenceListsJobSpec
       equalTo(1L),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // The first DPS snapshot should have been committed, but the second should be rolled back.

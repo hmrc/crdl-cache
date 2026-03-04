@@ -62,7 +62,7 @@ class LastUpdatedRepositorySpec
     session =>
       val inputInstant = clock.instant()
       for {
-        _           <- repository.setLastUpdated(session, BC08, 1, None, None, Some(inputInstant))
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, inputInstant)
         lastUpdated <- repository.fetchLastUpdated(BC08)
       } yield lastUpdated mustBe Some(LastUpdated(BC08, 1, None, None, inputInstant))
   }
@@ -71,7 +71,7 @@ class LastUpdatedRepositorySpec
     session =>
       val inputInstant = clock.instant()
       for {
-        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), Some(inputInstant))
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), inputInstant)
         lastUpdated <- repository.fetchLastUpdated(CL251)
       } yield lastUpdated mustBe Some(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), inputInstant))
   }
@@ -79,7 +79,7 @@ class LastUpdatedRepositorySpec
   it should "only upsert the value for the specified codelist" in withSession { session =>
     val inputInstant = clock.instant()
     for {
-      _           <- repository.setLastUpdated(session, BC08, 1, None, None, Some(inputInstant))
+      _           <- repository.setLastUpdated(session, BC08, 1, None, None, inputInstant)
       lastUpdated <- repository.fetchLastUpdated(BC66)
     } yield lastUpdated mustBe None
   }
@@ -88,8 +88,8 @@ class LastUpdatedRepositorySpec
     val instant1 = clock.instant()
     val instant2 = instant1.plusSeconds(20)
     for {
-      _           <- repository.setLastUpdated(session, BC08, 1, None, None, Some(instant1))
-      _           <- repository.setLastUpdated(session, BC08, 2, None, None, Some(instant2))
+      _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
+      _           <- repository.setLastUpdated(session, BC08, 2, None, None, instant2)
       lastUpdated <- repository.fetchLastUpdated(BC08)
     } yield lastUpdated mustBe Some(LastUpdated(BC08, 2, None, None, instant2))
   }
@@ -98,8 +98,8 @@ class LastUpdatedRepositorySpec
     val instant1 = clock.instant()
     val instant2 = instant1.plusSeconds(20)
     for {
-      _            <- repository.setLastUpdated(session, BC08, 1, None, None, Some(instant1))
-      _            <- repository.setLastUpdated(session, BC66, 1, None, None, Some(instant2))
+      _            <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
+      _            <- repository.setLastUpdated(session, BC66, 1, None, None, instant2)
       lastUpdated1 <- repository.fetchLastUpdated(BC08)
       lastUpdated2 <- repository.fetchLastUpdated(BC66)
     } yield {
@@ -113,9 +113,9 @@ class LastUpdatedRepositorySpec
       val instant1 = clock.instant()
       val instant2 = instant1.plusSeconds(20)
       for {
-        _           <- repository.setLastUpdated(session, BC08, 1, None, None, Some(instant1))
-        _           <- repository.setLastUpdated(session, BC08, 2, None, None, Some(instant2))
-        _           <- repository.setLastUpdated(session, BC66, 1, None, None, Some(instant2))
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
+        _           <- repository.setLastUpdated(session, BC08, 2, None, None, instant2)
+        _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant2)
         lastUpdated <- repository.fetchAllLastUpdated
       } yield {
         lastUpdated mustBe List(LastUpdated(BC08, 2, None, None, instant2), LastUpdated(BC66, 1, None, None, instant2))

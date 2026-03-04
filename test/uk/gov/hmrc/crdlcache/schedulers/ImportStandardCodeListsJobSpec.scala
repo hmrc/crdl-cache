@@ -213,7 +213,7 @@ class ImportStandardCodeListsJobSpec
         anyLong(),
         equalTo(None),
         equalTo(None),
-        equalTo(Some(fixedInstant))
+        equalTo(fixedInstant)
       )
     )
       .thenReturn(Future.unit)
@@ -305,7 +305,7 @@ class ImportStandardCodeListsJobSpec
       anyLong(),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // There are no snapshots for BC66
@@ -315,7 +315,7 @@ class ImportStandardCodeListsJobSpec
       anyLong(),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // Two snapshots should have been committed
@@ -341,7 +341,7 @@ class ImportStandardCodeListsJobSpec
         anyLong(),
         equalTo(None),
         equalTo(None),
-        equalTo(Some(fixedInstant))
+        equalTo(fixedInstant)
       )
     )
       .thenReturn(Future.unit)
@@ -395,7 +395,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(2L),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // There are no snapshots for BC66
@@ -405,7 +405,7 @@ class ImportStandardCodeListsJobSpec
       anyLong(),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // Only one snapshot should have been committed
@@ -428,7 +428,7 @@ class ImportStandardCodeListsJobSpec
         anyLong(),
         equalTo(None),
         equalTo(None),
-        equalTo(Some(fixedInstant))
+        equalTo(fixedInstant)
       )
     )
       .thenReturn(Future.unit)
@@ -521,7 +521,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(1L),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // There are no snapshots for BC66
@@ -531,7 +531,7 @@ class ImportStandardCodeListsJobSpec
       anyLong(),
       equalTo(None),
       equalTo(None),
-      equalTo(Some(fixedInstant))
+      equalTo(fixedInstant)
     )
 
     // The first snapshot should have been committed, but the second should be rolled back
