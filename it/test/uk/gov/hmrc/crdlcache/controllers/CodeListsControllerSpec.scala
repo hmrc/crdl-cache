@@ -152,8 +152,8 @@ class CodeListsControllerSpec
   )
 
   private val lastUpdatedEntries = List(
-    LastUpdated(BC08, 1, Instant.parse("2025-06-29T00:00:00Z")),
-    LastUpdated(BC66, 1, Instant.parse("2025-06-28T00:00:00Z"))
+    LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")),
+    LastUpdated(BC66, 1, None, None, Instant.parse("2025-06-28T00:00:00Z"))
   )
 
   override def beforeEach(): Unit = {
@@ -277,8 +277,6 @@ class CodeListsControllerSpec
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
-
-    println(response.json)
 
     response.json mustBe Json.arr(
       Json.obj(
