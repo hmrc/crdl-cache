@@ -1342,10 +1342,12 @@ class CustomsOfficeListsRepositorySpec
     val expectedSummary = CustomsOfficeSummary(
       customsOffices(0).referenceNumber,
       customsOffices(0).countryCode,
-      customsOffices(0).customsOfficeLsd.customsOfficeUsualName
+      customsOffices(0).customsOfficeLsd.customsOfficeUsualName,
+      customsOffices(0).phase,
+      customsOffices(0).domain
     )
     repository
-      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length)
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length, None, None)
       .map { results =>
         {
           results(0) mustBe expectedSummary

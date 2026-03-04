@@ -41,10 +41,18 @@ class CustomsOfficeListsV2Controller @Inject() (
   def fetchCustomsOfficeListSummaries(
     pageNum: Int,
     pageSize: Int,
-    activeAt: Option[Instant]
+    activeAt: Option[Instant],
+    phase: Option[String],
+    domain: Option[String]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
     val summariesFuture = customsOfficeListsRepository
-      .fetchCustomsOfficeSummaries(activeAt.getOrElse(clock.instant()), pageNum, pageSize)
+      .fetchCustomsOfficeSummaries(
+        activeAt.getOrElse(clock.instant()),
+        pageNum,
+        pageSize,
+        phase,
+        domain
+      )
     val officesCountFuture = customsOfficeListsRepository.customsOfficesCount()
     for {
       summaries    <- summariesFuture

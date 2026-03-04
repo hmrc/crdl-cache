@@ -22,14 +22,18 @@ import play.api.libs.functional.syntax.*
 final case class CustomsOfficeSummary(
   referenceNumber: String,
   countryCode: String,
-  customsOfficeUsualName: String
+  customsOfficeUsualName: String,
+  phase: Option[String],
+  domain: Option[String]
 )
 
 object CustomsOfficeSummary {
   given reads: Reads[CustomsOfficeSummary] = (
     (__ \ "referenceNumber").read[String] and
       (__ \ "countryCode").read[String] and
-      (__ \ "customsOfficeLsd" \ "customsOfficeUsualName").read[String]
+      (__ \ "customsOfficeLsd" \ "customsOfficeUsualName").read[String] and
+      (__ \ "phase").readNullable[String] and
+      (__ \ "domain").readNullable[String]
   )(CustomsOfficeSummary.apply _)
 
   given writes: Writes[CustomsOfficeSummary] = Json.writes[CustomsOfficeSummary]

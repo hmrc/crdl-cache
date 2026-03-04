@@ -4,4 +4,4 @@
 ->      /       prod.Routes
 
 # V2 endpoint to support crdl-cache-admin-frontend
-GET     /crdl-cache/v2/offices/summaries   uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant])
+GET     /crdl-cache/v2/offices/summaries   uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant], phase: Option[String], domain: Option[String])

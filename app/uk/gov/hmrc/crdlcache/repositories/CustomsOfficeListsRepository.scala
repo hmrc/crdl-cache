@@ -224,18 +224,35 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
   def fetchCustomsOfficeSummaries(
     activeAt: Instant,
     pageNum: Int,
-    pageSize: Int
+    pageSize: Int,
+    phase: Option[String],
+    domain: Option[String]
   ): Future[Seq[CustomsOfficeSummary]] = {
-    val filters = List(
+
+    val baseFilters = List(
       lte("activeFrom", activeAt),
       or(equal("activeTo", null), gt("activeTo", activeAt))
     )
+
+    val phaseDomainFilters = (phase, domain) match {
+      case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
+      case (None, None)       => List(exists("phase", false), exists("domain", false))
+      case _                  => List.empty
+    }
+
+    val filters = baseFilters ++ phaseDomainFilters
 
     collection
       .find[CustomsOfficeSummary](and(filters*))
       .projection(
         fields(
-          include("referenceNumber", "countryCode", "customsOfficeLsd.customsOfficeUsualName"),
+          include(
+            "referenceNumber",
+            "countryCode",
+            "customsOfficeLsd.customsOfficeUsualName",
+            "phase",
+            "domain"
+          ),
           excludeId()
         )
       )
