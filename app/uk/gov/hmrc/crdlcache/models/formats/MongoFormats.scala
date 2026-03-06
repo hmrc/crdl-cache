@@ -18,6 +18,7 @@ package uk.gov.hmrc.crdlcache.models.formats
 
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.crdlcache.models.CodeListCode
+import java.time.Instant
 import uk.gov.hmrc.crdlcache.models.{
   CodeListEntry,
   CustomsOffice,
@@ -33,7 +34,10 @@ trait MongoFormats extends MongoJavatimeFormats.Implicits with JavaTimeFormats {
 
   given codeListEntryFormat: Format[CodeListEntry] = Json.format[CodeListEntry]
 
-  given lastUpdatedFormat: Format[LastUpdated] = Json.format[LastUpdated]
+  given lastUpdatedFormat: Format[LastUpdated] = {
+    given Format[Instant] = MongoJavatimeFormats.instantFormat
+    Json.format[LastUpdated]
+  }
 
   given customsOfficeFormat: Format[CustomsOffice] = Json.format[CustomsOffice]
 
