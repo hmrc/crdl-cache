@@ -21,7 +21,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{Assertion, OptionValues}
-import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66}
+import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC66, CL251}
 import uk.gov.hmrc.crdlcache.models.LastUpdated
 import uk.gov.hmrc.mongo.test.{
   CleanMongoCollectionSupport,
@@ -62,15 +62,24 @@ class LastUpdatedRepositorySpec
     session =>
       val inputInstant = clock.instant()
       for {
-        _           <- repository.setLastUpdated(session, BC08, 1, inputInstant)
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, inputInstant)
         lastUpdated <- repository.fetchLastUpdated(BC08)
-      } yield lastUpdated mustBe Some(LastUpdated(BC08, 1, inputInstant))
+      } yield lastUpdated mustBe Some(LastUpdated(BC08, 1, None, None, inputInstant))
+  }
+
+  "LastUpdatedRepository.setLastUpdated" should "upsert the value for codelists with phase and domain" in withSession {
+    session =>
+      val inputInstant = clock.instant()
+      for {
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), inputInstant)
+        lastUpdated <- repository.fetchLastUpdated(CL251)
+      } yield lastUpdated mustBe Some(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), inputInstant))
   }
 
   it should "only upsert the value for the specified codelist" in withSession { session =>
     val inputInstant = clock.instant()
     for {
-      _           <- repository.setLastUpdated(session, BC08, 1, inputInstant)
+      _           <- repository.setLastUpdated(session, BC08, 1, None, None, inputInstant)
       lastUpdated <- repository.fetchLastUpdated(BC66)
     } yield lastUpdated mustBe None
   }
@@ -79,23 +88,23 @@ class LastUpdatedRepositorySpec
     val instant1 = clock.instant()
     val instant2 = instant1.plusSeconds(20)
     for {
-      _           <- repository.setLastUpdated(session, BC08, 1, instant1)
-      _           <- repository.setLastUpdated(session, BC08, 2, instant2)
+      _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
+      _           <- repository.setLastUpdated(session, BC08, 2, None, None, instant2)
       lastUpdated <- repository.fetchLastUpdated(BC08)
-    } yield lastUpdated mustBe Some(LastUpdated(BC08, 2, instant2))
+    } yield lastUpdated mustBe Some(LastUpdated(BC08, 2, None, None, instant2))
   }
 
   it should "return the latest value only for the specified codelist" in withSession { session =>
     val instant1 = clock.instant()
     val instant2 = instant1.plusSeconds(20)
     for {
-      _            <- repository.setLastUpdated(session, BC08, 1, instant1)
-      _            <- repository.setLastUpdated(session, BC66, 1, instant2)
+      _            <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
+      _            <- repository.setLastUpdated(session, BC66, 1, None, None, instant2)
       lastUpdated1 <- repository.fetchLastUpdated(BC08)
       lastUpdated2 <- repository.fetchLastUpdated(BC66)
     } yield {
-      lastUpdated1 mustBe Some(LastUpdated(BC08, 1, instant1))
-      lastUpdated2 mustBe Some(LastUpdated(BC66, 1, instant2))
+      lastUpdated1 mustBe Some(LastUpdated(BC08, 1, None, None, instant1))
+      lastUpdated2 mustBe Some(LastUpdated(BC66, 1, None, None, instant2))
     }
   }
 
@@ -104,12 +113,12 @@ class LastUpdatedRepositorySpec
       val instant1 = clock.instant()
       val instant2 = instant1.plusSeconds(20)
       for {
-        _           <- repository.setLastUpdated(session, BC08, 1, instant1)
-        _           <- repository.setLastUpdated(session, BC08, 2, instant2)
-        _           <- repository.setLastUpdated(session, BC66, 1, instant2)
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
+        _           <- repository.setLastUpdated(session, BC08, 2, None, None, instant2)
+        _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant2)
         lastUpdated <- repository.fetchAllLastUpdated
       } yield {
-        lastUpdated mustBe List(LastUpdated(BC08, 2, instant2), LastUpdated(BC66, 1, instant2))
+        lastUpdated mustBe List(LastUpdated(BC08, 2, None, None, instant2), LastUpdated(BC66, 1, None, None, instant2))
       }
   }
 }

@@ -295,6 +295,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS")),
         equalTo(fixedInstant)
       )
     )
@@ -389,6 +391,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
       equalTo(clientSession),
       equalTo(CL231),
       anyLong(),
+      equalTo(Some("P6")),
+      equalTo(Some("NCTS")),
       equalTo(fixedInstant)
     )
 
@@ -397,6 +401,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
       equalTo(clientSession),
       equalTo(CL234),
       anyLong(),
+      equalTo(Some("P6")),
+      equalTo(Some("NCTS")),
       equalTo(fixedInstant)
     )
 
@@ -411,16 +417,22 @@ class ImportPhaseAndDomainCodeListsJobSpec
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
     when(lastUpdatedRepository.fetchLastUpdated(CL231))
-      .thenReturn(Future.successful(Some(LastUpdated(CL231, 1, storedInstant))))
+      .thenReturn(
+        Future.successful(Some(LastUpdated(CL231, 1, Some("P6"), Some("NCTS"), storedInstant)))
+      )
 
     when(lastUpdatedRepository.fetchLastUpdated(CL234))
-      .thenReturn(Future.successful(Some(LastUpdated(CL234, 1, storedInstant))))
+      .thenReturn(
+        Future.successful(Some(LastUpdated(CL234, 1, Some("P6"), Some("NCTS"), storedInstant)))
+      )
 
     when(
       lastUpdatedRepository.setLastUpdated(
         equalTo(clientSession),
         any(),
         anyLong(),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS")),
         equalTo(fixedInstant)
       )
     )
@@ -481,6 +493,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS")),
         equalTo(fixedInstant)
       )
     )
@@ -610,6 +624,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
       equalTo(clientSession),
       equalTo(CL231),
       equalTo(1L),
+      equalTo(Some("P6")),
+      equalTo(Some("NCTS")),
       equalTo(fixedInstant)
     )
 
@@ -618,6 +634,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
       equalTo(clientSession),
       equalTo(CL234),
       anyLong(),
+      equalTo(Some("P6")),
+      equalTo(Some("NCTS")),
       equalTo(fixedInstant)
     )
 

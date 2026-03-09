@@ -237,6 +237,8 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
+        any(),
+        any(),
         any()
       )
     )
@@ -300,6 +302,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       anyLong(),
+      any(),
+      any(),
       equalTo(fixedInstant)
     )
 
@@ -314,13 +318,15 @@ class ImportCorrespondenceListsJobSpec
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
     when(lastUpdatedRepository.fetchLastUpdated(E200))
-      .thenReturn(Future.successful(Some(LastUpdated(E200, 1, storedInstant))))
+      .thenReturn(Future.successful(Some(LastUpdated(E200, 1, None, None, storedInstant))))
 
     when(
       lastUpdatedRepository.setLastUpdated(
         equalTo(clientSession),
         any(),
         anyLong(),
+        any(),
+        any(),
         any()
       )
     )
@@ -384,6 +390,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       anyLong(),
+      equalTo(None),
+      equalTo(None),
       equalTo(correspondenceListsJob.SeedExtractDate)
     )
 
@@ -401,6 +409,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       equalTo(2L),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 
@@ -422,6 +432,8 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
+        any(),
+        any(),
         any()
       )
     )
@@ -486,6 +498,8 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       equalTo(1L),
+      equalTo(None),
+      equalTo(None),
       equalTo(fixedInstant)
     )
 

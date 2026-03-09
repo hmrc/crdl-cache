@@ -18,4 +18,10 @@ package uk.gov.hmrc.crdlcache.models
 
 import java.time.Instant
 
-case class LastUpdated(codeListCode: CodeListCode, snapshotVersion: Long, lastUpdated: Instant)
+case class LastUpdated(
+  codeListCode: CodeListCode,
+  snapshotVersion: Long,
+  phase: Option[String],
+  domain: Option[String],
+  lastUpdated: Instant
+)
