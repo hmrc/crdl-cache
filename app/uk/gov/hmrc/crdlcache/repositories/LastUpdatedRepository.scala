@@ -27,6 +27,7 @@ import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.transaction.Transactions
+import org.mongodb.scala.model.Sorts
 
 import java.time.Instant
 import javax.inject.{Inject, Singleton}
@@ -94,4 +95,14 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
           throw MongoError.NoMatchingDocument
       }
   }
+
+  def fetchAllLastUpdatedV2(pageNum: Int, pageSize: Int): Future[Seq[LastUpdated]] = {
+    collection.find()
+      .sort(Sorts.ascending("codeListCode"))
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .toFuture()
+  }
+  
+  def codeListCount(): Future[Long] = collection.countDocuments().toFuture()
 }
