@@ -236,7 +236,6 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
 
     val phaseDomainFilters = (phase, domain) match {
       case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
-      case (None, None)       => List(exists("phase", false), exists("domain", false))
       case _                  => List.empty
     }
 
