@@ -1353,9 +1353,62 @@ class CustomsOfficeListsRepositorySpec
       }
   }
 
-  "CustomsOfficesListsRepository.customsOfficesCount" should s"return equal the number of documents in the store: ${customsOffices.length}" in withCustomsOfficeEntries(
+  "CustomsOfficesListsRepository.customsOfficesCount" should "return the count of active offices at the given instant" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
-    repository.customsOfficesCount().map(_ mustBe customsOffices.length)
+    repository.customsOfficesCount(defaultActiveAt).map(_ mustBe 5L)
+  }
+
+  it should "return filtered count when referenceNumber is supplied" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository.customsOfficesCount(defaultActiveAt, referenceNumber = Some("DK003102")).map(_ mustBe 1L)
+  }
+
+  it should "return filtered count when countryCode is supplied" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository.customsOfficesCount(defaultActiveAt, countryCode = Some("DK")).map(_ mustBe 4L)
+  }
+
+  "CustomsOfficesListsRepository.fetchCustomsOfficeSummaries" should "filter by referenceNumber when supplied" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, referenceNumber = Some("DK003102"))
+      .map { results =>
+        results must have length 1
+        results.head.referenceNumber mustBe "DK003102"
+      }
+  }
+
+  it should "filter by countryCode when supplied" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, countryCode = Some("DK"))
+      .map { results =>
+        results must have length 4
+        results.map(_.countryCode).distinct mustBe Seq("DK")
+      }
+  }
+
+  it should "filter by officeName case-insensitively when supplied" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, officeName = Some("hirtshals"))
+      .map { results =>
+        results must have length 4
+        results.map(_.referenceNumber) must contain allOf ("DK003102", "DK003103", "DK003104", "DK003105")
+      }
+  }
+
+  it should "return no results when officeName matches nothing" in withCustomsOfficeEntries(
+    customsOffices
+  ) { _ =>
+    repository
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, officeName = Some("zzz-no-match"))
+      .map(_ mustBe empty)
   }
 }

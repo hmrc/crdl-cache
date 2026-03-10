@@ -38,14 +38,37 @@ class CustomsOfficeListsV2Controller @Inject() (
 )(using ec: ExecutionContext)
   extends BackendController(cc)
   with HttpFormats {
+  def fetchCustomsOfficeDetail(
+    referenceNumber: String,
+    activeAt: Option[Instant]
+  ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
+    val resolvedActiveAt = activeAt.getOrElse(clock.instant())
+    customsOfficeListsRepository.fetchCustomsOfficeByRef(referenceNumber, resolvedActiveAt).map {
+      case Some(office) => Ok(Json.toJson(office))
+      case None         => NotFound
+    }
+  }
+
   def fetchCustomsOfficeListSummaries(
     pageNum: Int,
     pageSize: Int,
-    activeAt: Option[Instant]
+    activeAt: Option[Instant],
+    referenceNumber: Option[String],
+    countryCode: Option[String],
+    officeName: Option[String]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
+    val resolvedActiveAt = activeAt.getOrElse(clock.instant())
     val summariesFuture = customsOfficeListsRepository
-      .fetchCustomsOfficeSummaries(activeAt.getOrElse(clock.instant()), pageNum, pageSize)
-    val officesCountFuture = customsOfficeListsRepository.customsOfficesCount()
+      .fetchCustomsOfficeSummaries(
+        resolvedActiveAt,
+        pageNum,
+        pageSize,
+        referenceNumber,
+        countryCode,
+        officeName
+      )
+    val officesCountFuture = customsOfficeListsRepository
+      .customsOfficesCount(resolvedActiveAt, referenceNumber, countryCode, officeName)
     for {
       summaries    <- summariesFuture
       officesCount <- officesCountFuture
