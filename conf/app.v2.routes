@@ -3,6 +3,7 @@
 
 ->      /       prod.Routes
 
-# V2 endpoint to support crdl-cache-admin-frontend
-GET     /crdl-cache/v2/offices/summaries   uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant], phase: Option[String], domain: Option[String])
+# V2 endpoints to support crdl-cache-admin-frontend
+GET     /crdl-cache/v2/offices/summaries       uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant], referenceNumber: Option[String], countryCode: Option[String], officeName: Option[String], phase: Option[String], domain: Option[String])
+GET     /crdl-cache/v2/offices/:referenceNumber  uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeDetail(referenceNumber: String, activeAt: Option[Instant])
 GET     /crdl-cache/v2/lists              uk.gov.hmrc.crdlcache.controllers.CodeListsV2Controller.fetchCodeListVersions(pageNum: Int, pageSize: Int)

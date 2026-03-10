@@ -221,7 +221,21 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       .toFuture()
   }
 
-  def fetchCustomsOfficeSummaries(
+  def fetchCustomsOfficeByRef(
+    referenceNumber: String,
+    activeAt: Instant
+  ): Future[Option[CustomsOffice]] =
+    collection
+      .find(
+        and(
+          equal("referenceNumber", referenceNumber),
+          lte("activeFrom", activeAt),
+          or(equal("activeTo", null), gt("activeTo", activeAt))
+        )
+      )
+      .headOption()
+
+  private def summaryFilters(
     activeAt: Instant,
     pageNum: Int,
     pageSize: Int,
@@ -230,9 +244,20 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
   ): Future[Seq[CustomsOfficeSummary]] = {
 
     val baseFilters = List(
+    referenceNumber: Option[String],
+    countryCode: Option[String],
+    officeName: Option[String]
+  ): List[Bson] = {
+    val mandatoryFilters = List(
       lte("activeFrom", activeAt),
       or(equal("activeTo", null), gt("activeTo", activeAt))
     )
+    val referenceNumberFilter = referenceNumber.map(r => regex("referenceNumber", r, "i")).toList
+    val countryCodeFilter     = countryCode.map(c => equal("countryCode", c)).toList
+    val officeNameFilter =
+      officeName.map(n => regex("customsOfficeLsd.customsOfficeUsualName", n, "i")).toList
+    mandatoryFilters ++ referenceNumberFilter ++ countryCodeFilter ++ officeNameFilter
+  }
 
     val phaseDomainFilters = (phase, domain) match {
       case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
@@ -241,8 +266,18 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
 
     val filters = baseFilters ++ phaseDomainFilters
 
+  def fetchCustomsOfficeSummaries(
+    activeAt: Instant,
+    pageNum: Int,
+    pageSize: Int,
+    referenceNumber: Option[String] = None,
+    countryCode: Option[String] = None,
+    officeName: Option[String] = None
+  ): Future[Seq[CustomsOfficeSummary]] =
     collection
-      .find[CustomsOfficeSummary](and(filters*))
+      .find[CustomsOfficeSummary](
+        and(summaryFilters(activeAt, referenceNumber, countryCode, officeName)*)
+      )
       .projection(
         fields(
           include(
@@ -258,7 +293,14 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
       .toFuture()
-  }
 
-  def customsOfficesCount(): Future[Long] = collection.countDocuments().toFuture()
+  def customsOfficesCount(
+    activeAt: Instant,
+    referenceNumber: Option[String] = None,
+    countryCode: Option[String] = None,
+    officeName: Option[String] = None
+  ): Future[Long] =
+    collection
+      .countDocuments(and(summaryFilters(activeAt, referenceNumber, countryCode, officeName)*))
+      .toFuture()
 }
