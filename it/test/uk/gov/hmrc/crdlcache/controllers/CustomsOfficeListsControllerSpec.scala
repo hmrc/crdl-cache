@@ -40,7 +40,13 @@ import uk.gov.hmrc.crdlcache.models.{
   TimetableLine
 }
 import org.mockito.ArgumentMatchers.{any, eq as equalTo}
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeDetail,
+  CustomsOfficeTimetable,
+  RoleTrafficCompetence,
+  TimetableLine
+}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
@@ -244,6 +250,123 @@ class CustomsOfficeListsControllerSpec
 
   val responseJson = Json.obj(
     "referenceNumber"                             -> "DK003102",
+    "phase"                                       -> null,
+    "domain"                                      -> null,
+    "referenceNumberMainOffice"                   -> null,
+    "referenceNumberHigherAuthority"              -> null,
+    "referenceNumberCompetentAuthorityOfEnquiry"  -> "DK003102",
+    "referenceNumberCompetentAuthorityOfRecovery" -> "DK003102",
+    "referenceNumberTakeover"                     -> null,
+    "countryCode"                                 -> "DK",
+    "emailAddress"                                -> "test@dk",
+    "unLocodeId"                                  -> null,
+    "nctsEntryDate"                               -> null,
+    "nearestOffice"                               -> null,
+    "postalCode"                                  -> "9850",
+    "phoneNumber"                                 -> "+45 342234 34543",
+    "faxNumber"                                   -> null,
+    "telexNumber"                                 -> null,
+    "geoInfoCode"                                 -> null,
+    "regionCode"                                  -> null,
+    "traderDedicated"                             -> false,
+    "dedicatedTraderLanguageCode"                 -> null,
+    "dedicatedTraderName"                         -> null,
+    "customsOfficeSpecificNotesCodes"             -> Json.arr("SN0009"),
+    "customsOfficeLsd" -> Json.obj(
+      "city"                   -> "Hirtshals",
+      "languageCode"           -> "DA",
+      "spaceToAdd"             -> false,
+      "customsOfficeUsualName" -> "Hirtshals Toldekspedition",
+      "prefixSuffixFlag"       -> false,
+      "streetAndNumber"        -> "Dalsagervej 7"
+    ),
+    "customsOfficeTimetable" -> Json.arr(
+      Json.obj(
+        "seasonCode"      -> 1,
+        "seasonStartDate" -> "2018-01-01",
+        "seasonEndDate"   -> "2099-12-31",
+        "customsOfficeTimetableLine" -> Json.arr(
+          Json.obj(
+            "dayInTheWeekEndDay"              -> 5,
+            "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
+            "dayInTheWeekBeginDay"            -> 1,
+            "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
+            "customsOfficeRoleTrafficCompetence" -> Json.arr(
+              Json.obj(
+                "roleName"    -> "EXL",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXL",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "EXP",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXP",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "EXT",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "EXT",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "PLA",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "RFC",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "DIS",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "IPR",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "ENQ",
+                "trafficType" -> "N/A"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "P"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "R"
+              ),
+              Json.obj(
+                "roleName"    -> "REC",
+                "trafficType" -> "N/A"
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
+  val responseJsonPD = Json.obj(
+    "referenceNumber"                             -> "DK003102",
+    "phase"                                       -> Some("P6"),
+    "domain"                                      -> Some("NCTS"),
     "referenceNumberMainOffice"                   -> null,
     "referenceNumberHigherAuthority"              -> null,
     "referenceNumberCompetentAuthorityOfEnquiry"  -> "DK003102",
@@ -394,7 +517,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(fixedInstant),
         equalTo(Some("P6")),
         equalTo(Some("NCTS")),
-        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(officePD))
@@ -405,7 +528,7 @@ class CustomsOfficeListsControllerSpec
       .execute[HttpResponse]
       .futureValue
 
-    response.json mustBe Json.arr(responseJson)
+    response.json mustBe Json.arr(responseJsonPD)
   }
 
   "CustomsOfficeListsController" should "return 400 Bad Request when there are no errors but only Phase provided" in {
@@ -420,7 +543,9 @@ class CustomsOfficeListsControllerSpec
       .execute[HttpResponse]
       .futureValue
 
-    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.json mustBe Json.obj(
+      "error" -> "Both phase and domain must be provided together, or neither should be provided"
+    )
     response.status mustBe Status.BAD_REQUEST
   }
 
@@ -436,7 +561,9 @@ class CustomsOfficeListsControllerSpec
       .execute[HttpResponse]
       .futureValue
 
-    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.json mustBe Json.obj(
+      "error" -> "Both phase and domain must be provided together, or neither should be provided"
+    )
     response.status mustBe Status.BAD_REQUEST
   }
 
@@ -453,7 +580,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(fixedInstant),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -697,7 +824,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 400 Bad Request when roleDate is provided without roles" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
 
     val response =
@@ -708,18 +837,25 @@ class CustomsOfficeListsControllerSpec
         .futureValue
 
     response.status mustBe Status.BAD_REQUEST
-    response.json mustBe Json.obj("statusCode" -> 400, "message" -> "roleDate requires roles to be specified")
+    response.json mustBe Json.obj(
+      "statusCode" -> 400,
+      "message"    -> "roleDate requires roles to be specified"
+    )
   }
 
   it should "return 200 OK when roles and roleDate are both provided" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(None),
         equalTo(None),
         equalTo(Some(Set("TRA"))),
-        equalTo(fixedInstant), equalTo(None), equalTo(None),
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None),
         equalTo(Some(LocalDate.parse("2025-06-15")))
       )
     )
