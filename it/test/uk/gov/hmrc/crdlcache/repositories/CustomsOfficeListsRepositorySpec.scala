@@ -1342,10 +1342,12 @@ class CustomsOfficeListsRepositorySpec
     val expectedSummary = CustomsOfficeSummary(
       customsOffices(0).referenceNumber,
       customsOffices(0).countryCode,
-      customsOffices(0).customsOfficeLsd.customsOfficeUsualName
+      customsOffices(0).customsOfficeLsd.customsOfficeUsualName,
+      customsOffices(0).phase,
+      customsOffices(0).domain
     )
     repository
-      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length)
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, customsOffices.length, None, None, None, None, None)
       .map { results =>
         {
           results(0) mustBe expectedSummary
@@ -1356,26 +1358,26 @@ class CustomsOfficeListsRepositorySpec
   "CustomsOfficesListsRepository.customsOfficesCount" should "return the count of active offices at the given instant" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
-    repository.customsOfficesCount(defaultActiveAt).map(_ mustBe 5L)
+    repository.customsOfficesCount(defaultActiveAt, None, None, None, None, None).map(_ mustBe 5L)
   }
 
   it should "return filtered count when referenceNumber is supplied" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
-    repository.customsOfficesCount(defaultActiveAt, referenceNumber = Some("DK003102")).map(_ mustBe 1L)
+    repository.customsOfficesCount(defaultActiveAt, referenceNumber = Some("DK003102"), None, None, None, None).map(_ mustBe 1L)
   }
 
   it should "return filtered count when countryCode is supplied" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
-    repository.customsOfficesCount(defaultActiveAt, countryCode = Some("DK")).map(_ mustBe 4L)
+    repository.customsOfficesCount(defaultActiveAt, countryCode = Some("DK"), None, None, None).map(_ mustBe 4L)
   }
 
   "CustomsOfficesListsRepository.fetchCustomsOfficeSummaries" should "filter by referenceNumber when supplied" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, referenceNumber = Some("DK003102"))
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, referenceNumber = Some("DK003102"), None, None, None, None)
       .map { results =>
         results must have length 1
         results.head.referenceNumber mustBe "DK003102"
@@ -1386,7 +1388,7 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, countryCode = Some("DK"))
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, countryCode = Some("DK"), None, None, None)
       .map { results =>
         results must have length 4
         results.map(_.countryCode).distinct mustBe Seq("DK")
@@ -1397,7 +1399,7 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, officeName = Some("hirtshals"))
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, officeName = Some("hirtshals"), None, None)
       .map { results =>
         results must have length 4
         results.map(_.referenceNumber) must contain allOf ("DK003102", "DK003103", "DK003104", "DK003105")
@@ -1408,7 +1410,7 @@ class CustomsOfficeListsRepositorySpec
     customsOffices
   ) { _ =>
     repository
-      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, officeName = Some("zzz-no-match"))
+      .fetchCustomsOfficeSummaries(defaultActiveAt, 1, 10, officeName = Some("zzz-no-match"), None, None)
       .map(_ mustBe empty)
   }
 }

@@ -43,6 +43,8 @@ trait HttpFormats extends JavaTimeFormats {
   given Writes[CustomsOffice] = Writes { office =>
     Json.obj(
       "referenceNumber"                -> office.referenceNumber,
+      "phase"                          -> office.phase,
+      "domain"                         -> office.domain,
       "referenceNumberMainOffice"      -> office.referenceNumberMainOffice,
       "referenceNumberHigherAuthority" -> office.referenceNumberHigherAuthority,
       "referenceNumberCompetentAuthorityOfEnquiry" -> office.referenceNumberCompetentAuthorityOfEnquiry,

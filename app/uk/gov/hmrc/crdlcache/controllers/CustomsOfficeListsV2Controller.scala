@@ -55,20 +55,31 @@ class CustomsOfficeListsV2Controller @Inject() (
     activeAt: Option[Instant],
     referenceNumber: Option[String],
     countryCode: Option[String],
-    officeName: Option[String]
+    officeName: Option[String],
+    phase: Option[String],
+    domain: Option[String]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
     val resolvedActiveAt = activeAt.getOrElse(clock.instant())
     val summariesFuture = customsOfficeListsRepository
       .fetchCustomsOfficeSummaries(
-        resolvedActiveAt,
+        activeAt.getOrElse(clock.instant()),
         pageNum,
         pageSize,
         referenceNumber,
         countryCode,
-        officeName
+        officeName,
+        phase,
+        domain
       )
-    val officesCountFuture = customsOfficeListsRepository
-      .customsOfficesCount(resolvedActiveAt, referenceNumber, countryCode, officeName)
+    val officesCountFuture = customsOfficeListsRepository.customsOfficesCount(
+      resolvedActiveAt,
+      referenceNumber,
+      countryCode,
+      officeName,
+      phase,
+      domain
+    )
+
     for {
       summaries    <- summariesFuture
       officesCount <- officesCountFuture
