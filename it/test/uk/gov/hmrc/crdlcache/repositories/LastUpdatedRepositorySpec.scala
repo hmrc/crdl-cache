@@ -31,6 +31,7 @@ import uk.gov.hmrc.mongo.test.{
 import uk.gov.hmrc.mongo.transaction.TransactionConfiguration
 
 import java.time.{Clock, ZoneOffset}
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future}
 
 class LastUpdatedRepositorySpec
@@ -41,6 +42,9 @@ class LastUpdatedRepositorySpec
   with Matchers
   with OptionValues
   with ScalaFutures {
+
+  override given patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = 30.seconds, interval = 100.millis)
 
   private val clock = Clock.tickMillis(ZoneOffset.UTC)
 
