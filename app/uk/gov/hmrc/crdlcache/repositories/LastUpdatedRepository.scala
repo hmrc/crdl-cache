@@ -96,13 +96,40 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
       }
   }
 
-  def fetchAllLastUpdatedV2(pageNum: Int, pageSize: Int): Future[Seq[LastUpdated]] = {
-    collection.find()
+  private def snapshotFilters(
+    codeListCode: Option[String],
+    phase: Option[String],
+    domain: Option[String]
+  ): Seq[org.mongodb.scala.bson.conversions.Bson] = {
+    val codeFilter   = codeListCode.map(c => regex("codeListCode", c, "i")).toSeq
+    val phaseFilter  = phase.map(p => equal("phase", p)).toSeq
+    val domainFilter = domain.map(d => equal("domain", d)).toSeq
+    codeFilter ++ phaseFilter ++ domainFilter
+  }
+
+  def fetchAllLastUpdatedV2(
+    pageNum: Int,
+    pageSize: Int,
+    codeListCode: Option[String] = None,
+    phase: Option[String] = None,
+    domain: Option[String] = None
+  ): Future[Seq[LastUpdated]] = {
+    val filters = snapshotFilters(codeListCode, phase, domain)
+    val query   = if (filters.isEmpty) collection.find() else collection.find(and(filters*))
+    query
       .sort(Sorts.ascending("codeListCode"))
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
       .toFuture()
   }
-  
-  def codeListCount(): Future[Long] = collection.countDocuments().toFuture()
+
+  def codeListCount(
+    codeListCode: Option[String] = None,
+    phase: Option[String] = None,
+    domain: Option[String] = None
+  ): Future[Long] = {
+    val filters = snapshotFilters(codeListCode, phase, domain)
+    if (filters.isEmpty) collection.countDocuments().toFuture()
+    else collection.countDocuments(and(filters*)).toFuture()
+  }
 }

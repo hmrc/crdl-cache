@@ -121,4 +121,125 @@ class LastUpdatedRepositorySpec
         lastUpdated mustBe List(LastUpdated(BC08, 2, None, None, instant2), LastUpdated(BC66, 1, None, None, instant2))
       }
   }
+
+  "LastUpdatedRepository.fetchAllLastUpdatedV2" should "return all codelists when no filters are provided" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
+        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10)
+      } yield {
+        lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant), LastUpdated(BC66, 1, None, None, instant))
+      }
+  }
+
+  it should "filter by codeListCode using a case-insensitive partial match" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10, codeListCode = Some("bc"))
+      } yield {
+        lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant), LastUpdated(BC66, 1, None, None, instant))
+      }
+  }
+
+  it should "filter by phase using an exact match" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10, phase = Some("P6"))
+      } yield {
+        lastUpdated mustBe List(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), instant))
+      }
+  }
+
+  it should "filter by domain using an exact match" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10, domain = Some("NCTS"))
+      } yield {
+        lastUpdated mustBe List(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), instant))
+      }
+  }
+
+  it should "return a paged subset of results" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
+        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 1)
+      } yield {
+        lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant))
+      }
+  }
+
+  "LastUpdatedRepository.codeListCount" should "return the total count when no filters are provided" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _     <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
+        count <- repository.codeListCount()
+      } yield {
+        count mustBe 2L
+      }
+  }
+
+  it should "return a filtered count when codeListCode is provided" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _     <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
+        _     <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        count <- repository.codeListCount(codeListCode = Some("BC"))
+      } yield {
+        count mustBe 2L
+      }
+  }
+
+  it should "return a filtered count when phase is provided" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _     <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        count <- repository.codeListCount(phase = Some("P6"))
+      } yield {
+        count mustBe 1L
+      }
+  }
+
+  it should "return a filtered count when domain is provided" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        _     <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        count <- repository.codeListCount(domain = Some("NCTS"))
+      } yield {
+        count mustBe 1L
+      }
+  }
+
+  it should "return zero when no codelists match the filters" in withSession {
+    session =>
+      val instant = clock.instant()
+      for {
+        _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
+        count <- repository.codeListCount(codeListCode = Some("XYZ"))
+      } yield {
+        count mustBe 0L
+      }
+  }
 }

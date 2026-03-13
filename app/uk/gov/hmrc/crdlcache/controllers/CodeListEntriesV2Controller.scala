@@ -23,7 +23,10 @@ import uk.gov.hmrc.crdlcache.models.CodeListCode
 import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, PD, STANDARD}
 import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
 import uk.gov.hmrc.crdlcache.models.paging.PagedResult
-import uk.gov.hmrc.crdlcache.repositories.{CorrespondenceListsRepository, StandardCodeListsRepository}
+import uk.gov.hmrc.crdlcache.repositories.{
+  CorrespondenceListsRepository,
+  StandardCodeListsRepository
+}
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -55,8 +58,9 @@ class CodeListEntriesV2Controller @Inject() (
       case CORRESPONDENCE => correspondenceListsRepository
       case STANDARD | PD  => codeListsRepository
     }
-    val entriesFuture = repo.fetchEntriesPaged(code, resolvedActiveAt, pageNum, pageSize, key, value)
-    val countFuture   = repo.countEntries(code, resolvedActiveAt, key, value)
+    val entriesFuture =
+      repo.fetchEntriesPaged(code, resolvedActiveAt, pageNum, pageSize, key, value)
+    val countFuture = repo.countEntries(code, resolvedActiveAt, key, value)
     for {
       entries <- entriesFuture
       count   <- countFuture
