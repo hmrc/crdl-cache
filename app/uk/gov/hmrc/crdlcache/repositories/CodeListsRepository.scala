@@ -120,6 +120,47 @@ abstract class CodeListsRepository[K, I](
       .toFuture()
   }
 
+  private def entryFilters(
+    code: CodeListCode,
+    activeAt: Instant,
+    key: Option[String],
+    value: Option[String]
+  ): List[Bson] = {
+    val mandatoryFilters = List(
+      equal("codeListCode", code.code),
+      lte("activeFrom", activeAt),
+      or(equal("activeTo", null), gt("activeTo", activeAt))
+    )
+    val keyFilter   = key.map(k => regex("key", k, "i")).toList
+    val valueFilter = value.map(v => regex("value", v, "i")).toList
+    mandatoryFilters ++ keyFilter ++ valueFilter
+  }
+
+  def fetchEntriesPaged(
+    code: CodeListCode,
+    activeAt: Instant,
+    pageNum: Int,
+    pageSize: Int,
+    key: Option[String] = None,
+    value: Option[String] = None
+  ): Future[Seq[CodeListEntry]] =
+    collection
+      .find(and(entryFilters(code, activeAt, key, value)*))
+      .sort(Sorts.ascending("key"))
+      .skip((pageNum - 1) * pageSize)
+      .limit(pageSize)
+      .toFuture()
+
+  def countEntries(
+    code: CodeListCode,
+    activeAt: Instant,
+    key: Option[String] = None,
+    value: Option[String] = None
+  ): Future[Long] =
+    collection
+      .countDocuments(and(entryFilters(code, activeAt, key, value)*))
+      .toFuture()
+
   protected def supersedePreviousEntries(
     session: ClientSession,
     codeListCode: CodeListCode,
