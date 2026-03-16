@@ -250,8 +250,6 @@ class CustomsOfficeListsControllerSpec
 
   val responseJson = Json.obj(
     "referenceNumber"                             -> "DK003102",
-    "phase"                                       -> null,
-    "domain"                                      -> null,
     "referenceNumberMainOffice"                   -> null,
     "referenceNumberHigherAuthority"              -> null,
     "referenceNumberCompetentAuthorityOfEnquiry"  -> "DK003102",
@@ -363,120 +361,6 @@ class CustomsOfficeListsControllerSpec
     )
   )
 
-  val responseJsonPD = Json.obj(
-    "referenceNumber"                             -> "DK003102",
-    "phase"                                       -> Some("P6"),
-    "domain"                                      -> Some("NCTS"),
-    "referenceNumberMainOffice"                   -> null,
-    "referenceNumberHigherAuthority"              -> null,
-    "referenceNumberCompetentAuthorityOfEnquiry"  -> "DK003102",
-    "referenceNumberCompetentAuthorityOfRecovery" -> "DK003102",
-    "referenceNumberTakeover"                     -> null,
-    "countryCode"                                 -> "DK",
-    "emailAddress"                                -> "test@dk",
-    "unLocodeId"                                  -> null,
-    "nctsEntryDate"                               -> null,
-    "nearestOffice"                               -> null,
-    "postalCode"                                  -> "9850",
-    "phoneNumber"                                 -> "+45 342234 34543",
-    "faxNumber"                                   -> null,
-    "telexNumber"                                 -> null,
-    "geoInfoCode"                                 -> null,
-    "regionCode"                                  -> null,
-    "traderDedicated"                             -> false,
-    "dedicatedTraderLanguageCode"                 -> null,
-    "dedicatedTraderName"                         -> null,
-    "customsOfficeSpecificNotesCodes"             -> Json.arr("SN0009"),
-    "customsOfficeLsd" -> Json.obj(
-      "city"                   -> "Hirtshals",
-      "languageCode"           -> "DA",
-      "spaceToAdd"             -> false,
-      "customsOfficeUsualName" -> "Hirtshals Toldekspedition",
-      "prefixSuffixFlag"       -> false,
-      "streetAndNumber"        -> "Dalsagervej 7"
-    ),
-    "customsOfficeTimetable" -> Json.arr(
-      Json.obj(
-        "seasonCode"      -> 1,
-        "seasonStartDate" -> "2018-01-01",
-        "seasonEndDate"   -> "2099-12-31",
-        "customsOfficeTimetableLine" -> Json.arr(
-          Json.obj(
-            "dayInTheWeekEndDay"              -> 5,
-            "openingHoursTimeFirstPeriodFrom" -> "08:00:00",
-            "dayInTheWeekBeginDay"            -> 1,
-            "openingHoursTimeFirstPeriodTo"   -> "16:00:00",
-            "customsOfficeRoleTrafficCompetence" -> Json.arr(
-              Json.obj(
-                "roleName"    -> "EXL",
-                "trafficType" -> "P"
-              ),
-              Json.obj(
-                "roleName"    -> "EXL",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "EXP",
-                "trafficType" -> "P"
-              ),
-              Json.obj(
-                "roleName"    -> "EXP",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "EXT",
-                "trafficType" -> "P"
-              ),
-              Json.obj(
-                "roleName"    -> "EXT",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "PLA",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "RFC",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "DIS",
-                "trafficType" -> "N/A"
-              ),
-              Json.obj(
-                "roleName"    -> "IPR",
-                "trafficType" -> "N/A"
-              ),
-              Json.obj(
-                "roleName"    -> "ENQ",
-                "trafficType" -> "P"
-              ),
-              Json.obj(
-                "roleName"    -> "ENQ",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "ENQ",
-                "trafficType" -> "N/A"
-              ),
-              Json.obj(
-                "roleName"    -> "REC",
-                "trafficType" -> "P"
-              ),
-              Json.obj(
-                "roleName"    -> "REC",
-                "trafficType" -> "R"
-              ),
-              Json.obj(
-                "roleName"    -> "REC",
-                "trafficType" -> "N/A"
-              )
-            )
-          )
-        )
-      )
-    )
-  )
 
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
     when(
@@ -528,7 +412,7 @@ class CustomsOfficeListsControllerSpec
       .execute[HttpResponse]
       .futureValue
 
-    response.json mustBe Json.arr(responseJsonPD)
+    response.json mustBe Json.arr(responseJson)
   }
 
   "CustomsOfficeListsController" should "return 400 Bad Request when there are no errors but only Phase provided" in {
