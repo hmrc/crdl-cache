@@ -97,12 +97,13 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
   }
 
   def fetchAllLastUpdatedV2(pageNum: Int, pageSize: Int): Future[Seq[LastUpdated]] = {
-    collection.find()
+    collection
+      .find()
       .sort(Sorts.ascending("codeListCode"))
       .skip((pageNum - 1) * pageSize)
       .limit(pageSize)
       .toFuture()
   }
-  
+
   def codeListCount(): Future[Long] = collection.countDocuments().toFuture()
 }
