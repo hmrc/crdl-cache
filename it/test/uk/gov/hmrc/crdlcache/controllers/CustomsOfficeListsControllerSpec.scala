@@ -40,7 +40,13 @@ import uk.gov.hmrc.crdlcache.models.{
   TimetableLine
 }
 import org.mockito.ArgumentMatchers.{any, eq as equalTo}
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeDetail, CustomsOfficeTimetable, RoleTrafficCompetence, TimetableLine}
+import uk.gov.hmrc.crdlcache.models.{
+  CustomsOffice,
+  CustomsOfficeDetail,
+  CustomsOfficeTimetable,
+  RoleTrafficCompetence,
+  TimetableLine
+}
 import org.mockito.Mockito.{reset, when}
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
@@ -355,6 +361,7 @@ class CustomsOfficeListsControllerSpec
     )
   )
 
+
   "CustomsOfficeListsController" should "return 200 OK when there are no errors" in {
     when(
       authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
@@ -394,7 +401,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(fixedInstant),
         equalTo(Some("P6")),
         equalTo(Some("NCTS")),
-        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(officePD))
@@ -420,7 +427,9 @@ class CustomsOfficeListsControllerSpec
       .execute[HttpResponse]
       .futureValue
 
-    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.json mustBe Json.obj(
+      "error" -> "Both phase and domain must be provided together, or neither should be provided"
+    )
     response.status mustBe Status.BAD_REQUEST
   }
 
@@ -436,7 +445,9 @@ class CustomsOfficeListsControllerSpec
       .execute[HttpResponse]
       .futureValue
 
-    response.json mustBe Json.obj("error" -> "Both phase and domain must be provided together, or neither should be provided")
+    response.json mustBe Json.obj(
+      "error" -> "Both phase and domain must be provided together, or neither should be provided"
+    )
     response.status mustBe Status.BAD_REQUEST
   }
 
@@ -453,7 +464,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(fixedInstant),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
+        equalTo(None)
       )
     )
       .thenReturn(Future.successful(List.empty))
@@ -697,7 +708,9 @@ class CustomsOfficeListsControllerSpec
   }
 
   it should "return 400 Bad Request when roleDate is provided without roles" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
 
     val response =
@@ -708,18 +721,25 @@ class CustomsOfficeListsControllerSpec
         .futureValue
 
     response.status mustBe Status.BAD_REQUEST
-    response.json mustBe Json.obj("statusCode" -> 400, "message" -> "roleDate requires roles to be specified")
+    response.json mustBe Json.obj(
+      "statusCode" -> 400,
+      "message"    -> "roleDate requires roles to be specified"
+    )
   }
 
   it should "return 200 OK when roles and roleDate are both provided" in {
-    when(authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval)))
+    when(
+      authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
+    )
       .thenReturn(Future.unit)
     when(
       repository.fetchCustomsOfficeLists(
         equalTo(None),
         equalTo(None),
         equalTo(Some(Set("TRA"))),
-        equalTo(fixedInstant), equalTo(None), equalTo(None),
+        equalTo(fixedInstant),
+        equalTo(None),
+        equalTo(None),
         equalTo(Some(LocalDate.parse("2025-06-15")))
       )
     )
