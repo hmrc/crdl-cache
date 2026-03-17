@@ -37,10 +37,17 @@ class CodeListsV2Controller @Inject() (
   extends BackendController(cc)
   with HttpFormats {
 
-  def fetchCodeListVersions(pageNum: Int, pageSize: Int): Action[AnyContent] =
+  def fetchCodeListVersions(
+    pageNum: Int,
+    pageSize: Int,
+    codeListCode: Option[String],
+    phase: Option[String],
+    domain: Option[String]
+  ): Action[AnyContent] =
     auth.authorizedAction(ReadCodeLists).async { _ =>
-      val listUpdatedFuture   = lastUpdatedRepository.fetchAllLastUpdatedV2(pageNum, pageSize)
-      val codeListCountFuture = lastUpdatedRepository.codeListCount()
+      val listUpdatedFuture =
+        lastUpdatedRepository.fetchAllLastUpdatedV2(pageNum, pageSize, codeListCode, phase, domain)
+      val codeListCountFuture = lastUpdatedRepository.codeListCount(codeListCode, phase, domain)
       for {
         listUpdated   <- listUpdatedFuture
         codeListCount <- codeListCountFuture
