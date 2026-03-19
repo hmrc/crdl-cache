@@ -314,6 +314,7 @@ sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
     curl -X DELETE http://localhost:7252/crdl-cache/test-only/codelists
     curl -X DELETE http://localhost:7252/crdl-cache/test-only/correspondence-lists
     curl -X DELETE http://localhost:7252/crdl-cache/test-only/last-updated
+    curl -X DELETE http://localhost:7252/crdl-cache/test-only/pd-lists
     ```
 
 * To check the **status** of an import you can use the following endpoints for customs offices, codelists and correspondence lists respectively.
@@ -321,6 +322,7 @@ sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
     curl -X GET http://localhost:7252/crdl-cache/test-only/codelists
     curl -X GET http://localhost:7252/crdl-cache/test-only/customs-office-lists
     curl -X GET http://localhost:7252/crdl-cache/test-only/correspondence-lists
+    curl -X GET http://localhost:7252/crdl-cache/test-only/pd-lists
     ```
     Depending on the job status it would either return IDLE or RUNNING status.
 
