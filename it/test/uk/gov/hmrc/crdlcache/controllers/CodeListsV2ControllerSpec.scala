@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.crdlcache.controllers
 
-import org.mockito.ArgumentMatchers.{eq as equalTo}
+import org.apache.pekko.http.scaladsl.model.HttpHeader.ParsingResult.Ok
+import org.mockito.ArgumentMatchers.eq as equalTo
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -97,7 +98,7 @@ class CodeListsV2ControllerSpec
     "totalPages"  -> 1
   )
 
-  "CodeListsV2Controller" should "return 200 OK with a paged result when no filters are provided" in {
+  "CodeListsV2Controller.fetchCodeListVersions" should "return 200 OK with a paged result when no filters are provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
     when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(None), equalTo(None), equalTo(None)))
@@ -302,5 +303,36 @@ class CodeListsV2ControllerSpec
     }
 
     statusCode mustBe Status.INTERNAL_SERVER_ERROR
+  }
+
+  "CodeListsV2Controller.getSnapShot" should "return 200 OK with a paged result when no filters are provided" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+    when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08)))
+      .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")))))
+
+    val response = httpClientV2
+      .get(url"http://localhost:$port/crdl-cache/v2/snapshot/BC08")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+      .execute[HttpResponse]
+      .futureValue
+
+    response.status mustBe Status.OK
+    response.json mustBe Json.obj("codeListCode" -> "BC08", "snapshotVersion" -> 1, "lastUpdated" -> "2025-06-29T00:00:00Z")
+  }
+
+  "CodeListsV2Controller.getSnapShot" should "return 404 Not Found when no snapshot is found" in {
+    when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
+      .thenReturn(Future.unit)
+    when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08)))
+      .thenReturn(Future.successful(None))
+
+    val response = httpClientV2
+      .get(url"http://localhost:$port/crdl-cache/v2/snapshot/BC08")
+      .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+      .execute[HttpResponse]
+      .futureValue
+
+    response.status mustBe Status.NOT_FOUND
   }
 }

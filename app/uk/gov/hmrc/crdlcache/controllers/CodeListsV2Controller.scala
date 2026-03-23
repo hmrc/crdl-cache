@@ -25,6 +25,7 @@ import uk.gov.hmrc.crdlcache.repositories.LastUpdatedRepository
 import uk.gov.hmrc.internalauth.client.BackendAuthComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.crdlcache.models.paging.PagedResult
+import uk.gov.hmrc.crdlcache.models.CodeListCode
 
 import scala.concurrent.ExecutionContext
 
@@ -66,4 +67,13 @@ class CodeListsV2Controller @Inject() (
         )
       }
     }
+
+  def getSnapshot(
+    code: String
+  ): Action[AnyContent] = auth.authorizedAction(ReadCodeLists).async { _ =>
+    lastUpdatedRepository.fetchLastUpdated(CodeListCode.fromString(code)).map {
+      case Some(snapshot) => Ok(Json.toJson(snapshot))
+      case None           => NotFound
+    }
+  }
 }
