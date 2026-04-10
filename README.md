@@ -283,7 +283,7 @@ The steps for doing so have been explained in detail on here [ADDING-CODELISTS.m
 In order to trigger the import jobs locally, we need to start the cache service using the following command:
 
 ```shell
-sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes 
+  sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes 
 ```
 
 * **Customs office import** can be triggered via curl using the below test-only endpoint:
@@ -402,6 +402,32 @@ This should ensure that you have the prerequisites for the service installed:
 * sbt 1.10.x or later
 * MongoDB 7.x or later
 * Service Manager 2.x
+
+---
+
+### Scalafmt
+
+Check all project files are formatted as expected as follows:
+
+> `sbt scalafmtCheckAll`
+
+Format `*.sbt` and `project/*.scala` files as follows:
+
+> `sbt scalafmtSbt`
+
+Format all project files as follows:
+
+> `sbt scalafmtAll`
+
+### Tests
+
+Run all unit tests with command:
+
+> `sbt test`
+
+Run all integration tests command:
+
+> `sbt it/test`
 
 ### All tests and checks
 This is an sbt command alias specific to this project. It will run a scala format
