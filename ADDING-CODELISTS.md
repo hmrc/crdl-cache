@@ -43,6 +43,14 @@ Insert the new case in `models/CodeListCode`:
   case CL141 extends CodeListCode("CL141")
 ```
 
+If it’s a **codelist with phase and domain**, include the `listType` as the second parameter. As CL012 is not an example of a correspondence list, we will use the existing CL010 code as an example here:
+
+
+```scala
+  // CL010 (Country Codes Community)
+  case CL010 extends CodeListCode("CL010", listType = PD)
+```
+
 If it’s a **correspondence list**, include the `listType` as the second parameter. As CL012 is not an example of a correspondence list, we will use the existing E200 code as an example here:
 
 ```scala
@@ -65,7 +73,7 @@ object CodeListCode {
 
 Add a new codelist configuration to the appropriate config block to ensure it gets added to the daily import job.
 
-* For a code list, add it to `import-codelists.codelists`.
+* For a code list, if it has a phase and domain, add it to `import-pd-lists`. Otherwise, add it to `import-codelists`.
 
   You will need a `keyProperty` which determines the data item in the DPS API response to use as the `key` of the entry. The NCTS entity definitions contain an `isprimarykey` attribute which can help to identify the `keyProperty`.
   
@@ -85,7 +93,7 @@ Add a new codelist configuration to the appropriate config block to ensure it ge
   }
   ```
 
-* For a correspondence list, add it to `import-correspondence-lists.correspondence-lists`.
+* For a correspondence list, add it to `import-correspondence-lists`.
 
   You will need a `keyProperty` and `valueProperty` which determine the data items in the DPS API response to use as the `key` and `value` of the entry. The `valueProperty` is used when there is a composite key in the entity definition. In the NCTS entity definitions, this might be indicated by the presence of `isprimarykey` fields.
 
@@ -157,9 +165,9 @@ In order to do this you need some credentials to call the HIP API. You can fetch
 
 Hopefully, if you are making changes to the application, your team owns the "Central Reference Data Cache" application in the Integration Hub.
 
-You can find credentials for Test environment by viewing the application details of the Central Reference Data Cache application. The credentials can be found on the Credentials tab of the Test environment page.
+You can find credentials for the Test environment by viewing the application details of the Central Reference Data Cache application. The credentials can be found on the Credentials tab of the Test environment page.
 
-In order to use these credentials when fetching from the DPS API, you must set `CLIENT_ID` and `CLIENT_SECRET` environment variables in you shell before running the application with sbt.
+In order to use these credentials when fetching from the DPS API, you must set `CLIENT_ID` and `CLIENT_SECRET` environment variables in your shell before running the application with sbt.
 
 We do not encourage you to add these credentials directly to the `application.conf` due to the risk of credentials being committed accidentally.
 

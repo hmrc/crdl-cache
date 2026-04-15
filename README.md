@@ -51,7 +51,7 @@ And now you can use curl to fetch the data from the **crdl-cache**, For example:
 curl -H 'Authorization: crdl-cache-token' http://localhost:7252/crdl-cache/lists/BC08
 ```
 ### Sample Bruno Requests
-To request data from the crdl-cache using Bruno, open the [CRDL-CACHE(LOCAL)](./bruno/CRDL-CACHE(LOCAL)) collection on your bruno application, the file that can be found in the .bruno folder.
+To request data from the crdl-cache using Bruno, open the [CRDL-CACHE(LOCAL)](.bruno/CRDL-CACHE(LOCAL)) collection on your bruno application, the file that can be found in the .bruno folder.
 
 ### Fetch Codelist Versions
 
@@ -171,7 +171,7 @@ This endpoint is used to fetch entries of a reference data codelist.
 
 ### Fetch Customs Office Lists
 
-This endpoint is used to fetch customs office list.
+This endpoint is used to fetch customs office lists.
 
 * **URL**
 
@@ -283,7 +283,7 @@ The steps for doing so have been explained in detail on here [ADDING-CODELISTS.m
 In order to trigger the import jobs locally, we need to start the cache service using the following command:
 
 ```shell
-sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes 
+  sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes 
 ```
 
 * **Customs office import** can be triggered via curl using the below test-only endpoint:
@@ -308,7 +308,7 @@ sbt run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes
 
 * In cases when you need a fresh import you can use the **DELETE** test-only endpoints to clear the data that has been previously imported. Here are the delete endpoints for customs office, codelists, correspondence lists and last updated respectively.
 
-    Please note that the last updated needs to be deleted along with codelists and correspondence lists. This is because last updated contains the data when the codelists and correspondence lists were last updated. 
+    Please note that the last updated needs to be deleted along with codelists and correspondence lists. This is because the last updated contains the data when the codelists and correspondence lists were last updated. 
     ```shell
     curl -X DELETE http://localhost:7252/crdl-cache/test-only/customs-office-lists
     curl -X DELETE http://localhost:7252/crdl-cache/test-only/codelists
@@ -369,7 +369,7 @@ microservice {
   }
 ```
 
-Please Note: To obtain the client id and secret, you can go to the [Integration Hub](https://admin.tax.service.gov.uk/integration-hub) and login with your LDAP credentials. Click on the 'Central Reference Data Cache' registered application and navigate to Test > Credentails.
+Please Note: To obtain the client id and secret, you can go to the [Integration Hub](https://admin.tax.service.gov.uk/integration-hub) and login with your LDAP credentials. Click on the 'Central Reference Data Cache' registered application and navigate to Test > Credentials.
 Follow the below-mentioned steps to set up the client id and secret as environment variables. Post that when the import job is triggered next it would fetch the data from the DPS API.
 
 ### Saving CLIENT_ID and CLIENT_SECRET as environment variables
@@ -402,6 +402,32 @@ This should ensure that you have the prerequisites for the service installed:
 * sbt 1.10.x or later
 * MongoDB 7.x or later
 * Service Manager 2.x
+
+---
+
+### Scalafmt
+
+Check all project files are formatted as expected as follows:
+
+> `sbt scalafmtCheckAll`
+
+Format `*.sbt` and `project/*.scala` files as follows:
+
+> `sbt scalafmtSbt`
+
+Format all project files as follows:
+
+> `sbt scalafmtAll`
+
+### Tests
+
+Run all unit tests with command:
+
+> `sbt test`
+
+Run all integration tests command:
+
+> `sbt it/test`
 
 ### All tests and checks
 This is an sbt command alias specific to this project. It will run a scala format

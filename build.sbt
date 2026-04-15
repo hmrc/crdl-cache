@@ -14,7 +14,7 @@ lazy val microservice = Project("crdl-cache", file("."))
     // suppress warnings in generated routes files
     scalacOptions ++= Seq(
       "-Wconf:src=routes/.*:s",
-      //Ignore unused import error for generated OpenApi file
+      // Ignore unused import error for generated OpenApi file
       "-Wconf:msg=unused import&src=.*OpenApi.template.scala:s",
       // Disable duplicate compiler option warning as it's caused by our sbt plugins
       "-Wconf:msg=Flag.*repeatedly:s",
