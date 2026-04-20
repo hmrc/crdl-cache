@@ -67,6 +67,7 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
     codeListCode: CodeListCode,
     newEntry: CodeListSnapshotEntry
   ): Instruction = {
+    logger.warn(s"CRDL-535:L4: processEntry=> codeListCode = ${codeListCode} newEntry = ${newEntry} ")
     val updatedEntry: CodeListEntry = CodeListEntry(
       codeListCode,
       newEntry.key,
