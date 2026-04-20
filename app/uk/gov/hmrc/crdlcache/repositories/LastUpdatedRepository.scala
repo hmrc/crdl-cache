@@ -42,8 +42,8 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     domainFormat = MongoFormats.lastUpdatedFormat,
     indexes = Seq(
       IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(true)),
-      IndexModel(Indexes.ascending("phase"), IndexOptions().sparse(true)),
-      IndexModel(Indexes.ascending("domain"), IndexOptions().sparse(true))
+      IndexModel(Indexes.ascending("phase")),
+      IndexModel(Indexes.ascending("domain"))
     )
   )
   with Transactions {

@@ -154,16 +154,36 @@ abstract class ImportCodeListsJob[K, I](
         case _                            => (None, None)
       }
 
+      _ = logger.warn(s"CRDL-535: Starting fetchCodeListSnapshots for ${codeListConfig.code.code} with lastUpdated=$lastUpdated phase=$phase domain=$domain")
+
       _ <- dpsConnector
         .fetchCodeListSnapshots(codeListConfig.code, lastUpdated, phase, domain)
         // Add a delay between calls to avoid overwhelming DPS
         .delay(1.second, DelayOverflowStrategy.backpressure)
+        .map { page =>
+          logger.warn(s"CRDL-535: Received page with ${page.elements.size} elements for ${codeListConfig.code.code}")
+          page
+        }
         .mapConcat(_.elements)
+        .map { snapshot =>
+          logger.warn(s"CRDL-535: After mapConcat - snapshot snapshotversion=${snapshot.snapshotversion} for ${codeListConfig.code.code}")
+          snapshot
+        }
         .dropWhile { snapshot =>
           // Ignore snapshot versions that we already have
-          storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
+          val skip = storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
+          logger.warn(s"CRDL-535: dropWhile snapshot snapshotversion=${snapshot.snapshotversion} storedSnapshotVersion=${storedLastUpdated.map(_.snapshotVersion)} skip=$skip for ${codeListConfig.code.code}")
+          skip
+        }
+        .map { snapshot =>
+          logger.warn(s"CRDL-535: After dropWhile - processing snapshot snapshotversion=${snapshot.snapshotversion} for ${codeListConfig.code.code}")
+          snapshot
         }
         .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
+        .map { snapshot =>
+          logger.warn(s"CRDL-535: Mapped to CodeListSnapshot version=${snapshot.version} name=${snapshot.name} for ${codeListConfig.code.code}")
+          snapshot
+        }
         .mapAsync(1) { snapshot =>
           // Ensure that we roll back if something goes wrong processing the snapshot
           withSessionAndTransaction { session =>
