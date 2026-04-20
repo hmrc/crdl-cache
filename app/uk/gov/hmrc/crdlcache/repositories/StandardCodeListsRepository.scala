@@ -67,8 +67,8 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
   def executeInstruction(session: ClientSession, instruction: Instruction): Future[Unit] =
     instruction match {
       case UpsertEntry(codeListEntry) =>
-        logger.debug(
-          s"Upserting entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+        logger.warn(
+          s"CRDL-535:L5: Upserting entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
         )
         for {
           _ <- supersedePreviousEntries(
@@ -81,8 +81,8 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           _ <- upsertEntry(session, codeListEntry)
         } yield ()
       case InvalidateEntry(codeListEntry) =>
-        logger.debug(
-          s"Invalidating entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
+        logger.warn(
+          s"CRDL-535:L5: Invalidating entry of codelist ${codeListEntry.codeListCode.code} with key ${codeListEntry.key}"
         )
         supersedePreviousEntries(
           session,
@@ -92,7 +92,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           includeActiveFrom = true
         )
       case RecordMissingEntry(codeListCode, key, removedAt) =>
-        logger.debug(s"Recording removal of entry in codelist ${codeListCode.code} with key $key")
+        logger.warn(s"CRDL-535:L5:Recording removal of entry in codelist ${codeListCode.code} with key $key")
         supersedePreviousEntries(
           session,
           codeListCode,

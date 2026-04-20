@@ -23,6 +23,7 @@ import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.*
 import org.mongodb.scala.model.Filters.*
+import play.api.Logging
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
@@ -53,7 +54,8 @@ abstract class CodeListsRepository[K, I](
       IndexOptions().expireAfter(30, TimeUnit.DAYS)
     ) +: indexes
   )
-  with Transactions {
+  with Transactions
+  with Logging {
 
   def activationDate(instruction: I): Instant
 
@@ -204,6 +206,7 @@ abstract class CodeListsRepository[K, I](
       )
       .toFuture()
       .map { result =>
+        logger.warn(s"CRDL-535:L5: upsertEntry.result = ${result}")
         if (!result.wasAcknowledged())
           throw MongoError.NotAcknowledged
         else if (result.getModifiedCount == 0 && result.getUpsertedId == BsonNull)
