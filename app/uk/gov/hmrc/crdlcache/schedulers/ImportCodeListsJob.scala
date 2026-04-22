@@ -79,14 +79,12 @@ abstract class ImportCodeListsJob[K, I](
           "Both phase and domain must be provided together, or neither should be provided"
         )
       case _ =>
-        logger.warn(s"CRDL-535:L1: In processSnapshot with phase= $phase and domain = $domain")
         repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>
-          logger.warn(s"CRDL-535:L2: currentKeySet.size = ${currentKeySet.size}")
           val incomingKeySet = newSnapshot.entries.map(keyOfEntry)
           val mergedKeySet   = currentKeySet.union(incomingKeySet)
-          logger.warn(s"CRDL-535:L2: mergedKeySet.size = ${mergedKeySet.size}")
+
           val groupedEntries = newSnapshot.entries.toList.groupBy(keyOfEntry)
-          logger.warn(s"CRDL-535:L2: groupedEntries = ${groupedEntries}")
+
           val instructions = List.newBuilder[I]
 
           for (key <- mergedKeySet) {
@@ -110,7 +108,7 @@ abstract class ImportCodeListsJob[K, I](
                 .values
                 .toSet
             }
-            logger.warn(s"CRDL-535:L3: hasExistingEntry = ${hasExistingEntry} maybeNewEntries = ${maybeNewEntries} entriesByDate = ${entriesByDate}")
+
             (hasExistingEntry, entriesByDate) match {
               case (_, Some(newEntries)) =>
                 val pDEntries = (phase, domain) match {
@@ -132,7 +130,6 @@ abstract class ImportCodeListsJob[K, I](
                 )
             }
           }
-          logger.warn(s"CRDL-535:L3: instructions = ${instructions}")
           instructions.result()
         }
     }
@@ -154,44 +151,22 @@ abstract class ImportCodeListsJob[K, I](
         case _                            => (None, None)
       }
 
-      _ = logger.warn(s"CRDL-535: Starting fetchCodeListSnapshots for ${codeListConfig.code.code} with lastUpdated=$lastUpdated phase=$phase domain=$domain")
-
       _ <- dpsConnector
         .fetchCodeListSnapshots(codeListConfig.code, lastUpdated, phase, domain)
         // Add a delay between calls to avoid overwhelming DPS
         .delay(1.second, DelayOverflowStrategy.backpressure)
-        .map { page =>
-          logger.warn(s"CRDL-535: Received page with ${page.elements.size} elements for ${codeListConfig.code.code}")
-          page
-        }
         .mapConcat(_.elements)
-        .map { snapshot =>
-          logger.warn(s"CRDL-535: After mapConcat - snapshot snapshotversion=${snapshot.snapshotversion} for ${codeListConfig.code.code}")
-          snapshot
-        }
         .dropWhile { snapshot =>
           // Ignore snapshot versions that we already have
-          val skip = storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
-          logger.warn(s"CRDL-535: dropWhile snapshot snapshotversion=${snapshot.snapshotversion} storedSnapshotVersion=${storedLastUpdated.map(_.snapshotVersion)} skip=$skip for ${codeListConfig.code.code}")
-          skip
-        }
-        .map { snapshot =>
-          logger.warn(s"CRDL-535: After dropWhile - processing snapshot snapshotversion=${snapshot.snapshotversion} for ${codeListConfig.code.code}")
-          snapshot
+          storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
         }
         .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
-        .map { snapshot =>
-          logger.warn(s"CRDL-535: Mapped to CodeListSnapshot version=${snapshot.version} name=${snapshot.name} for ${codeListConfig.code.code}")
-          snapshot
-        }
         .mapAsync(1) { snapshot =>
           // Ensure that we roll back if something goes wrong processing the snapshot
           withSessionAndTransaction { session =>
             for {
               instructions <- processSnapshot(session, codeListConfig, snapshot, phase, domain)
-              _ <- Future.successful(logger.warn(s"CRDL-535:L6: before execution instructions = ${instructions} for codeList = ${codeListConfig.code}"))
               _            <- repository.executeInstructions(session, instructions)
-              _ <- Future.successful(logger.warn(s"CRDL-535:L6: after execution for codeList = ${codeListConfig.code}"))
               _ <- lastUpdatedRepository.setLastUpdated(
                 session,
                 codeListConfig.code,
@@ -200,13 +175,12 @@ abstract class ImportCodeListsJob[K, I](
                 domain,
                 clock.instant()
               )
-              _ <- Future.successful(logger.warn(s"CRDL-535:L6: updated lastUpdated Date for codeList = ${codeListConfig.code}"))
             } yield ()
           }
         }
         .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
           logger.error(
-            s"CRDL-535:L6 Stopping codelist ${codeListConfig.code.code} import job due to exception",
+            s"Stopping codelist ${codeListConfig.code.code} import job due to exception",
             err
           )
           Supervision.stop
@@ -223,7 +197,7 @@ abstract class ImportCodeListsJob[K, I](
       .run()
       .map(_ => ())
 
-    importCodeLists.foreach(_ => logger.info(s"CRDL-535:L7: $jobName job completed successfully"))
+    importCodeLists.foreach(_ => logger.info(s"$jobName job completed successfully"))
 
     importCodeLists
   }
@@ -232,7 +206,7 @@ abstract class ImportCodeListsJob[K, I](
     Await.result(
       withLock(importCodeLists()).map {
         _.getOrElse {
-          logger.info(s"CRDL-535:L7 $jobName job lock could not be obtained")
+          logger.info(s"$jobName job lock could not be obtained")
         }
       },
       Duration.Inf

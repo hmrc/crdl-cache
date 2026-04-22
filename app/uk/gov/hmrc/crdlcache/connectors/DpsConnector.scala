@@ -115,11 +115,6 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
         err
       )
     )
-    fetchResult.foreach { response =>
-      logger.warn(
-        s"CRDL-535: fetchCodeListSnapshot response for ${code.code} at index $startIndex: elements=${response.elements.size} snapshotVersions=${response.elements.map(_.snapshotversion).mkString("[", ",", "]")} correlationId=$correlationId"
-      )
-    }
     fetchResult
   }
 
@@ -130,43 +125,31 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     businessDomain: Option[String] = None
   )(using
     ec: ExecutionContext
-  ): Source[CodeListResponse, NotUsed] = {
-    logger.warn(s"CRDL-535: fetchCodeListSnapshots called for ${code.code} lastUpdatedDate=$lastUpdatedDate businessDomainPhase=$businessDomainPhase businessDomain=$businessDomain")
-    Source
-      .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
-        fetchCodeListSnapshot(code, lastUpdatedDate, startIndex, businessDomainPhase, businessDomain)
-          .map { response =>
-            if (response.elements.isEmpty) {
-              logger.warn(s"CRDL-535: fetchCodeListSnapshots exhausted for ${code.code} at index $startIndex - no more pages")
-              None
-            } else {
-              logger.warn(s"CRDL-535: fetchCodeListSnapshots yielding page for ${code.code} startIndex=$startIndex nextIndex=${startIndex + 10} pageSize=${response.elements.size}")
-              Some((startIndex + 10, response))
-            }
-          }
-      }
-  }
+  ): Source[CodeListResponse, NotUsed] = Source
+    .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
+      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex, businessDomainPhase, businessDomain)
+        .map { response =>
+          if (response.elements.isEmpty)
+            None
+          else
+            Some((startIndex + 10, response))
+        }
+    }
 
   def fetchCustomsOfficeLists(
     phase: Option[String] = None,
     domain: Option[String] = None
   )(using
     ec: ExecutionContext
-  ): Source[CustomsOfficeListResponse, NotUsed] = {
-    logger.warn(s"CRDL-535: fetchCustomsOfficeLists called with phase=$phase domain=$domain")
-    Source
-      .unfoldAsync[Int, CustomsOfficeListResponse](0) { startIndex =>
-        fetchCustomsOfficeList(startIndex, phase, domain).map { response =>
-          if (response.elements.isEmpty) {
-            logger.warn(s"CRDL-535: fetchCustomsOfficeLists exhausted at index $startIndex - no more pages")
-            None
-          } else {
-            logger.warn(s"CRDL-535: fetchCustomsOfficeLists yielding page startIndex=$startIndex nextIndex=${startIndex + 10} pageSize=${response.elements.size}")
-            Some((startIndex + 10, response))
-          }
-        }
+  ): Source[CustomsOfficeListResponse, NotUsed] = Source
+    .unfoldAsync[Int, CustomsOfficeListResponse](0) { startIndex =>
+      fetchCustomsOfficeList(startIndex, phase, domain).map { response =>
+        if (response.elements.isEmpty)
+          None
+        else
+          Some((startIndex + 10, response))
       }
-  }
+    }
 
   private def fetchCustomsOfficeList(
     startIndex: Int,
@@ -212,11 +195,6 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
         err
       )
     )
-    fetchResult.foreach { response =>
-      logger.warn(
-        s"CRDL-535: fetchCustomsOfficeList response at index $startIndex: elements=${response.elements.size} correlationId=$correlationId"
-      )
-    }
     fetchResult
   }
 }
