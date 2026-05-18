@@ -102,8 +102,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.appName mustBe "crdl-cache"
 
     appConfig.dpsUrl mustBe "http://localhost:7253"
-    appConfig.dpsRefDataPath mustBe "crdl/views/iv_crdl_reference_data"
-    appConfig.dpsCustomsOfficesPath mustBe "crdl/views/iv_crdl_customs_office"
+    appConfig.dpsRefDataPath mustBe "crdl-ref-data-dps-stub/iv_crdl_reference_data"
+    appConfig.dpsCustomsOfficesPath mustBe "crdl-ref-data-dps-stub/iv_crdl_customs_office"
     appConfig.dpsClientId mustBe "client_id_must_be_set_in_app-config-xxx"
     appConfig.dpsClientSecret mustBe "client_secret_must_be_set_in_app-config-xxx"
 
