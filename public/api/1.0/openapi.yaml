@@ -25,6 +25,8 @@ tags:
       
       For example, entries in the excise products codelist (BC36) contain properties describing the excise product category
       they belong to, and applicability flags describing which kinds of excise information apply to that particular product.
+      
+      The API does not automatically filter by state=active so a consuming service should do this if required.
   - name: CustomsOffices
     x-displayName: Customs Offices
     description: |
