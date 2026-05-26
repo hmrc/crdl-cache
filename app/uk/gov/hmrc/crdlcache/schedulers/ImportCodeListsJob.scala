@@ -136,11 +136,12 @@ abstract class ImportCodeListsJob[K, I](
           for {
             codeListCount <- repository.countEntries(listConfig.code, Instant.ofEpochMilli(0))
           } yield {
-            logger.info(s"Code list ${listConfig.code} acquired. " +
-              s"Existing for Code: $codeListCount - " +
-              s"Upsert: ${result.collect{case u: Instruction.UpsertEntry => u}.length} - " +
-              s"Invalidate: ${result.collect{case i: Instruction.InvalidateEntry => i}.length} - " +
-              s"Record Missing: ${result.collect{case r : Instruction.RecordMissingEntry => r}.length}"
+            logger.info(
+              s"Code list ${listConfig.code} acquired. " +
+                s"Existing for Code: $codeListCount - " +
+                s"Upsert: ${result.collect { case u: Instruction.UpsertEntry => u }.length} - " +
+                s"Invalidate: ${result.collect { case i: Instruction.InvalidateEntry => i }.length} - " +
+                s"Record Missing: ${result.collect { case r: Instruction.RecordMissingEntry => r }.length}"
             )
           }
           result
