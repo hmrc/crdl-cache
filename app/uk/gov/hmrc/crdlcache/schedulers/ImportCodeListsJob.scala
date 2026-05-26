@@ -25,6 +25,7 @@ import play.api.Logging
 import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig, PhaseAndDomainListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListSnapshot, CodeListSnapshotEntry}
+import uk.gov.hmrc.crdlcache.models.Instruction
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
@@ -33,6 +34,7 @@ import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
 import java.time.{Clock, ZoneOffset}
 import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future}
+import java.time.Instant
 
 @DisallowConcurrentExecution
 abstract class ImportCodeListsJob[K, I](
@@ -130,7 +132,18 @@ abstract class ImportCodeListsJob[K, I](
                 )
             }
           }
-          instructions.result()
+          val result = instructions.result()
+          for {
+            codeListCount <- repository.countEntries(listConfig.code, Instant.ofEpochMilli(0))
+          } yield {
+            logger.info(s"Code list ${listConfig.code} acquired. " +
+              s"Existing for Code: $codeListCount - " +
+              s"Upsert: ${result.collect{case u: Instruction.UpsertEntry => u}.length} - " +
+              s"Invalidate: ${result.collect{case i: Instruction.InvalidateEntry => i}.length} - " +
+              s"Record Missing: ${result.collect{case r : Instruction.RecordMissingEntry => r}.length}"
+            )
+          }
+          result
         }
     }
   }
