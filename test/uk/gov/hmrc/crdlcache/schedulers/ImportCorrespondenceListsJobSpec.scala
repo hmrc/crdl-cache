@@ -208,6 +208,9 @@ class ImportCorrespondenceListsJobSpec
       appConfig
     )
 
+    when(correspondenceListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0))
+
     // Job lock
     val mockLock = mock[Lock]
     when(lockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(mockLock)))
