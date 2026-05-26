@@ -9,6 +9,8 @@ info:
     The data originates from the EU CS/RD2 and SEED reference data systems and is hosted at DPS (Data Platform Services).
     
     This service exists to reduce the load on the DPS reference data APIs by caching reference data within MDTP.
+    
+    **Note:** The API does not automatically filter by state=active so a consuming service should do this if required.
 
 servers:
   - url: http://localhost:7252/crdl-cache
