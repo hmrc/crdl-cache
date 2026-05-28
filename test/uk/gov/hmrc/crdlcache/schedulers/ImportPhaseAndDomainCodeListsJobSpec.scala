@@ -310,6 +310,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("T2", "T2F")))
 
+    when(codeListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
+
     // Codelist configuration
     when(appConfig.phaseAndDomainListConfigs).thenReturn(
       List(
@@ -507,6 +510,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("T2", "T2F")))
+
+    when(codeListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
 
     // Codelist configuration
     when(appConfig.phaseAndDomainListConfigs).thenReturn(

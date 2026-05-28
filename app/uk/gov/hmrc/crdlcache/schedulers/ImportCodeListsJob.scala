@@ -153,10 +153,10 @@ abstract class ImportCodeListsJob[K, I](
     for {
       // Fetch last updated timestamp
       preIngestCodeListCount <- repository.countEntries(codeListConfig.code, Instant.now())
-      storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
+      storedLastUpdated      <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
       defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
       lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
-      
+
       _ = logger.warn(
         s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated - existing entry count: $preIngestCodeListCount"
       )
