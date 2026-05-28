@@ -181,9 +181,6 @@ class ImportStandardCodeListsJobSpec
       appConfig
     )
 
-    when(codeListsRepository.countEntries(any(), any(), any(), any()))
-      .thenReturn(Future.successful(0))
-
     // Job lock
     val mockLock = mock[Lock]
     when(lockRepository.takeLock(any(), any(), any())).thenReturn(Future.successful(Some(mockLock)))
@@ -198,6 +195,8 @@ class ImportStandardCodeListsJobSpec
     when(clientSession.abortTransaction())
       .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
 
+    when(codeListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0))
   }
 
   "ImportCodeListsJob.importCodeLists" should "import the configured codelists when there is no last updated date stored" in {
@@ -225,6 +224,9 @@ class ImportStandardCodeListsJobSpec
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
+
+    when(codeListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
 
     // Codelist configuration
     when(appConfig.codeListConfigs).thenReturn(
@@ -354,6 +356,9 @@ class ImportStandardCodeListsJobSpec
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
 
+    when(codeListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
+
     // Codelist configuration
     when(appConfig.codeListConfigs).thenReturn(
       List(
@@ -440,6 +445,9 @@ class ImportStandardCodeListsJobSpec
     when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
       .thenReturn(Future.successful(Set.empty[String]))
       .thenReturn(Future.successful(Set("BL", "BM")))
+
+    when(codeListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
 
     // Codelist configuration
     when(appConfig.codeListConfigs).thenReturn(

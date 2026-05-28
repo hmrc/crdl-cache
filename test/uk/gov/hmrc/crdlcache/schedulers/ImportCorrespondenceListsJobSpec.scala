@@ -263,6 +263,9 @@ class ImportCorrespondenceListsJobSpec
         )
       )
 
+    when(correspondenceListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
+
     // Correspondence list configuration
     when(appConfig.correspondenceListConfigs).thenReturn(
       List(
@@ -350,6 +353,9 @@ class ImportCorrespondenceListsJobSpec
           )
         )
       )
+
+    when(correspondenceListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
 
     when(
       correspondenceListsRepository.saveEntries(
@@ -457,6 +463,9 @@ class ImportCorrespondenceListsJobSpec
           )
         )
       )
+
+    when(correspondenceListsRepository.countEntries(any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
 
     // Correspondence list configuration
     when(appConfig.correspondenceListConfigs).thenReturn(
