@@ -134,9 +134,9 @@ abstract class ImportCodeListsJob[K, I](
           }
           val result = instructions.result()
           for {
-            codeListCount <- repository.countEntries(listConfig.code, Instant.ofEpochMilli(0))
+            codeListCount <- repository.countEntries(listConfig.code, Instant.now())
           } yield {
-            logger.info(
+            logger.warn(
               s"Code list ${listConfig.code} acquired. " +
                 s"Existing for Code: $codeListCount - " +
                 s"Upsert: ${result.collect { case u: Instruction.UpsertEntry => u }.length} - " +
@@ -152,12 +152,13 @@ abstract class ImportCodeListsJob[K, I](
   protected def importCodeList(codeListConfig: ListConfig): Future[Unit] = {
     for {
       // Fetch last updated timestamp
+      preIngestCodeListCount <- repository.countEntries(codeListConfig.code, Instant.now())
       storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
       defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
       lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
-
-      _ = logger.info(
-        s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated"
+      
+      _ = logger.warn(
+        s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated - existing entry count: $preIngestCodeListCount"
       )
 
       (phase, domain) = codeListConfig match {
