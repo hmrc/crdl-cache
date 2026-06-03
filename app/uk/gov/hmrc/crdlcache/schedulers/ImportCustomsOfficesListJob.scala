@@ -38,6 +38,7 @@ import java.time.{Clock, LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.*
+import java.time.Instant
 
 @DisallowConcurrentExecution
 class ImportCustomsOfficesListJob @Inject() (
@@ -117,6 +118,13 @@ class ImportCustomsOfficesListJob @Inject() (
 
   private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
     val job = for {
+      preIngestOfficeCount <- customsOfficeListsRepository.customsOfficesCount(
+        Instant.now(),
+        domain = Some("NCTS"),
+        phase = Some("P6")
+      )
+      _ = logger.warn(s"Number of NCTS P6 Customs Offices pre-ingest: ${preIngestOfficeCount}")
+
       customOfficeLists <- dpsConnector
         .fetchCustomsOfficeLists(phase, domain)
         .delay(1.second, DelayOverflowStrategy.backpressure)
@@ -154,4 +162,14 @@ class ImportCustomsOfficesListJob @Inject() (
       },
       Duration.Inf
     )
+    for {
+      postIngestOfficeCount <- customsOfficeListsRepository.customsOfficesCount(
+            Instant.now(),
+            domain = Some("NCTS"),
+            phase = Some("P6")
+          )
+          _ = logger.warn(
+            s"Number of NCTS P6 Customs Offices post-ingest: ${postIngestOfficeCount}"
+          )
+    } yield ()
 }
