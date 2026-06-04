@@ -68,7 +68,7 @@ class CustomsOfficeListsV2ControllerSpec
 
   override def fakeApplication(): Application =
     GuiceApplicationBuilder()
-      .configure("play.http.router" -> "app.v2.Routes")
+      .configure("play.http.router" -> "app.Routes")
       .disable[InternalAuthModule]
       .overrides(
         bind[StubBehaviour].toInstance(authStub),
@@ -129,7 +129,7 @@ class CustomsOfficeListsV2ControllerSpec
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+      .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -169,7 +169,7 @@ class CustomsOfficeListsV2ControllerSpec
       .thenReturn(Future.successful(0L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+      .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -218,7 +218,7 @@ class CustomsOfficeListsV2ControllerSpec
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&activeAt=2024-01-01T00:00:00Z"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&activeAt=2024-01-01T00:00:00Z"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -259,7 +259,7 @@ class CustomsOfficeListsV2ControllerSpec
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&referenceNumber=GB000060"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&referenceNumber=GB000060"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -300,7 +300,7 @@ class CustomsOfficeListsV2ControllerSpec
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&countryCode=GB"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&countryCode=GB"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -341,7 +341,7 @@ class CustomsOfficeListsV2ControllerSpec
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&officeName=Dover"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&officeName=Dover"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -382,7 +382,7 @@ class CustomsOfficeListsV2ControllerSpec
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&phase=P6&domain=NCTS"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&phase=P6&domain=NCTS"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -423,7 +423,7 @@ class CustomsOfficeListsV2ControllerSpec
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&referenceNumber=GB000060&countryCode=GB&officeName=Dover&phase=P6&domain=NCTS"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&referenceNumber=GB000060&countryCode=GB&officeName=Dover&phase=P6&domain=NCTS"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -442,7 +442,7 @@ class CustomsOfficeListsV2ControllerSpec
       try {
         httpClientV2
           .get(
-            url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10&activeAt=not-a-timestamp"
+            url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&activeAt=not-a-timestamp"
           )
           .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
           .execute[HttpResponse]
@@ -488,7 +488,7 @@ class CustomsOfficeListsV2ControllerSpec
     val statusCode =
       try {
         httpClientV2
-          .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+          .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
           .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
           .execute[HttpResponse]
           .futureValue
@@ -509,7 +509,7 @@ class CustomsOfficeListsV2ControllerSpec
     val (statusCode, responseJson) =
       try {
         val r = httpClientV2
-          .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+          .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
           .execute[HttpResponse]
           .futureValue
         (r.status, r.json)
@@ -530,7 +530,7 @@ class CustomsOfficeListsV2ControllerSpec
     val (statusCode, responseJson) =
       try {
         val r = httpClientV2
-          .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+          .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
           .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
           .execute[HttpResponse]
           .futureValue
@@ -552,7 +552,7 @@ class CustomsOfficeListsV2ControllerSpec
     val (statusCode, responseJson) =
       try {
         val r = httpClientV2
-          .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+          .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
           .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
           .execute[HttpResponse]
           .futureValue
@@ -574,7 +574,7 @@ class CustomsOfficeListsV2ControllerSpec
     val statusCode =
       try {
         httpClientV2
-          .get(url"http://localhost:$port/crdl-cache/v2/offices/summaries?pageNum=1&pageSize=10")
+          .get(url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10")
           .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
           .execute[HttpResponse]
           .futureValue
