@@ -404,6 +404,8 @@ class ImportCustomsOfficesListJobSpec
     when(clientSession.abortTransaction())
       .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
 
+    when(customsOfficeListRepository.customsOfficesCount(any(), any(), any(), any(), any(), any()))
+      .thenReturn(Future.successful(0L))
   }
 
   "ImportCustomsOfficeListJob.importCustomsOfficeLists" should "import the customs office lists" in {
