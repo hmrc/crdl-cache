@@ -47,7 +47,13 @@ class CodeListsV2Controller @Inject() (
   ): Action[AnyContent] =
     auth.authorizedAction(ReadCodeLists).async { _ =>
       val listUpdatedFuture =
-        lastUpdatedRepository.fetchAllLastUpdatedV2(pageNum, pageSize, codeListCode, phase, domain)
+        lastUpdatedRepository.fetchAllLastUpdatedPaged(
+          pageNum,
+          pageSize,
+          codeListCode,
+          phase,
+          domain
+        )
       val codeListCountFuture = lastUpdatedRepository.codeListCount(codeListCode, phase, domain)
       for {
         listUpdated   <- listUpdatedFuture
