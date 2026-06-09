@@ -6,8 +6,8 @@ GET        /offices             uk.gov.hmrc.crdlcache.controllers.CustomsOfficeL
 
 # Admin endpoints to support crdl-cache-admin-frontend
 
-GET     /crdl-cache/admin/offices/summaries            uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant], referenceNumber: Option[String], countryCode: Option[String], officeName: Option[String], phase: Option[String], domain: Option[String])
-GET     /crdl-cache/admin/offices/:referenceNumber     uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeDetail(referenceNumber: String, activeAt: Option[Instant])
+GET     /admin/offices/summaries            uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeListSummaries(pageNum: Int, pageSize: Int, activeAt: Option[Instant], referenceNumber: Option[String], countryCode: Option[String], officeName: Option[String], phase: Option[String], domain: Option[String])
+GET     /admin/offices/:referenceNumber     uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsV2Controller.fetchCustomsOfficeDetail(referenceNumber: String, activeAt: Option[Instant])
 GET     /admin/lists                        uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListVersionsPaged(pageNum: Int, pageSize: Int, codeListCode: Option[String], phase: Option[String], domain: Option[String])
-GET     /crdl-cache/admin/lists/:code/entries          uk.gov.hmrc.crdlcache.controllers.CodeListEntriesV2Controller.fetchCodeListEntries(code: CodeListCode, pageNum: Int, pageSize: Int, activeAt: Option[Instant], key: Option[String], value: Option[String])
+GET     /admin/lists/:code/entries          uk.gov.hmrc.crdlcache.controllers.CodeListEntriesV2Controller.fetchCodeListEntries(code: CodeListCode, pageNum: Int, pageSize: Int, activeAt: Option[Instant], key: Option[String], value: Option[String])
 GET     /admin/snapshot/:code               uk.gov.hmrc.crdlcache.controllers.CodeListsController.getSnapshot(code: String)

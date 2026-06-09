@@ -77,7 +77,6 @@ class CodeListEntriesV2ControllerSpec
   }
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .configure{"play.http.router" -> "app.Routes"}
     .disable[InternalAuthModule]
     .overrides(
       bind[StubBehaviour].toInstance(authStub),
