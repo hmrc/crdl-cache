@@ -1,5 +1,6 @@
 # microservice specific routes
 
-GET        /lists               uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListVersions
-GET        /lists/:code         uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListEntries(code: CodeListCode, keys: Option[Set[String]] ?= None, properties: Option[Map[String, JsValue]] ?= None, activeAt: Option[Instant], phase: Option[String], domain: Option[String])
-GET        /offices             uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsController.fetchCustomsOfficeLists(referenceNumbers: Option[Set[String]] ?= None, countryCodes: Option[Set[String]] ?= None, roles: Option[Set[String]] ?= None, activeAt: Option[Instant], phase: Option[String], domain: Option[String], roleDate: Option[LocalDate] ?= None)
+GET        /lists                           uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListVersions
+GET        /lists/:code                     uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListEntries(code: CodeListCode, keys: Option[Set[String]] ?= None, properties: Option[Map[String, JsValue]] ?= None, activeAt: Option[Instant], phase: Option[String], domain: Option[String])
+GET        /offices                         uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsController.fetchCustomsOfficeLists(referenceNumbers: Option[Set[String]] ?= None, countryCodes: Option[Set[String]] ?= None, roles: Option[Set[String]] ?= None, activeAt: Option[Instant], phase: Option[String], domain: Option[String], roleDate: Option[LocalDate] ?= None)
+GET        /admin/lists/:code/entries       uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListEntriesPaginated(code: CodeListCode, pageNum: Int, pageSize: Int, activeAt: Option[Instant], key: Option[String], value: Option[String])

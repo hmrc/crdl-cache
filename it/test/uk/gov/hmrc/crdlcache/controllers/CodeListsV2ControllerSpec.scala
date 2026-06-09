@@ -88,8 +88,16 @@ class CodeListsV2ControllerSpec
 
   private val pagedResultJson = Json.obj(
     "items" -> Json.arr(
-      Json.obj("codeListCode" -> "BC08", "snapshotVersion" -> 1, "lastUpdated" -> "2025-06-29T00:00:00Z"),
-      Json.obj("codeListCode" -> "BC66", "snapshotVersion" -> 1, "lastUpdated" -> "2025-06-28T00:00:00Z")
+      Json.obj(
+        "codeListCode"    -> "BC08",
+        "snapshotVersion" -> 1,
+        "lastUpdated"     -> "2025-06-29T00:00:00Z"
+      ),
+      Json.obj(
+        "codeListCode"    -> "BC66",
+        "snapshotVersion" -> 1,
+        "lastUpdated"     -> "2025-06-28T00:00:00Z"
+      )
     ),
     "pageNum"     -> 1,
     "pageSize"    -> 10,
@@ -101,13 +109,21 @@ class CodeListsV2ControllerSpec
   "CodeListsV2Controller.fetchCodeListVersions" should "return 200 OK with a paged result when no filters are provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(None), equalTo(None), equalTo(None)))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(None),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(lastUpdatedEntries))
     when(lastUpdatedRepository.codeListCount(equalTo(None), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(2L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
+      .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -119,13 +135,21 @@ class CodeListsV2ControllerSpec
   it should "return 200 OK with an empty items list when there are no matching code lists" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(None), equalTo(None), equalTo(None)))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(None),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(Seq.empty))
     when(lastUpdatedRepository.codeListCount(equalTo(None), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(0L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
+      .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -144,13 +168,27 @@ class CodeListsV2ControllerSpec
   it should "return 200 OK when a codeListCode filter is provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(Some("BC08")), equalTo(None), equalTo(None)))
-      .thenReturn(Future.successful(Seq(LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")))))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(Some("BC08")),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
+      .thenReturn(
+        Future.successful(
+          Seq(LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")))
+        )
+      )
     when(lastUpdatedRepository.codeListCount(equalTo(Some("BC08")), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10&codeListCode=BC08")
+      .get(
+        url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10&codeListCode=BC08"
+      )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -161,13 +199,27 @@ class CodeListsV2ControllerSpec
   it should "return 200 OK when a phase filter is provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(None), equalTo(Some("P6")), equalTo(None)))
-      .thenReturn(Future.successful(Seq(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), Instant.parse("2025-06-29T00:00:00Z")))))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(None),
+        equalTo(Some("P6")),
+        equalTo(None)
+      )
+    )
+      .thenReturn(
+        Future.successful(
+          Seq(
+            LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), Instant.parse("2025-06-29T00:00:00Z"))
+          )
+        )
+      )
     when(lastUpdatedRepository.codeListCount(equalTo(None), equalTo(Some("P6")), equalTo(None)))
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10&phase=P6")
+      .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10&phase=P6")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -178,13 +230,27 @@ class CodeListsV2ControllerSpec
   it should "return 200 OK when a domain filter is provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(None), equalTo(None), equalTo(Some("NCTS"))))
-      .thenReturn(Future.successful(Seq(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), Instant.parse("2025-06-29T00:00:00Z")))))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(None),
+        equalTo(None),
+        equalTo(Some("NCTS"))
+      )
+    )
+      .thenReturn(
+        Future.successful(
+          Seq(
+            LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), Instant.parse("2025-06-29T00:00:00Z"))
+          )
+        )
+      )
     when(lastUpdatedRepository.codeListCount(equalTo(None), equalTo(None), equalTo(Some("NCTS"))))
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10&domain=NCTS")
+      .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10&domain=NCTS")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -195,13 +261,35 @@ class CodeListsV2ControllerSpec
   it should "return 200 OK when all three filters are provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(Some("CL251")), equalTo(Some("P6")), equalTo(Some("NCTS"))))
-      .thenReturn(Future.successful(Seq(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), Instant.parse("2025-06-29T00:00:00Z")))))
-    when(lastUpdatedRepository.codeListCount(equalTo(Some("CL251")), equalTo(Some("P6")), equalTo(Some("NCTS"))))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(Some("CL251")),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
+      .thenReturn(
+        Future.successful(
+          Seq(
+            LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), Instant.parse("2025-06-29T00:00:00Z"))
+          )
+        )
+      )
+    when(
+      lastUpdatedRepository.codeListCount(
+        equalTo(Some("CL251")),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10&codeListCode=CL251&phase=P6&domain=NCTS")
+      .get(
+        url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10&codeListCode=CL251&phase=P6&domain=NCTS"
+      )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -212,21 +300,30 @@ class CodeListsV2ControllerSpec
   it should "return 500 Internal Server Error when there is an error fetching from the repository" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchAllLastUpdatedV2(equalTo(1), equalTo(10), equalTo(None), equalTo(None), equalTo(None)))
+    when(
+      lastUpdatedRepository.fetchAllLastUpdatedV2(
+        equalTo(1),
+        equalTo(10),
+        equalTo(None),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
     when(lastUpdatedRepository.codeListCount(equalTo(None), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(0L))
 
-    val statusCode = try {
-      httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
-        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
-        .execute[HttpResponse]
-        .futureValue
-        .status
-    } catch {
-      case e: UpstreamErrorResponse => e.statusCode
-    }
+    val statusCode =
+      try {
+        httpClientV2
+          .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
+          .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+          .execute[HttpResponse]
+          .futureValue
+          .status
+      } catch {
+        case e: UpstreamErrorResponse => e.statusCode
+      }
 
     statusCode mustBe Status.INTERNAL_SERVER_ERROR
   }
@@ -235,15 +332,16 @@ class CodeListsV2ControllerSpec
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
 
-    val (statusCode, responseJson) = try {
-      val r = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
-        .execute[HttpResponse]
-        .futureValue
-      (r.status, r.json)
-    } catch {
-      case e: UpstreamErrorResponse => (e.statusCode, Json.parse(e.message))
-    }
+    val (statusCode, responseJson) =
+      try {
+        val r = httpClientV2
+          .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
+          .execute[HttpResponse]
+          .futureValue
+        (r.status, r.json)
+      } catch {
+        case e: UpstreamErrorResponse => (e.statusCode, Json.parse(e.message))
+      }
 
     responseJson mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
     statusCode mustBe Status.UNAUTHORIZED
@@ -253,16 +351,17 @@ class CodeListsV2ControllerSpec
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.failed(UpstreamErrorResponse("Unauthorized", Status.UNAUTHORIZED)))
 
-    val (statusCode, responseJson) = try {
-      val r = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
-        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
-        .execute[HttpResponse]
-        .futureValue
-      (r.status, r.json)
-    } catch {
-      case e: UpstreamErrorResponse => (e.statusCode, Json.parse(e.message))
-    }
+    val (statusCode, responseJson) =
+      try {
+        val r = httpClientV2
+          .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
+          .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+          .execute[HttpResponse]
+          .futureValue
+        (r.status, r.json)
+      } catch {
+        case e: UpstreamErrorResponse => (e.statusCode, Json.parse(e.message))
+      }
 
     responseJson mustBe Json.obj("statusCode" -> 401, "message" -> "Unauthorized")
     statusCode mustBe Status.UNAUTHORIZED
@@ -272,16 +371,17 @@ class CodeListsV2ControllerSpec
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.failed(UpstreamErrorResponse("Forbidden", Status.FORBIDDEN)))
 
-    val (statusCode, responseJson) = try {
-      val r = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
-        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
-        .execute[HttpResponse]
-        .futureValue
-      (r.status, r.json)
-    } catch {
-      case e: UpstreamErrorResponse => (e.statusCode, Json.parse(e.message))
-    }
+    val (statusCode, responseJson) =
+      try {
+        val r = httpClientV2
+          .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
+          .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+          .execute[HttpResponse]
+          .futureValue
+        (r.status, r.json)
+      } catch {
+        case e: UpstreamErrorResponse => (e.statusCode, Json.parse(e.message))
+      }
 
     responseJson mustBe Json.obj("statusCode" -> 403, "message" -> "Forbidden")
     statusCode mustBe Status.FORBIDDEN
@@ -291,16 +391,17 @@ class CodeListsV2ControllerSpec
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.failed(UpstreamErrorResponse("Internal Server Error", 500)))
 
-    val statusCode = try {
-      httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists?pageNum=1&pageSize=10")
-        .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
-        .execute[HttpResponse]
-        .futureValue
-        .status
-    } catch {
-      case e: UpstreamErrorResponse => e.statusCode
-    }
+    val statusCode =
+      try {
+        httpClientV2
+          .get(url"http://localhost:$port/crdl-cache/admin/lists?pageNum=1&pageSize=10")
+          .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
+          .execute[HttpResponse]
+          .futureValue
+          .status
+      } catch {
+        case e: UpstreamErrorResponse => e.statusCode
+      }
 
     statusCode mustBe Status.INTERNAL_SERVER_ERROR
   }
@@ -309,7 +410,11 @@ class CodeListsV2ControllerSpec
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
     when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08)))
-      .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")))))
+      .thenReturn(
+        Future.successful(
+          Some(LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")))
+        )
+      )
 
     val response = httpClientV2
       .get(url"http://localhost:$port/crdl-cache/v2/snapshot/BC08")
@@ -318,7 +423,11 @@ class CodeListsV2ControllerSpec
       .futureValue
 
     response.status mustBe Status.OK
-    response.json mustBe Json.obj("codeListCode" -> "BC08", "snapshotVersion" -> 1, "lastUpdated" -> "2025-06-29T00:00:00Z")
+    response.json mustBe Json.obj(
+      "codeListCode"    -> "BC08",
+      "snapshotVersion" -> 1,
+      "lastUpdated"     -> "2025-06-29T00:00:00Z"
+    )
   }
 
   "CodeListsV2Controller.getSnapShot" should "return 404 Not Found when no snapshot is found" in {
