@@ -164,12 +164,12 @@ class ImportCustomsOfficesListJob @Inject() (
     )
     for {
       postIngestOfficeCount <- customsOfficeListsRepository.customsOfficesCount(
-            Instant.now(),
-            domain = Some("NCTS"),
-            phase = Some("P6")
-          )
-          _ = logger.warn(
-            s"Number of NCTS P6 Customs Offices post-ingest: ${postIngestOfficeCount}"
-          )
+        Instant.now(),
+        domain = Some("NCTS"),
+        phase = Some("P6")
+      )
+      _ = logger.warn(
+        s"Number of NCTS P6 Customs Offices post-ingest: ${postIngestOfficeCount}"
+      )
     } yield ()
 }
