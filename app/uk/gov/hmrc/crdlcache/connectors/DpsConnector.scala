@@ -158,7 +158,8 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   )(using ec: ExecutionContext): Future[CustomsOfficeListResponse] = {
     val baseQueryParams = Map(
       "$start_index" -> startIndex,
-      "$count"       -> 10
+      "$count"       -> 10,
+      "iscurrentindicator" -> 1 // Possible improvement suggested by DPS that should have their API prefilter to the latest version
     )
 
     val queryParams = baseQueryParams ++
