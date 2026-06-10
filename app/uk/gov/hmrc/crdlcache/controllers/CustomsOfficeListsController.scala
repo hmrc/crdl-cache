@@ -22,6 +22,7 @@ import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
 import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
+import uk.gov.hmrc.crdlcache.models.paging.PagedResult
 import uk.gov.hmrc.internalauth.client.*
 
 import java.time.{Clock, Instant, LocalDate}
@@ -79,5 +80,66 @@ class CustomsOfficeListsController @Inject() (
               Ok(Json.toJson(customsOfficeLists))
             }
       }
+  }
+
+  def fetchCustomsOfficeDetail(
+    referenceNumber: String,
+    activeAt: Option[Instant]
+  ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
+    val resolvedActiveAt = activeAt.getOrElse(clock.instant())
+    customsOfficeListsRepository.fetchCustomsOfficeByRef(referenceNumber, resolvedActiveAt).map {
+      case Some(office) => Ok(Json.toJson(office))
+      case None         => NotFound
+    }
+  }
+
+  def fetchCustomsOfficeListSummaries(
+    pageNum: Int,
+    pageSize: Int,
+    activeAt: Option[Instant],
+    referenceNumber: Option[String],
+    countryCode: Option[String],
+    officeName: Option[String],
+    phase: Option[String],
+    domain: Option[String]
+  ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
+    val resolvedActiveAt = activeAt.getOrElse(clock.instant())
+    val summariesFuture = customsOfficeListsRepository
+      .fetchCustomsOfficeSummaries(
+        activeAt.getOrElse(clock.instant()),
+        pageNum,
+        pageSize,
+        referenceNumber,
+        countryCode,
+        officeName,
+        phase,
+        domain
+      )
+    val officesCountFuture = customsOfficeListsRepository.customsOfficesCount(
+      resolvedActiveAt,
+      referenceNumber,
+      countryCode,
+      officeName,
+      phase,
+      domain
+    )
+
+    for {
+      summaries    <- summariesFuture
+      officesCount <- officesCountFuture
+    } yield {
+      Ok(
+        Json.toJson(
+          PagedResult(
+            pageNum = pageNum,
+            pageSize = pageSize,
+            itemsInPage = summaries.length,
+            totalItems = officesCount,
+            totalPages = Math.ceil(officesCount.toFloat / pageSize).toInt,
+            items = summaries
+          )
+        )
+      )
+    }
   }
 }
