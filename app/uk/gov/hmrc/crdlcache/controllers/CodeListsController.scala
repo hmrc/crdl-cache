@@ -22,6 +22,7 @@ import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCodeLists
 import uk.gov.hmrc.crdlcache.models.CodeListType.{CORRESPONDENCE, PD, STANDARD}
 import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
 import uk.gov.hmrc.crdlcache.models.CodeListCode
+import uk.gov.hmrc.crdlcache.models.paging.PagedResult
 import uk.gov.hmrc.crdlcache.repositories.{
   CorrespondenceListsRepository,
   LastUpdatedRepository,
@@ -29,7 +30,6 @@ import uk.gov.hmrc.crdlcache.repositories.{
 }
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.crdlcache.models.paging.PagedResult
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -107,6 +107,41 @@ class CodeListsController @Inject() (
           }
       }
     }
+
+  def fetchCodeListEntriesPaginated(
+    code: CodeListCode,
+    pageNum: Int,
+    pageSize: Int,
+    activeAt: Option[Instant],
+    key: Option[String],
+    value: Option[String]
+  ): Action[AnyContent] = auth.authorizedAction(ReadCodeLists).async { _ =>
+    val resolvedActiveAt = activeAt.getOrElse(clock.instant())
+    val repo = code.listType match {
+      case CORRESPONDENCE => correspondenceListsRepository
+      case STANDARD | PD  => codeListsRepository
+    }
+    val entriesFuture =
+      repo.fetchEntriesPaged(code, resolvedActiveAt, pageNum, pageSize, key, value)
+    val countFuture = repo.countEntries(code, resolvedActiveAt, key, value)
+    for {
+      entries <- entriesFuture
+      count   <- countFuture
+    } yield {
+      Ok(
+        Json.toJson(
+          PagedResult(
+            items = entries,
+            pageNum = pageNum,
+            pageSize = pageSize,
+            itemsInPage = entries.length,
+            totalItems = count,
+            totalPages = Math.ceil(count.toFloat / pageSize).toInt
+          )
+        )
+      )
+    }
+  }
 
   def fetchCodeListVersions: Action[AnyContent] =
     auth.authorizedAction(ReadCodeLists).async { _ =>
