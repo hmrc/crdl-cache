@@ -126,13 +126,13 @@ class LastUpdatedRepositorySpec
       }
   }
 
-  "LastUpdatedRepository.fetchAllLastUpdatedV2" should "return all codelists when no filters are provided" in withSession {
+  "LastUpdatedRepository.fetchAllLastUpdatedPaged" should "return all codelists when no filters are provided" in withSession {
     session =>
       val instant = clock.instant()
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
-        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10)
+        lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10)
       } yield {
         lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant), LastUpdated(BC66, 1, None, None, instant))
       }
@@ -145,7 +145,7 @@ class LastUpdatedRepositorySpec
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
-        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10, codeListCode = Some("bc"))
+        lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10, codeListCode = Some("bc"))
       } yield {
         lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant), LastUpdated(BC66, 1, None, None, instant))
       }
@@ -157,7 +157,7 @@ class LastUpdatedRepositorySpec
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
-        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10, phase = Some("P6"))
+        lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10, phase = Some("P6"))
       } yield {
         lastUpdated mustBe List(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), instant))
       }
@@ -169,7 +169,7 @@ class LastUpdatedRepositorySpec
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
-        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 10, domain = Some("NCTS"))
+        lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10, domain = Some("NCTS"))
       } yield {
         lastUpdated mustBe List(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), instant))
       }
@@ -181,7 +181,7 @@ class LastUpdatedRepositorySpec
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
-        lastUpdated <- repository.fetchAllLastUpdatedV2(1, 1)
+        lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 1)
       } yield {
         lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant))
       }

@@ -29,6 +29,7 @@ import uk.gov.hmrc.crdlcache.repositories.{
 }
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.crdlcache.models.paging.PagedResult
 
 import java.time.{Clock, Instant}
 import javax.inject.{Inject, Singleton}
@@ -114,4 +115,49 @@ class CodeListsController @Inject() (
           Ok(Json.toJson(lastUpdatedEntries))
         }
     }
+
+  def fetchCodeListVersionsPaged(
+    pageNum: Int,
+    pageSize: Int,
+    codeListCode: Option[String],
+    phase: Option[String],
+    domain: Option[String]
+  ): Action[AnyContent] =
+    auth.authorizedAction(ReadCodeLists).async { _ =>
+      val listUpdatedFuture =
+        lastUpdatedRepository.fetchAllLastUpdatedPaged(
+          pageNum,
+          pageSize,
+          codeListCode,
+          phase,
+          domain
+        )
+      val codeListCountFuture = lastUpdatedRepository.codeListCount(codeListCode, phase, domain)
+      for {
+        listUpdated   <- listUpdatedFuture
+        codeListCount <- codeListCountFuture
+      } yield {
+        Ok(
+          Json.toJson(
+            PagedResult(
+              items = listUpdated,
+              pageNum = pageNum,
+              pageSize = pageSize,
+              itemsInPage = listUpdated.length,
+              totalItems = codeListCount,
+              totalPages = Math.ceil(codeListCount.toFloat / pageSize).toInt
+            )
+          )
+        )
+      }
+    }
+
+  def getSnapshot(
+    code: String
+  ): Action[AnyContent] = auth.authorizedAction(ReadCodeLists).async { _ =>
+    lastUpdatedRepository.fetchLastUpdated(CodeListCode.fromString(code)).map {
+      case Some(snapshot) => Ok(Json.toJson(snapshot))
+      case None           => NotFound
+    }
+  }
 }

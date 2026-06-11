@@ -77,7 +77,6 @@ class CodeListEntriesV2ControllerSpec
   }
 
   override def fakeApplication(): Application = GuiceApplicationBuilder()
-    .configure{"play.http.router" -> "app.v2.Routes"}
     .disable[InternalAuthModule]
     .overrides(
       bind[StubBehaviour].toInstance(authStub),
@@ -111,7 +110,7 @@ class CodeListEntriesV2ControllerSpec
         Json.obj("status" -> "active"),
         if withPhaseAndDomain then Some(entryPhase) else None,
         if withPhaseAndDomain then Some(entryDomain) else None
-      )  
+      )
     }
 
     private val expectedPDEntryPagedResult = (entries: Seq[CodeListEntry]) => Json.obj(
@@ -136,7 +135,7 @@ class CodeListEntriesV2ControllerSpec
         .thenReturn(Future.successful(5L))
 
       val response = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$pdEntryCodeListCode/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$pdEntryCodeListCode/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -154,7 +153,7 @@ class CodeListEntriesV2ControllerSpec
         .thenReturn(Future.successful(5L))
 
       val response = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -180,7 +179,7 @@ class CodeListEntriesV2ControllerSpec
         .thenReturn(Future.successful(5L))
 
       val response = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$pdEntryCodeListCode/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$pdEntryCodeListCode/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -206,7 +205,7 @@ class CodeListEntriesV2ControllerSpec
         .thenReturn(Future.successful(5L))
 
       val response = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$correspondenceEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$correspondenceEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -229,7 +228,7 @@ class CodeListEntriesV2ControllerSpec
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
 
     val statusCode = try {
-        httpClientV2.get(url"http://localhost:$port/crdl-cache/v2/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        httpClientV2.get(url"http://localhost:$port/crdl-cache/admin/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -246,7 +245,7 @@ class CodeListEntriesV2ControllerSpec
 
     val (statusCode, responseJson) = try {
       val r = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .execute[HttpResponse]
         .futureValue
       (r.status, r.json)
@@ -263,7 +262,7 @@ class CodeListEntriesV2ControllerSpec
 
     val (statusCode, responseJson) = try {
       val r = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -282,7 +281,7 @@ class CodeListEntriesV2ControllerSpec
 
     val (statusCode, responseJson) = try {
       val r = httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
@@ -301,7 +300,7 @@ class CodeListEntriesV2ControllerSpec
 
     val statusCode = try {
       httpClientV2
-        .get(url"http://localhost:$port/crdl-cache/v2/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
+        .get(url"http://localhost:$port/crdl-cache/admin/lists/$standardEntryCodeList/entries?pageNum=$defaultPageNum&pageSize=$defaultPageSize")
         .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
         .execute[HttpResponse]
         .futureValue
