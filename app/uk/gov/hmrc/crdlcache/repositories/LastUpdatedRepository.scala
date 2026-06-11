@@ -111,7 +111,7 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     codeFilter ++ phaseFilter ++ domainFilter
   }
 
-  def fetchAllLastUpdatedV2(
+  def fetchAllLastUpdatedPaged(
     pageNum: Int,
     pageSize: Int,
     codeListCode: Option[String] = None,
