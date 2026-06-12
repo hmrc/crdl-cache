@@ -68,6 +68,7 @@ class DpsConnectorSpec
       "microservice.services.dps-api.clientId"             -> clientId,
       "microservice.services.dps-api.clientSecret"         -> clientSecret,
       "last-updated-date.default"                          -> "2025-05-29",
+      "customsOfficesPageSize"                             -> "10",
       "import-codelists.schedule"                          -> "* * * * * ?",
       "import-pd-lists.schedule"                           -> "* * * * * ?",
       "import-offices.schedule"                            -> "* * * * * ?",

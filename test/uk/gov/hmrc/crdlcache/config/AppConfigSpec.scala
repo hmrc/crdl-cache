@@ -37,6 +37,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
         "microservice.services.dps-api.clientId"             -> "abc123",
         "microservice.services.dps-api.clientSecret"         -> "def456",
         "last-updated-date.default"                          -> "2025-11-01",
+        "customsOfficesPageSize"                             -> "50",
         "import-codelists.schedule"                          -> "*/10 * * * * ?",
         "import-pd-lists.schedule"                           -> "*/10 * * * * ?",
         "import-correspondence-lists.schedule"               -> "*/10 * * * * ?",
@@ -114,6 +115,7 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
     appConfig.importOfficesJobPhase mustBe Some("P6")
     appConfig.importOfficesJobDomain mustBe Some("NCTS")
     appConfig.defaultLastUpdated mustBe LocalDate.of(2025, 11, 1)
+    appConfig.customsOfficesPageSize mustBe 50
     appConfig.codeListConfigs mustBe List(
       CodeListConfig(BC01, SEED, "EvidenceTypeCode"),
       CodeListConfig(BC03, SEED, "AcoActionNotPossibleReasonCode"),
