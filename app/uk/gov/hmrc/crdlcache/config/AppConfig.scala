@@ -47,6 +47,8 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("last-updated-date.default"))
 
+  val customsOfficesPageSize = config.get[Int]("customsOfficesPageSize")
+
   private def loadListConfigs[T](configPath: String)(mapper: Config => T): List[T] = {
     val listElementName = configPath.split("import-").last
     config

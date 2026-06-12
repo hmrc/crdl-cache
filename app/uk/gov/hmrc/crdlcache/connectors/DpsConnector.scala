@@ -147,7 +147,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
         if (response.elements.isEmpty)
           None
         else
-          Some((startIndex + 10, response))
+          Some((startIndex + appConfig.customsOfficesPageSize, response))
       }
     }
 
@@ -158,7 +158,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   )(using ec: ExecutionContext): Future[CustomsOfficeListResponse] = {
     val baseQueryParams = Map(
       "$start_index" -> startIndex,
-      "$count"       -> 10,
+      "$count"       -> appConfig.customsOfficesPageSize,
       "iscurrentindicator" -> 1 // Possible improvement suggested by DPS that should have their API prefilter to the latest version
     )
 
