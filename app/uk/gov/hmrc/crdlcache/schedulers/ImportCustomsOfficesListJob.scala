@@ -36,7 +36,7 @@ import uk.gov.hmrc.mongo.transaction.{TransactionConfiguration, Transactions}
 
 import java.time.{Clock, LocalDate, ZoneOffset}
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.*
 import java.time.Instant
 
@@ -156,18 +156,10 @@ class ImportCustomsOfficesListJob @Inject() (
   def execute(
     context: JobExecutionContext
   ): Unit =
-    val importFuture = withLock(importCustomsOfficeLists()).map {
-      _.getOrElse { logger.info("Import Customs offices job lock could not be obtained") }
-    }
-    for {
-      _ <- importFuture
-      postIngestOfficeCount <- customsOfficeListsRepository.customsOfficesCount(
-        Instant.now(),
-        domain = Some("NCTS"),
-        phase = Some("P6")
-      )
-      _ = logger.warn(
-        s"Number of NCTS P6 Customs Offices post-ingest: ${postIngestOfficeCount}"
-      )
-    } yield ()
+    Await.result(
+      withLock(importCustomsOfficeLists()).map {
+        _.getOrElse { logger.info("Import Customs offices job lock could not be obtained") }
+      },
+      Duration.Inf
+    )
 }
