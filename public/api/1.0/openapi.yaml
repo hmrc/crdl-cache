@@ -340,6 +340,118 @@ components:
         trafficType:
           type: string
           description: The type of traffic that this customs office can process. This should reference entries of the "TrafficType" (CL020) codelist.
+    LastUpdated:
+      type: object
+      required:
+        - codeListCode
+        - snapshotVersion
+        - lastUpdated
+      additionalProperties: false
+      properties:
+        codeListCode:
+          type: string
+          description: A unique code identifying the reference data codelist
+          examples:
+            - BC08
+            - BC36
+            - CL239
+        snapshotVersion:
+          type: integer
+          description: An incrementing integer version of the codelist.
+          examples:
+            - 1
+        phase:
+          type: string
+          description: The phase associated with the codelist
+          examples:
+            - "P6"
+        domain:
+          type: string
+          description: The domain associated with the codelist
+          examples:
+            - "NCTS"
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The timestamp at which the codelist was last updated.
+          examples:
+            - "2025-06-05T04:03:02Z"
+    PagedResult:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+        - pageNum
+        - pageSize
+        - itemsInPage
+        - totalItems
+        - totalPages
+      properties:
+        items:
+          type: array
+          items: { }
+          description: The items returned in this page of results.
+        pageNum:
+          type: integer
+          description: The current page number.
+          examples:
+            - 1
+        pageSize:
+          type: integer
+          description: The number of items requested per page.
+          examples:
+            - 10
+        itemsInPage:
+          type: integer
+          description: The number of items returned in this page.
+          examples:
+            - 10
+        totalItems:
+          type: integer
+          format: int64
+          description: The total number of items across all pages.
+          examples:
+            - 100
+        totalPages:
+          type: integer
+          description: The total number of pages available.
+          examples:
+            - 10
+    CustomsOfficeSummary:
+      type: object
+      x-tags:
+        - CustomsOffices
+      additionalProperties: false
+      required:
+        - referenceNumber
+        - countryCode
+        - customsOfficeUsualName
+      properties:
+        referenceNumber:
+          type: string
+          description: The unique reference number for a customs office.
+          examples:
+            - "MT000702"
+        countryCode:
+          type: string
+          description: The country code for the customs office.
+          examples:
+            - "MT"
+        customsOfficeUsualName:
+          type: string
+          description: The usual name of the customs office.
+          examples:
+            - "Customs Warehousing Unit"
+        phase:
+          type: string
+          description: The phase associated with the customs office.
+          examples:
+            - "P6"
+        domain:
+          type: string
+          description: The domain associated with the customs office.
+          examples:
+            - "NCTS"
 
   responses:
     badRequest:
@@ -370,6 +482,30 @@ components:
                 description: A message indicating the cause of the bad request status.
                 examples:
                   - "bad request, cause: REDACTED"
+    notFound:
+      x-summary: Not Found
+      description: |
+        This error is returned when the requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - status
+              - message
+            properties:
+              status:
+                type: number
+                description: The HTTP status code of the response.
+                minimum: 100
+                maximum: 599
+                examples:
+                  - 404
+              message:
+                type: string
+                description: A message indicating the cause of the not found status.
+                examples:
+                  - "404, Not Found"
 
 paths:
   /lists:
@@ -389,31 +525,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required:
-                    - codeListCode
-                    - snapshotVersion
-                    - lastUpdated
-                  additionalProperties: false
-                  properties:
-                    codeListCode:
-                      type: string
-                      description: A unique code identifying the reference data codelist
-                      examples:
-                        - BC08
-                        - BC36
-                        - CL239
-                    snapshotVersion:
-                      type: integer
-                      description: An incrementing integer version of the codelist.
-                      examples:
-                        - 1
-                    lastUpdated:
-                      type: string
-                      format: date-time
-                      description: The timestamp at which the codelist was last updated.
-                      examples:
-                        - "2025-06-05T04:03:02Z"
+                  $ref: "#/components/schemas/LastUpdated"
   /lists/{code}:
     get:
       summary: Fetch Codelist Entries
@@ -422,7 +534,7 @@ paths:
       tags:
         - Codelists
       security:
-        - InternalAuth: ["READ lists"]
+        - InternalAuth: [ "READ lists" ]
       parameters:
         - name: code
           in: path
@@ -439,9 +551,9 @@ paths:
           in: query
           description: |
             Used to specify the keys of entries to return in the response.
-            
+
             You can provide comma-separated values for keys, or provide multiple occurrences of the `keys` parameter, or both.
-            
+
             For example: `?keys=AW,BL&keys=XI&keys=GB`.
           required: false
           schema:
@@ -456,9 +568,9 @@ paths:
           in: query
           description: |
             Used to filter entries by the feed-specific and codelist-specific properties in the `properties` object.
-            
+
             **Note:** This API allows any query parameter name to be used for filtering feed-specific and codelist-specific properties. You do not need to prefix the query parameter with `properties`.
-            
+
             For example: `?unitOfMeasureCode=3&responsibleDataManager=null`.
           required: false
           explode: true
@@ -612,7 +724,7 @@ paths:
                       referenceNumberHigherAuthority: ITP00002
                       countryCode: IT
                       emailAddress: test@adm.gov.it
-                      nctsEntryDate : 2025-05-01
+                      nctsEntryDate: 2025-05-01
                       postalCode: "40121"
                       phoneNumber: 0039 0515283611
                       faxNumber: 0039 0515283622
@@ -620,7 +732,7 @@ paths:
                       traderDedicated: false
                       dedicatedTraderLanguageCode: IT
                       dedicatedTraderName: TIN
-                      customsOfficeSpecificNotesCodes: []
+                      customsOfficeSpecificNotesCodes: [ ]
                       customsOfficeLsd:
                         customsOfficeUsualName: EMILIA 1 BOLOGNA
                         languageCode: IT
@@ -641,8 +753,8 @@ paths:
                               openingHoursTimeFirstPeriodTo: "1800"
                               dayInTheWeekEndDay: 6
                               customsOfficeRoleTrafficCompetence:
-                               - roleName: EXC
-                                 trafficType: R
+                                - roleName: EXC
+                                  trafficType: R
                     - referenceNumber: LV000724
                       referenceNumberMainOffice: LV002600
                       referenceNumberHigherAuthority: LV009999
@@ -686,3 +798,254 @@ paths:
                                   trafficType: V
         400:
           $ref: "#/components/responses/badRequest"
+  /admin/lists:
+    get:
+      summary: Fetch Codelist Versions Paged
+      description: |
+        This endpoint is used to fetch the available codelists and their version information.
+      tags:
+        - Codelists
+      security:
+        - InternalAuth: [ "READ lists" ]
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/PagedResult"
+                type: array
+                items:
+                  $ref: "#/components/schemas/LastUpdated"
+  /admin/lists/{code}/entries:
+    get:
+      summary: Fetch Codelist Entries Paged
+      description: |
+        This endpoint is used to fetch entries of a reference data codelist.
+      tags:
+        - Codelists
+      security:
+        - InternalAuth: [ "READ lists" ]
+      parameters:
+        - name: code
+          in: path
+          description: A unique code identifying a reference data codelist.
+          required: true
+          schema:
+            type: string
+            examples:
+              - BC08
+              - BC36
+              - CL239
+        - name: pageNum
+          in: query
+          description: The page number to retrieve.
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 1
+        - name: pageSize
+          in: query
+          description: The number of items to return per page.
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 10
+        - name: activeAt
+          in: query
+          description: The timestamp at which to view entries. If omitted the current timestamp is used.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - "2025-06-05T00:00:00Z"
+        - name: key
+          in: query
+          description: Used to filter entries by key.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "GB"
+        - name: value
+          in: query
+          description: Used to filter entries by value.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "United Kingdom"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PagedResult'
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CodeListEntry'
+        400:
+          $ref: "#/components/responses/badRequest"
+  /admin/snapshot/{code}:
+    get:
+      summary: Fetch Codelist Snapshot
+      description: |
+        This endpoint is used to fetch the snapshot version information for a specific codelist.
+      tags:
+        - Codelists
+      security:
+        - InternalAuth: [ "READ lists" ]
+      parameters:
+        - name: code
+          in: path
+          description: A unique code identifying a reference data codelist.
+          required: true
+          schema:
+            type: string
+            examples:
+              - BC08
+              - BC36
+              - CL239
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LastUpdated'
+        404:
+          $ref: "#/components/responses/notFound"
+  /admin/offices/summaries:
+    get:
+      summary: Fetch Customs Office Summaries Paged
+      description: |
+        This endpoint is used to fetch a paged list of customs office summaries.
+      tags:
+        - CustomsOffices
+      security:
+        - InternalAuth: [ "READ offices" ]
+      parameters:
+        - name: pageNum
+          in: query
+          description: The page number to retrieve.
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 1
+        - name: pageSize
+          in: query
+          description: The number of items to return per page.
+          required: true
+          schema:
+            type: integer
+            examples:
+              - 10
+        - name: activeAt
+          in: query
+          description: The timestamp at which to view entries. If omitted the current timestamp is used.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - "2025-06-05T00:00:00Z"
+        - name: referenceNumber
+          in: query
+          description: Used to filter offices by reference number.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "MT000900"
+        - name: countryCode
+          in: query
+          description: Used to filter offices by country code.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "MT"
+        - name: officeName
+          in: query
+          description: Used to filter offices by name.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "Customs Debt Unit"
+        - name: phase
+          in: query
+          description: Used to filter offices by phase.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "P6"
+        - name: domain
+          in: query
+          description: Used to filter offices by domain.
+          required: false
+          schema:
+            type: string
+            examples:
+              - "NCTS"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PagedResult'
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CustomsOfficeSummary'
+        400:
+          $ref: "#/components/responses/badRequest"
+  /admin/offices/{referenceNumber}:
+    get:
+      summary: Fetch Customs Office Detail
+      description: |
+        This endpoint is used to fetch the details of a specific customs office.
+      tags:
+        - CustomsOffices
+      security:
+        - InternalAuth: [ "READ offices" ]
+      parameters:
+        - name: referenceNumber
+          in: path
+          description: The unique reference number of the customs office.
+          required: true
+          schema:
+            type: string
+            examples:
+              - "MT000900"
+        - name: activeAt
+          in: query
+          description: The timestamp at which to view the customs office. If omitted the current timestamp is used.
+          required: false
+          schema:
+            type: string
+            format: date-time
+            examples:
+              - "2025-06-05T00:00:00Z"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomsOffice'
+        404:
+          $ref: "#/components/responses/notFound"
