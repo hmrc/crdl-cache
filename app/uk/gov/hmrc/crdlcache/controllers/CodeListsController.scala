@@ -188,9 +188,11 @@ class CodeListsController @Inject() (
     }
 
   def getSnapshot(
-    code: String
+    code: String,
+    phase: Option[String] = None,
+    domain: Option[String] = None
   ): Action[AnyContent] = auth.authorizedAction(ReadCodeLists).async { _ =>
-    lastUpdatedRepository.fetchLastUpdated(CodeListCode.fromString(code)).map {
+    lastUpdatedRepository.fetchLastUpdated(CodeListCode.fromString(code), phase, domain).map {
       case Some(snapshot) => Ok(Json.toJson(snapshot))
       case None           => NotFound
     }

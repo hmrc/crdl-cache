@@ -10,4 +10,4 @@ GET     /admin/offices/summaries            uk.gov.hmrc.crdlcache.controllers.Cu
 GET     /admin/offices/:referenceNumber     uk.gov.hmrc.crdlcache.controllers.CustomsOfficeListsController.fetchCustomsOfficeDetail(referenceNumber: String, activeAt: Option[Instant])
 GET     /admin/lists                        uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListVersionsPaged(pageNum: Int, pageSize: Int, codeListCode: Option[String], phase: Option[String], domain: Option[String])
 GET     /admin/lists/:code/entries          uk.gov.hmrc.crdlcache.controllers.CodeListsController.fetchCodeListEntriesPaginated(code: CodeListCode, pageNum: Int, pageSize: Int, activeAt: Option[Instant], key: Option[String], value: Option[String])
-GET     /admin/snapshot/:code               uk.gov.hmrc.crdlcache.controllers.CodeListsController.getSnapshot(code: String)
+GET     /admin/snapshot/:code               uk.gov.hmrc.crdlcache.controllers.CodeListsController.getSnapshot(code: String, phase: Option[String] ?= None, domain: Option[String] ?= None)

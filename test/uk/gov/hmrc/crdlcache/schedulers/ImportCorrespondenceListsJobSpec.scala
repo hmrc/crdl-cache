@@ -233,7 +233,8 @@ class ImportCorrespondenceListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+      .thenReturn(Future.successful(None))
 
     when(
       lastUpdatedRepository.setLastUpdated(
@@ -249,7 +250,12 @@ class ImportCorrespondenceListsJobSpec
 
     // Correspondence list manipulation
     when(
-      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None)
+      )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
       .thenReturn(
@@ -323,7 +329,7 @@ class ImportCorrespondenceListsJobSpec
 
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
-    when(lastUpdatedRepository.fetchLastUpdated(E200))
+    when(lastUpdatedRepository.fetchLastUpdated(E200, None, None))
       .thenReturn(Future.successful(Some(LastUpdated(E200, 1, None, None, storedInstant))))
 
     when(
@@ -340,7 +346,12 @@ class ImportCorrespondenceListsJobSpec
 
     // Correspondence list manipulation
     when(
-      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None)
+      )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
       .thenReturn(
@@ -434,7 +445,8 @@ class ImportCorrespondenceListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+      .thenReturn(Future.successful(None))
 
     when(
       lastUpdatedRepository.setLastUpdated(
@@ -450,7 +462,12 @@ class ImportCorrespondenceListsJobSpec
 
     // Correspondence list manipulation
     when(
-      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None)
+      )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
       .thenReturn(
@@ -523,7 +540,12 @@ class ImportCorrespondenceListsJobSpec
 
   "ImportCodeListsJob.processSnapshot" should "produce a list of instructions for a snapshot that contains only new entries" in {
     when(
-      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None)
+      )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
 
@@ -604,7 +626,12 @@ class ImportCorrespondenceListsJobSpec
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
     when(
-      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None)
+      )
     )
       .thenReturn(
         Future.successful(
@@ -680,7 +707,12 @@ class ImportCorrespondenceListsJobSpec
 
   it should "pick the latest entry by modification date and action identification when there are duplicate entries for a given key->value mapping and activation date" in {
     when(
-      correspondenceListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(E200))
+      correspondenceListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(E200),
+        equalTo(None),
+        equalTo(None)
+      )
     )
       .thenReturn(
         Future.successful(

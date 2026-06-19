@@ -39,7 +39,7 @@ class ImportStandardCodeListsJob @Inject() (
   appConfig: AppConfig,
   clock: Clock
 )(using system: ActorSystem, ec: ExecutionContext)
-  extends ImportCodeListsJob[String, Instruction](
+  extends ImportCodeListsJob[CodeListKey, Instruction](
     "import-code-lists",
     mongoComponent,
     lockRepository,
@@ -53,14 +53,23 @@ class ImportStandardCodeListsJob @Inject() (
   override protected def listConfigs: List[ListConfig] =
     appConfig.codeListConfigs
 
-  override protected def keyOfEntry(snapshotEntry: CodeListSnapshotEntry): String =
-    snapshotEntry.key
+  override def keyOfEntry(codeListEntry: CodeListSnapshotEntry): CodeListKey =
+    CodeListKey(codeListEntry.key, codeListEntry.phase, codeListEntry.domain)
 
-  override protected def recordMissing(codeListCode: CodeListCode, key: String): Instruction = {
+  override protected def recordMissing(
+    codeListCode: CodeListCode,
+    key: CodeListKey
+  ): Instruction = {
     // DPS provides no snapshot dates:
     // the best we can do with removed entries is to use the start of today as their deactivation date
     val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
-    RecordMissingEntry(codeListCode, key, removedAt = startOfToday.toInstant)
+    RecordMissingEntry(
+      codeListCode,
+      key.key,
+      key.phase,
+      key.domain,
+      removedAt = startOfToday.toInstant
+    )
   }
 
   override def processEntry(

@@ -51,7 +51,8 @@ abstract class CodeListsRepository[K, I](
     indexes = IndexModel(
       Indexes.ascending("activeTo"),
       IndexOptions().expireAfter(30, TimeUnit.DAYS)
-    ) +: indexes
+    ) +: indexes,
+    replaceIndexes = true
   )
   with Transactions {
 
@@ -69,9 +70,26 @@ abstract class CodeListsRepository[K, I](
         previousInstruction.flatMap(_ => executeInstruction(session, nextInstruction))
     }
 
-  def fetchEntryKeys(session: ClientSession, code: CodeListCode): Future[Set[K]] =
+  def fetchEntryKeys(
+    session: ClientSession,
+    code: CodeListCode,
+    phase: Option[String] = None,
+    domain: Option[String] = None
+  ): Future[Set[K]] =
     collection
-      .find(session, and(equal("codeListCode", code.code), equal("activeTo", null)))
+      .find(
+        session,
+        and(
+          Seq(
+            equal("codeListCode", code.code),
+            equal("activeTo", null)
+          )
+            ++ phase.fold(None)(p =>
+              Seq(equal("phase", p))
+                ++ domain.fold(None)(d => Seq(equal("domain", d)))
+            )*
+        )
+      )
       .map(keyOfEntry)
       .toFuture()
       .map(_.toSet)

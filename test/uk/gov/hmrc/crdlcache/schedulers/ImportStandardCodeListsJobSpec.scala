@@ -206,7 +206,8 @@ class ImportStandardCodeListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+      .thenReturn(Future.successful(None))
 
     when(
       lastUpdatedRepository.setLastUpdated(
@@ -221,9 +222,18 @@ class ImportStandardCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(
+        Future.successful(Set(CodeListKey("BL", None, None), CodeListKey("BM", None, None)))
+      )
 
     when(codeListsRepository.countEntries(any(), any(), any(), any()))
       .thenReturn(Future.successful(0L))
@@ -333,10 +343,10 @@ class ImportStandardCodeListsJobSpec
 
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
-    when(lastUpdatedRepository.fetchLastUpdated(BC08))
+    when(lastUpdatedRepository.fetchLastUpdated(BC08, None, None))
       .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, None, None, storedInstant))))
 
-    when(lastUpdatedRepository.fetchLastUpdated(BC66))
+    when(lastUpdatedRepository.fetchLastUpdated(BC66, None, None))
       .thenReturn(Future.successful(Some(LastUpdated(BC66, 1, None, None, storedInstant))))
 
     when(
@@ -352,9 +362,18 @@ class ImportStandardCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(
+        Future.successful(Set(CodeListKey("BL", None, None), CodeListKey("BM", None, None)))
+      )
 
     when(codeListsRepository.countEntries(any(), any(), any(), any()))
       .thenReturn(Future.successful(0L))
@@ -427,7 +446,8 @@ class ImportStandardCodeListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+      .thenReturn(Future.successful(None))
 
     when(
       lastUpdatedRepository.setLastUpdated(
@@ -442,9 +462,18 @@ class ImportStandardCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+      .thenReturn(
+        Future.successful(Set(CodeListKey("BL", None, None), CodeListKey("BM", None, None)))
+      )
 
     when(codeListsRepository.countEntries(any(), any(), any(), any()))
       .thenReturn(Future.successful(0L))
@@ -552,7 +581,14 @@ class ImportStandardCodeListsJobSpec
   }
 
   "ImportCodeListsJob.processSnapshot" should "produce a list of instructions for a snapshot that contains only new entries" in {
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
 
     val codeListConfig = CodeListConfig(BC08, SEED, "CountryCode")
@@ -601,8 +637,17 @@ class ImportStandardCodeListsJobSpec
   }
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC08)))
-      .thenReturn(Future.successful(Set("BL", "BM")))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(BC08),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
+      .thenReturn(
+        Future.successful(Set(CodeListKey("BL", None, None), CodeListKey("BM", None, None)))
+      )
 
     val codeListConfig = CodeListConfig(BC08, SEED, "CountryCode")
 
@@ -645,7 +690,7 @@ class ImportStandardCodeListsJobSpec
           None
         )
       ),
-      RecordMissingEntry(BC08, "BM", fixedInstant),
+      RecordMissingEntry(BC08, "BM", None, None, fixedInstant),
       UpsertEntry(
         CodeListEntry(
           BC08,
@@ -680,8 +725,15 @@ class ImportStandardCodeListsJobSpec
   }
 
   it should "pick the latest entry by modification date and action identification when there are duplicate entries for a given key and activation date" in {
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(BC36)))
-      .thenReturn(Future.successful(Set("E470")))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(BC36),
+        equalTo(None),
+        equalTo(None)
+      )
+    )
+      .thenReturn(Future.successful(Set(CodeListKey("E470", None, None))))
 
     val codeListConfig = CodeListConfig(BC36, SEED, "ExciseProductCode")
 
