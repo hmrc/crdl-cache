@@ -25,7 +25,7 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.{Assertion, OptionValues}
 import play.api.libs.json.{JsNull, JsString, JsTrue, Json}
 import uk.gov.hmrc.crdlcache.models.CodeListCode.{BC08, BC36, BC66}
-import uk.gov.hmrc.crdlcache.models.CodeListEntry
+import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListKey}
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
 import uk.gov.hmrc.mongo.test.{
   CleanMongoCollectionSupport,
@@ -310,7 +310,7 @@ class StandardCodeListsRepositorySpec
   "StandardCodeListsRepository.fetchEntryKeys" should "return entries that have not been superseded" in withCodeListEntries(
     codelistEntries
   ) { session =>
-    repository.fetchEntryKeys(session, BC08).map(_ must contain("BL"))
+    repository.fetchEntryKeys(session, BC08).map(_ must contain(CodeListKey("BL", None, None)))
   }
 
   it should "not return entries that are invalidated" in withCodeListEntries(codelistEntries) {
@@ -329,7 +329,7 @@ class StandardCodeListsRepositorySpec
         .fetchEntryKeys(session, BC08)
         .map {
           _ mustBe entriesWithNoEndDate
-            .map(_.key)
+            .map(entry => CodeListKey(entry.key, None, None))
             .toSet
         }
   }
@@ -753,7 +753,7 @@ class StandardCodeListsRepositorySpec
         .executeInstructions(
           session,
           List(
-            RecordMissingEntry(BC08, "IO", Instant.parse("2025-05-22T00:00:00Z"))
+            RecordMissingEntry(BC08, "IO", None, None, Instant.parse("2025-05-22T00:00:00Z"))
           )
         )
 
@@ -780,7 +780,7 @@ class StandardCodeListsRepositorySpec
         .executeInstructions(
           session,
           List(
-            RecordMissingEntry(BC08, "IO", activeIoEntry.activeFrom)
+            RecordMissingEntry(BC08, "IO", None, None, activeIoEntry.activeFrom)
           )
         )
 
@@ -889,7 +889,7 @@ class StandardCodeListsRepositorySpec
                 activeIoEntry.copy(activeFrom = Instant.parse("2025-05-22T00:00:00Z"))
               ),
               UpsertEntry(updatedCzechEntry),
-              RecordMissingEntry(BC08, "CZ", Instant.parse("2025-01-17T00:00:00Z")),
+              RecordMissingEntry(BC08, "CZ", None, None, Instant.parse("2025-01-17T00:00:00Z")),
               UpsertEntry(existingCzechEntry),
               UpsertEntry(activeIoEntry)
             )
