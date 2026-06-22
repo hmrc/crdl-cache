@@ -24,7 +24,7 @@ import play.api.Logging
 import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.Instruction.{InvalidateEntry, RecordMissingEntry, UpsertEntry}
-import uk.gov.hmrc.crdlcache.models.{CodeListEntry, Instruction}
+import uk.gov.hmrc.crdlcache.models.{CodeListEntry, CodeListKey, Instruction}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.Codecs
 
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(using
   ec: ExecutionContext
-) extends CodeListsRepository[String, Instruction](
+) extends CodeListsRepository[CodeListKey, Instruction](
     mongoComponent,
     collectionName = "codelists",
     extraCodecs =
@@ -43,7 +43,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
         Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
     indexes = Seq(
       IndexModel(
-        Indexes.ascending("codeListCode", "key", "activeFrom"),
+        Indexes.ascending("codeListCode", "phase", "domain", "key", "activeFrom"),
         IndexOptions().unique(true)
       ),
       IndexModel(
@@ -60,9 +60,13 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
 
   override def activationDate(instruction: Instruction): Instant = instruction.activeFrom
 
-  override def keyOfEntry(codeListEntry: CodeListEntry): String = codeListEntry.key
+  override def keyOfEntry(codeListEntry: CodeListEntry): CodeListKey =
+    CodeListKey(codeListEntry.key, codeListEntry.phase, codeListEntry.domain)
 
-  override def filtersForKey(key: String): Seq[Bson] = Seq(equal("key", key))
+  override def filtersForKey(key: CodeListKey): Seq[Bson] =
+    Seq(equal("key", key.key))
+      ++ key.phase.fold(None)(p => Seq(equal("phase", p)))
+      ++ key.domain.fold(None)(d => Seq(equal("domain", d)))
 
   def executeInstruction(session: ClientSession, instruction: Instruction): Future[Unit] =
     instruction match {
@@ -74,7 +78,7 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           _ <- supersedePreviousEntries(
             session,
             codeListEntry.codeListCode,
-            codeListEntry.key,
+            CodeListEntry.asCodeListKey(codeListEntry),
             codeListEntry.activeFrom,
             includeActiveFrom = false
           )
@@ -87,16 +91,16 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
         supersedePreviousEntries(
           session,
           codeListEntry.codeListCode,
-          codeListEntry.key,
+          CodeListEntry.asCodeListKey(codeListEntry),
           codeListEntry.activeFrom,
           includeActiveFrom = true
         )
-      case RecordMissingEntry(codeListCode, key, removedAt) =>
+      case RecordMissingEntry(codeListCode, key, phase, domain, removedAt) =>
         logger.debug(s"Recording removal of entry in codelist ${codeListCode.code} with key $key")
         supersedePreviousEntries(
           session,
           codeListCode,
-          key,
+          CodeListKey(key, phase, domain),
           removedAt,
           includeActiveFrom = true
         )

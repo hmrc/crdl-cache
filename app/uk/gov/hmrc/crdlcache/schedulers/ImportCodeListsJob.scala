@@ -81,79 +81,96 @@ abstract class ImportCodeListsJob[K, I](
           "Both phase and domain must be provided together, or neither should be provided"
         )
       case _ =>
-        repository.fetchEntryKeys(session, listConfig.code).map { currentKeySet =>
-          val incomingKeySet = newSnapshot.entries.map(keyOfEntry)
-          val mergedKeySet   = currentKeySet.union(incomingKeySet)
+        repository.fetchEntryKeys(session, listConfig.code, phase, domain).map { currentKeySet =>
+          {
+            val incomingKeySet =
+              newSnapshot.entries.map(_.copy(phase = phase, domain = domain)).map(keyOfEntry)
+            val mergedKeySet = currentKeySet.union(incomingKeySet)
 
-          val groupedEntries = newSnapshot.entries.toList.groupBy(keyOfEntry)
+            val groupedEntries = newSnapshot.entries.toList
+              .map(_.copy(phase = phase, domain = domain))
+              .groupBy(keyOfEntry)
 
-          val instructions = List.newBuilder[I]
+            val instructions = List.newBuilder[I]
 
-          for (key <- mergedKeySet) {
-            val hasExistingEntry = currentKeySet.contains(key)
-            val maybeNewEntries  = groupedEntries.get(key)
+            for (key <- mergedKeySet) {
+              val hasExistingEntry = currentKeySet.contains(key)
+              val maybeNewEntries  = groupedEntries.get(key)
 
-            // In case of multiple entries for a given key with the same activation date,
-            // the one with the latest modification timestamp and latest action ID is used.
-            val entriesByDate = maybeNewEntries.map { newEntries =>
-              newEntries
-                .groupBy(_.activeFrom) // Group by activation date
-                .view
-                .mapValues(
-                  _.maxBy(entry =>
-                    (
-                      entry.updatedAt,
-                      entry.properties.value.get("actionIdentification").flatMap(_.asOpt[String])
+              // In case of multiple entries for a given key with the same activation date,
+              // the one with the latest modification timestamp and latest action ID is used.
+              val entriesByDate = maybeNewEntries.map { newEntries =>
+                newEntries
+                  .groupBy(_.activeFrom) // Group by activation date
+                  .view
+                  .mapValues(
+                    _.maxBy(entry =>
+                      (
+                        entry.updatedAt,
+                        entry.properties.value.get("actionIdentification").flatMap(_.asOpt[String])
+                      )
                     )
+                  ) // Pick the latest modification and SEED "ActionIdentification"
+                  .values
+                  .toSet
+              }
+
+              (hasExistingEntry, entriesByDate) match {
+                case (_, Some(newEntries)) =>
+                  val pDEntries = (phase, domain) match {
+                    case (Some(phase), Some(domain)) =>
+                      newEntries.map(_.copy(phase = Some(phase), domain = Some(domain)))
+                    case _ =>
+                      newEntries
+                  }
+                  instructions ++= pDEntries.map(
+                    processEntry(listConfig.code, _)
                   )
-                ) // Pick the latest modification and SEED "ActionIdentification"
-                .values
-                .toSet
+
+                case (true, None) =>
+                  instructions += recordMissing(listConfig.code, key)
+
+                case _ =>
+                  throw IllegalStateException(
+                    "Impossible case - we have neither a new nor existing entry for a key"
+                  )
+              }
             }
-
-            (hasExistingEntry, entriesByDate) match {
-              case (_, Some(newEntries)) =>
-                val pDEntries = (phase, domain) match {
-                  case (Some(phase), Some(domain)) =>
-                    newEntries.map(_.copy(phase = Some(phase), domain = Some(domain)))
-                  case _ =>
-                    newEntries
-                }
-                instructions ++= pDEntries.map(
-                  processEntry(listConfig.code, _)
-                )
-
-              case (true, None) =>
-                instructions += recordMissing(listConfig.code, key)
-
-              case _ =>
-                throw IllegalStateException(
-                  "Impossible case - we have neither a new nor existing entry for a key"
-                )
+            val result = instructions.result()
+            for {
+              codeListCount <- repository.countEntries(listConfig.code, Instant.now())
+            } yield {
+              logger.warn(
+                s"Code list ${listConfig.code} acquired. " +
+                  s"Existing for Code: $codeListCount - " +
+                  s"Upsert: ${result.collect { case u: Instruction.UpsertEntry => u }.length} - " +
+                  s"Invalidate: ${result.collect { case i: Instruction.InvalidateEntry => i }.length} - " +
+                  s"Record Missing: ${result.collect { case r: Instruction.RecordMissingEntry => r }.length}"
+              )
             }
+            result
           }
-          val result = instructions.result()
-          for {
-            codeListCount <- repository.countEntries(listConfig.code, Instant.now())
-          } yield {
-            logger.warn(
-              s"Code list ${listConfig.code} acquired. " +
-                s"Existing for Code: $codeListCount - " +
-                s"Upsert: ${result.collect { case u: Instruction.UpsertEntry => u }.length} - " +
-                s"Invalidate: ${result.collect { case i: Instruction.InvalidateEntry => i }.length} - " +
-                s"Record Missing: ${result.collect { case r: Instruction.RecordMissingEntry => r }.length}"
-            )
-          }
-          result
         }
     }
   }
 
   protected def importCodeList(codeListConfig: ListConfig): Future[Unit] = {
+    val phase = codeListConfig match {
+      case c: PhaseAndDomainListConfig => Some(c.phase)
+      case _                           => None
+    }
+    val domain = codeListConfig match {
+      case c: PhaseAndDomainListConfig => Some(c.domain)
+      case _                           => None
+    }
     for {
       // Fetch last updated timestamp
       preIngestCodeListCount <- repository.countEntries(codeListConfig.code, Instant.now())
-      storedLastUpdated      <- lastUpdatedRepository.fetchLastUpdated(codeListConfig.code)
+      storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(
+        codeListConfig.code,
+        phase,
+        domain
+      )
       defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
       lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
 
@@ -173,7 +190,9 @@ abstract class ImportCodeListsJob[K, I](
         .mapConcat(_.elements)
         .dropWhile { snapshot =>
           // Ignore snapshot versions that we already have
-          storedLastUpdated.exists(_.snapshotVersion >= snapshot.snapshotversion)
+          storedLastUpdated.exists(s =>
+            s.snapshotVersion >= snapshot.snapshotversion && s.phase == phase && s.domain == domain
+          )
         }
         .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
         .mapAsync(1) { snapshot =>

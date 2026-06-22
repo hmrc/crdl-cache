@@ -1359,7 +1359,7 @@ class CodeListsControllerSpec
   "CodeListsController.getSnapShot" should "return 200 OK with a paged result when no filters are provided" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08)))
+    when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, None, None, Instant.parse("2025-06-29T00:00:00Z")))))
 
     val response = httpClientV2
@@ -1375,7 +1375,7 @@ class CodeListsControllerSpec
   "CodeListsController.getSnapShot" should "return 404 Not Found when no snapshot is found" in {
     when(authStub.stubAuth(equalTo(Some(ReadCodeLists)), equalTo(Retrieval.EmptyRetrieval)))
       .thenReturn(Future.unit)
-    when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08)))
+    when(lastUpdatedRepository.fetchLastUpdated(equalTo(BC08), equalTo(None), equalTo(None)))
       .thenReturn(Future.successful(None))
 
     val response = httpClientV2

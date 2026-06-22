@@ -291,7 +291,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+      .thenReturn(Future.successful(None))
 
     when(
       lastUpdatedRepository.setLastUpdated(
@@ -306,9 +307,23 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(CL231),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("T2", "T2F")))
+      .thenReturn(
+        Future.successful(
+          Set(
+            CodeListKey("T2", Some("P6"), Some("NCTS")),
+            CodeListKey("T2F", Some("P6"), Some("NCTS"))
+          )
+        )
+      )
 
     when(codeListsRepository.countEntries(any(), any(), any(), any()))
       .thenReturn(Future.successful(0L))
@@ -422,12 +437,12 @@ class ImportPhaseAndDomainCodeListsJobSpec
 
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
-    when(lastUpdatedRepository.fetchLastUpdated(CL231))
+    when(lastUpdatedRepository.fetchLastUpdated(CL231, Some("P6"), Some("NCTS")))
       .thenReturn(
         Future.successful(Some(LastUpdated(CL231, 1, Some("P6"), Some("NCTS"), storedInstant)))
       )
 
-    when(lastUpdatedRepository.fetchLastUpdated(CL234))
+    when(lastUpdatedRepository.fetchLastUpdated(CL234, Some("P6"), Some("NCTS")))
       .thenReturn(
         Future.successful(Some(LastUpdated(CL234, 1, Some("P6"), Some("NCTS"), storedInstant)))
       )
@@ -445,9 +460,23 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(CL231),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("T2", "T2F")))
+      .thenReturn(
+        Future.successful(
+          Set(
+            CodeListKey("T2", Some("P6"), Some("NCTS")),
+            CodeListKey("T2F", Some("P6"), Some("NCTS"))
+          )
+        )
+      )
 
     // Codelist configuration
     when(appConfig.phaseAndDomainListConfigs).thenReturn(
@@ -492,7 +521,8 @@ class ImportPhaseAndDomainCodeListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any())).thenReturn(Future.successful(None))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+      .thenReturn(Future.successful(None))
 
     when(
       lastUpdatedRepository.setLastUpdated(
@@ -507,9 +537,23 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .thenReturn(Future.unit)
 
     // Codelist manipulation
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(CL231),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
       .thenReturn(Future.successful(Set.empty[String]))
-      .thenReturn(Future.successful(Set("T2", "T2F")))
+      .thenReturn(
+        Future.successful(
+          Set(
+            CodeListKey("T2", Some("P6"), Some("NCTS")),
+            CodeListKey("T2F", Some("P6"), Some("NCTS"))
+          )
+        )
+      )
 
     when(codeListsRepository.countEntries(any(), any(), any(), any()))
       .thenReturn(Future.successful(0L))
@@ -655,8 +699,16 @@ class ImportPhaseAndDomainCodeListsJobSpec
   }
 
   "ImportPhaseAndDomainCodeListsJob.processSnapshot" should "produce a list of instructions for a snapshot that contains only new entries" in {
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
-      .thenReturn(Future.successful(Set.empty[String]))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(CL231),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
+      // .thenReturn(Future.successful(Set(CodeListKey("T", Some("P6"), Some("NCTS")))))
+      .thenReturn(Future.successful(Set.empty[CodeListKey]))
 
     val codeListConfig = PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS")
 
@@ -709,8 +761,23 @@ class ImportPhaseAndDomainCodeListsJobSpec
   }
 
   it should "produce a list of instructions for a snapshot which contains invalidations and missing entries" in {
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL231)))
-      .thenReturn(Future.successful(Set("T2F", "T")))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(CL231),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
+      .thenReturn(
+        Future.successful(
+          Set(
+            CodeListKey("T", Some("P6"), Some("NCTS")),
+            CodeListKey("T2", Some("P6"), Some("NCTS")),
+            CodeListKey("T2F", Some("P6"), Some("NCTS"))
+          )
+        )
+      )
 
     val codeListConfig = PhaseAndDomainListConfig(CL231, CSRD2, "DeclarationTypeCode", "P6", "NCTS")
 
@@ -726,7 +793,13 @@ class ImportPhaseAndDomainCodeListsJobSpec
       .futureValue
 
     instructions.sortBy(ins => (ins.key, ins.activeFrom)) mustBe List(
-      RecordMissingEntry(CL231, "T", Instant.parse("2025-06-03T00:00:00Z")),
+      RecordMissingEntry(
+        CL231,
+        "T",
+        Some("P6"),
+        Some("NCTS"),
+        Instant.parse("2025-06-03T00:00:00Z")
+      ),
       UpsertEntry(
         CodeListEntry(
           CL231,
@@ -799,8 +872,15 @@ class ImportPhaseAndDomainCodeListsJobSpec
   }
 
   it should "pick the latest entry by modification date and action identification when there are duplicate entries for a given key and activation date" in {
-    when(codeListsRepository.fetchEntryKeys(equalTo(clientSession), equalTo(CL234)))
-      .thenReturn(Future.successful(Set("E470")))
+    when(
+      codeListsRepository.fetchEntryKeys(
+        equalTo(clientSession),
+        equalTo(CL234),
+        equalTo(Some("P6")),
+        equalTo(Some("NCTS"))
+      )
+    )
+      .thenReturn(Future.successful(Set(CodeListKey("E470", Some("P6"), Some("NCTS")))))
 
     val codeListConfig = PhaseAndDomainListConfig(CL234, CSRD2, "DocumentTypeExcise", "P6", "NCTS")
 
@@ -850,7 +930,9 @@ class ImportPhaseAndDomainCodeListsJobSpec
               Some("NCTS")
             )
           )
-        )
+        ),
+        Some("P6"),
+        Some("NCTS")
       )
       .futureValue
 

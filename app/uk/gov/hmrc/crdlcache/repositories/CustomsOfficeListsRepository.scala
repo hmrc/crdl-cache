@@ -72,7 +72,8 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       ),
       IndexModel(Indexes.ascending("activeTo"), IndexOptions().expireAfter(30, TimeUnit.DAYS))
     ),
-    extraCodecs = Seq(Codecs.playFormatCodec(CustomsOfficeSummary.format))
+    extraCodecs = Seq(Codecs.playFormatCodec(CustomsOfficeSummary.format)),
+    replaceIndexes = true
   )
   with Transactions
   with Logging {

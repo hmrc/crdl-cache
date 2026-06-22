@@ -59,7 +59,7 @@ class LastUpdatedRepositorySpec
     repository.withClientSession(test).futureValue
 
   "LastUpdatedRepository.fetchLastUpdated" should "return None when no last updated date has been populated" in {
-    repository.fetchLastUpdated(BC08).futureValue mustBe None
+    repository.fetchLastUpdated(BC08, None, None).futureValue mustBe None
   }
 
   "LastUpdatedRepository.setLastUpdated" should "upsert the last updated date when it is not present" in withSession {
@@ -67,7 +67,7 @@ class LastUpdatedRepositorySpec
       val inputInstant = clock.instant()
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, inputInstant)
-        lastUpdated <- repository.fetchLastUpdated(BC08)
+        lastUpdated <- repository.fetchLastUpdated(BC08, None, None)
       } yield lastUpdated mustBe Some(LastUpdated(BC08, 1, None, None, inputInstant))
   }
 
@@ -76,7 +76,7 @@ class LastUpdatedRepositorySpec
       val inputInstant = clock.instant()
       for {
         _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), inputInstant)
-        lastUpdated <- repository.fetchLastUpdated(CL251)
+        lastUpdated <- repository.fetchLastUpdated(CL251, None, None)
       } yield lastUpdated mustBe Some(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), inputInstant))
   }
 
@@ -84,7 +84,7 @@ class LastUpdatedRepositorySpec
     val inputInstant = clock.instant()
     for {
       _           <- repository.setLastUpdated(session, BC08, 1, None, None, inputInstant)
-      lastUpdated <- repository.fetchLastUpdated(BC66)
+      lastUpdated <- repository.fetchLastUpdated(BC66, None, None)
     } yield lastUpdated mustBe None
   }
 
@@ -94,7 +94,7 @@ class LastUpdatedRepositorySpec
     for {
       _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
       _           <- repository.setLastUpdated(session, BC08, 2, None, None, instant2)
-      lastUpdated <- repository.fetchLastUpdated(BC08)
+      lastUpdated <- repository.fetchLastUpdated(BC08, None, None)
     } yield lastUpdated mustBe Some(LastUpdated(BC08, 2, None, None, instant2))
   }
 
@@ -104,8 +104,8 @@ class LastUpdatedRepositorySpec
     for {
       _            <- repository.setLastUpdated(session, BC08, 1, None, None, instant1)
       _            <- repository.setLastUpdated(session, BC66, 1, None, None, instant2)
-      lastUpdated1 <- repository.fetchLastUpdated(BC08)
-      lastUpdated2 <- repository.fetchLastUpdated(BC66)
+      lastUpdated1 <- repository.fetchLastUpdated(BC08, None, None)
+      lastUpdated2 <- repository.fetchLastUpdated(BC66, None, None)
     } yield {
       lastUpdated1 mustBe Some(LastUpdated(BC08, 1, None, None, instant1))
       lastUpdated2 mustBe Some(LastUpdated(BC66, 1, None, None, instant2))

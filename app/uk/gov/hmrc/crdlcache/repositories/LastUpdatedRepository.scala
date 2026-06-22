@@ -41,18 +41,32 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     collectionName = "last-updated",
     domainFormat = MongoFormats.lastUpdatedFormat,
     indexes = Seq(
-      IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(true)),
-      IndexModel(Indexes.ascending("phase")),
-      IndexModel(Indexes.ascending("domain"))
-    )
+      IndexModel(Indexes.ascending("codeListCode", "phase", "domain"), IndexOptions().unique(true)),
+      IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(false)),
+      IndexModel(Indexes.ascending("phase"), IndexOptions().unique(false)),
+      IndexModel(Indexes.ascending("domain"), IndexOptions().unique(false))
+    ),
+    replaceIndexes = true
   )
   with Transactions {
 
   // This collection contains only one document per codelist
   override lazy val requiresTtlIndex: Boolean = false
 
-  def fetchLastUpdated(codeListCode: CodeListCode): Future[Option[LastUpdated]] = {
-    collection.find(equal("codeListCode", codeListCode.code)).headOption()
+  def fetchLastUpdated(
+    codeListCode: CodeListCode,
+    phase: Option[String],
+    domain: Option[String]
+  ): Future[Option[LastUpdated]] = {
+    collection
+      .find(
+        and(
+          Seq(equal("codeListCode", codeListCode.code))
+            ++ phase.fold(None)(p => Seq(equal("phase", p)))
+            ++ domain.fold(None)(d => Seq(equal("domain", d)))*
+        )
+      )
+      .headOption()
   }
 
   def fetchAllLastUpdated: Future[Seq[LastUpdated]] = {
