@@ -1,0 +1,24 @@
+meta {
+  name: Pdlists - Data - Phase & Domain Parameters provided
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/lists/CL009?phase=P6&domain=NCTS
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+  domain: NCTS
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

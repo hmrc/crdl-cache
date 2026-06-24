@@ -1,0 +1,15 @@
+meta {
+  name: Delete-PD-Lists
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:7252/crdl-cache/test-only/pd-lists
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

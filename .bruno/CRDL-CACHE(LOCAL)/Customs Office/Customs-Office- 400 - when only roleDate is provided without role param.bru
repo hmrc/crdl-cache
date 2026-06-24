@@ -1,0 +1,25 @@
+meta {
+  name: Customs-Office- 400 - when only roleDate is provided without role param
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/offices?phase=P6&domain=NCTS&roleDate=2026-01-01
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+  domain: NCTS
+  roleDate: 2026-01-01
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

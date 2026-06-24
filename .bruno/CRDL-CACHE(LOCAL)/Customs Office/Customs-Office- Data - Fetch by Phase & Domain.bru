@@ -1,0 +1,24 @@
+meta {
+  name: Customs-Office- Data - Fetch by Phase & Domain
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/offices?phase=P6&domain=NCTS
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+  domain: NCTS
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}
