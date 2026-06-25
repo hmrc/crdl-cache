@@ -1,0 +1,23 @@
+meta {
+  name: Customs-Office- 400 - When only Phase or Domain provided
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/offices?phase=P6
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

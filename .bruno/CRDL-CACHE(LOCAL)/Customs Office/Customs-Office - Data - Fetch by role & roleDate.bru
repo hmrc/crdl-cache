@@ -1,0 +1,26 @@
+meta {
+  name: Customs-Office - Data - Fetch by role & roleDate
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/offices?phase=P6&domain=NCTS&roles=DEP&roleDate=2026-01-30
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+  domain: NCTS
+  roles: DEP
+  roleDate: 2026-01-30
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Codelists-Data- Fetch by properties
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/lists/BC36?exciseProductsCategoryCode=E&densityApplicabilityFlag=false&alcoholicStrengthApplicabilityFlag=false
+  body: none
+  auth: inherit
+}
+
+params:query {
+  exciseProductsCategoryCode: E
+  densityApplicabilityFlag: false
+  alcoholicStrengthApplicabilityFlag: false
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

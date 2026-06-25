@@ -1,0 +1,26 @@
+meta {
+  name: Pdlists-Data- Fetch By Keys
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/lists/CL056?phase=P6&domain=NCTS&keys=SDE&keys=TEA
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+  domain: NCTS
+  keys: SDE
+  keys: TEA
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}

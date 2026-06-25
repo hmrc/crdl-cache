@@ -1,0 +1,23 @@
+meta {
+  name: 400 - Invalid - When only phase or Domain provided
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/lists/CL380?phase=P6
+  body: none
+  auth: inherit
+}
+
+params:query {
+  phase: P6
+}
+
+headers {
+  Authorization: {{Authorization}}
+}
+
+settings {
+  encodeUrl: true
+}
