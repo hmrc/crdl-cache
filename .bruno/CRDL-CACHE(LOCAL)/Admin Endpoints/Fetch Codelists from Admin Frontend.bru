@@ -1,0 +1,25 @@
+meta {
+  name: Fetch Codelists from Admin Frontend
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/admin/lists?pageNum=4&pageSize=10
+  body: none
+  auth: inherit
+}
+
+params:query {
+  pageNum: 4
+  pageSize: 10
+}
+
+headers {
+  Authorization: crdl-cache-token
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

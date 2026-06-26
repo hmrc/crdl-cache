@@ -1,0 +1,20 @@
+meta {
+  name: Fetch CustomsOffice Ref Num from Admin Frontend
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/admin/offices/GB000T08
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: crdl-cache-token
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
