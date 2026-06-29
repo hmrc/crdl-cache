@@ -1,0 +1,25 @@
+meta {
+  name: Fetch CodeEntries from Admin Frontend
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:7252/crdl-cache/admin/lists/CL042/entries?pageNum=1&pageSize=10
+  body: none
+  auth: inherit
+}
+
+params:query {
+  pageNum: 1
+  pageSize: 10
+}
+
+headers {
+  Authorization: crdl-cache-token
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
