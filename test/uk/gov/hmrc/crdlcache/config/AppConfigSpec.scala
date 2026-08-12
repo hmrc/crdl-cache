@@ -146,7 +146,8 @@ class AppConfigSpec extends AnyFlatSpec with Matchers {
       CodeListConfig(BC108, SEED, "ManualClosureRejectionReasonCode"),
       CodeListConfig(BC109, SEED, "NationalAdministrationDegreePlatoCode"),
       CodeListConfig(HMRCBC36, SEED, "ExciseProductCode"),
-      CodeListConfig(HMRCBC37, SEED, "CnCode")
+      CodeListConfig(HMRCBC37, SEED, "CnCode"),
+      CodeListConfig(HMRCBC66, SEED, "ExciseProductsCategoryCode")
     )
     appConfig.phaseAndDomainListConfigs mustBe List(
       PhaseAndDomainListConfig(CL008, CSRD2, "CountryCode", "P6", "NCTS"),

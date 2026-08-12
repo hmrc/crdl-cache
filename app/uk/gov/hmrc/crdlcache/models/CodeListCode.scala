@@ -204,6 +204,8 @@ enum CodeListCode(val code: String, val listType: CodeListType = STANDARD) {
   case HMRCBC36 extends CodeListCode("HMRCBC36")
   // HMRCBC37 (CN Codes)
   case HMRCBC37 extends CodeListCode("HMRCBC37")
+  // HMRCBC66 (Excise Product Categories)
+  case HMRCBC66 extends CodeListCode("HMRCBC66")
   // HMRCE200 (CN Code <-> Excise Products Correspondence)
   case HMRCE200 extends CodeListCode("HMRCE200", listType = CORRESPONDENCE)
   // Unknown codelist code
@@ -307,6 +309,7 @@ object CodeListCode {
       E200,
       HMRCBC36,
       HMRCBC37,
+      HMRCBC66,
       HMRCE200
     )
 
