@@ -7,3 +7,4 @@ tags: []
 test-repositories:
   - crdl-cache-api-tests
   - crdl-cache-performance-tests
+serviceNowMapping: SNSVC0021009
