@@ -217,7 +217,7 @@ class StandardCodeListsRepositorySpec
     None
   )
 
-  private val phaseAndDomainEntries = Seq(
+  private val domainAndPhaseEntries = Seq(
     CodeListEntry(
       BC08,
       "T1",
@@ -227,8 +227,8 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "state" -> "valid",
-        "phase" -> "P6",
-        "domain" -> "NCTS"
+        "domain" -> "NCTS",
+        "phase" -> "P6"
       ),
       Some("P6"),
       Some("NCTS")
@@ -242,8 +242,8 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "state" -> "valid",
-        "phase" -> "P6",
-        "domain" -> "NCTS"
+        "domain" -> "NCTS",
+        "phase" -> "P6"
       ),
       Some("P6"),
       Some("NCTS")
@@ -257,8 +257,8 @@ class StandardCodeListsRepositorySpec
       Some(Instant.parse("2024-01-17T00:00:00Z")),
       Json.obj(
         "state" -> "valid",
-        "phase" -> "P5",
-        "domain" -> "NCTS"
+        "domain" -> "NCTS",
+        "phase" -> "P5"
       ),
       Some("P5"),
       Some("NCTS")
@@ -579,8 +579,8 @@ class StandardCodeListsRepositorySpec
     }
   }
 
-  it should "return only entries with matching phase and domain when both are provided" in withCodeListEntries(
-    phaseAndDomainEntries
+  it should "return only entries with matching domain and phase when both are provided" in withCodeListEntries(
+    domainAndPhaseEntries
   ) { _ =>
     repository
       .fetchEntries(
@@ -588,14 +588,13 @@ class StandardCodeListsRepositorySpec
         filterKeys = None,
         filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = Some("P6"),
-        domain = Some("NCTS")
+        domainAndPhase = DomainAndPhase(Some("NCTS"), Some("P6"))
       )
-      .map(_ must contain allElementsOf phaseAndDomainEntries.take(2))
+      .map(_ must contain allElementsOf domainAndPhaseEntries.take(2))
   }
 
-  it should "filter by phase and domain and exclude entries with different phase" in withCodeListEntries(
-    phaseAndDomainEntries
+  it should "filter by domain and phase and exclude entries with different phase" in withCodeListEntries(
+    domainAndPhaseEntries
   ) { _ =>
     repository
       .fetchEntries(
@@ -603,14 +602,13 @@ class StandardCodeListsRepositorySpec
         filterKeys = None,
         filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = Some("P5"),
-        domain = Some("NCTS")
+        domainAndPhase = DomainAndPhase(Some("NCTS"), Some("P5"))
       )
-      .map(_ must contain only phaseAndDomainEntries.last)
+      .map(_ must contain only domainAndPhaseEntries.last)
   }
 
-  it should "return only entries without phase and domain when neither is provided" in withCodeListEntries(
-    phaseAndDomainEntries ++ entriesWithoutPhaseDomain
+  it should "return only entries without domain and phase when neither is provided" in withCodeListEntries(
+    domainAndPhaseEntries ++ entriesWithoutPhaseDomain
   ) { _ =>
     repository
       .fetchEntries(
@@ -618,14 +616,13 @@ class StandardCodeListsRepositorySpec
         filterKeys = None,
         filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        domainAndPhase = DomainAndPhase(None, None)
       )
       .map(_ must contain allElementsOf entriesWithoutPhaseDomain)
   }
 
-  it should "exclude entries with phase and domain when neither filter is provided" in withCodeListEntries(
-    phaseAndDomainEntries ++ entriesWithoutPhaseDomain
+  it should "exclude entries with domain and phase when neither filter is provided" in withCodeListEntries(
+    domainAndPhaseEntries ++ entriesWithoutPhaseDomain
   ) { _ =>
     repository
       .fetchEntries(
@@ -633,18 +630,17 @@ class StandardCodeListsRepositorySpec
         filterKeys = None,
         filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = None,
-        domain = None
+        domainAndPhase = DomainAndPhase(None, None)
       )
       .map { result =>
-        result mustNot contain(phaseAndDomainEntries.head)
-        result mustNot contain(phaseAndDomainEntries(1))
-        result mustNot contain(phaseAndDomainEntries.last)
+        result mustNot contain(domainAndPhaseEntries.head)
+        result mustNot contain(domainAndPhaseEntries(1))
+        result mustNot contain(domainAndPhaseEntries.last)
       }
   }
 
   it should "combine phase/domain filter with key filter" in withCodeListEntries(
-    phaseAndDomainEntries
+    domainAndPhaseEntries
   ) { _ =>
     repository
       .fetchEntries(
@@ -652,14 +648,13 @@ class StandardCodeListsRepositorySpec
         filterKeys = Some(Set("T1", "T2")),
         filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = Some("P6"),
-        domain = Some("NCTS")
+        domainAndPhase = DomainAndPhase(Some("NCTS"), Some("P6"))
       )
-      .map(_ must contain allElementsOf phaseAndDomainEntries.take(2))
+      .map(_ must contain allElementsOf domainAndPhaseEntries.take(2))
   }
 
   it should "combine phase/domain filter with property filter" in withCodeListEntries(
-    phaseAndDomainEntries
+    domainAndPhaseEntries
   ) { _ =>
     repository
       .fetchEntries(
@@ -667,14 +662,13 @@ class StandardCodeListsRepositorySpec
         filterKeys = None,
         filterProperties = Some(Map("state" -> JsString("valid"))),
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = Some("P6"),
-        domain = Some("NCTS")
+        domainAndPhase = DomainAndPhase(Some("NCTS"), Some("P6"))
       )
-      .map(_ must contain allElementsOf phaseAndDomainEntries.take(2))
+      .map(_ must contain allElementsOf domainAndPhaseEntries.take(2))
   }
 
   it should "return empty when phase/domain combination does not match any entries" in withCodeListEntries(
-    phaseAndDomainEntries
+    domainAndPhaseEntries
   ) { _ =>
     repository
       .fetchEntries(
@@ -682,8 +676,7 @@ class StandardCodeListsRepositorySpec
         filterKeys = None,
         filterProperties = None,
         activeAt = Instant.parse("2025-06-05T00:00:00Z"),
-        phase = Some("P99"),
-        domain = Some("UNKNOWN")
+        domainAndPhase = DomainAndPhase(Some("UNKNOWN"), Some("P99"))
       )
       .map(_ mustBe empty)
   }

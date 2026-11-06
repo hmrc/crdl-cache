@@ -382,8 +382,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -397,7 +396,7 @@ class CustomsOfficeListsControllerSpec
     response.json mustBe Json.arr(testOfficeJson)
   }
 
-  it should "return 200 OK when there are no errors and phase and domain are provided" in {
+  it should "return 200 OK when there are no errors and domain and phase are provided" in {
     when(
       authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
     )
@@ -408,15 +407,14 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant),
-        equalTo(Some("P6")),
-        equalTo(Some("NCTS")),
+        equalTo(DomainAndPhase(Some("NCTS"), Some("P6"))),
         equalTo(None)
       )
     )
       .thenReturn(Future.successful(testOfficePD))
 
     val response = httpClientV2
-      .get(url"http://localhost:$port/crdl-cache/offices?phase=P6&domain=NCTS")
+      .get(url"http://localhost:$port/crdl-cache/offices?domain=NCTS&phase=P6")
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
       .futureValue
@@ -437,7 +435,7 @@ class CustomsOfficeListsControllerSpec
       .futureValue
 
     response.json mustBe Json.obj(
-      "error" -> "Both phase and domain must be provided together, or neither should be provided"
+      "error" -> "Both domain and phase must be provided together, or neither should be provided"
     )
     response.status mustBe Status.BAD_REQUEST
   }
@@ -455,7 +453,7 @@ class CustomsOfficeListsControllerSpec
       .futureValue
 
     response.json mustBe Json.obj(
-      "error" -> "Both phase and domain must be provided together, or neither should be provided"
+      "error" -> "Both domain and phase must be provided together, or neither should be provided"
     )
     response.status mustBe Status.BAD_REQUEST
   }
@@ -471,8 +469,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -515,8 +512,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("GB"))),
         equalTo(Some(Set("AUT"))),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -545,8 +541,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("GB", "XI"))),
         equalTo(Some(Set("AUT", "CCA"))),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -575,8 +570,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set("GB", "XI", "AW", "BL"))),
         equalTo(Some(Set("AUT", "CCA", "ACE", "RSS"))),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -605,8 +599,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some(Set.empty)),
         equalTo(Some(Set.empty)),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -633,8 +626,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(None)
       )
     )
@@ -747,8 +739,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(Some(Set("TRA"))),
         equalTo(fixedInstant),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(Some(LocalDate.parse("2025-06-15")))
       )
     )
@@ -985,8 +976,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -996,8 +986,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(1L))
@@ -1025,8 +1014,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Seq.empty))
@@ -1036,8 +1024,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(0L))
@@ -1073,8 +1060,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -1084,8 +1070,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(1L))
@@ -1114,8 +1099,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some("GB000060")),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -1125,8 +1109,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some("GB000060")),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(1L))
@@ -1155,8 +1138,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(Some("GB")),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None)),
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -1166,8 +1148,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(Some("GB")),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None)),
       )
     )
       .thenReturn(Future.successful(1L))
@@ -1196,8 +1177,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(Some("Dover")),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None)),
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -1207,8 +1187,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(Some("Dover")),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None)),
       )
     )
       .thenReturn(Future.successful(1L))
@@ -1224,7 +1203,7 @@ class CustomsOfficeListsControllerSpec
     response.status mustBe Status.OK
   }
 
-  it should "return 200 OK when an phase and domain is provided" in {
+  it should "return 200 OK when an domain and phase is provided" in {
     when(
       authStub.stubAuth(equalTo(Some(ReadCustomsOfficeLists)), equalTo(Retrieval.EmptyRetrieval))
     )
@@ -1237,8 +1216,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(Some("P6")),
-        equalTo(Some("NCTS"))
+        equalTo(DomainAndPhase(Some("NCTS"), Some("P6")))
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -1248,15 +1226,14 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(Some("P6")),
-        equalTo(Some("NCTS"))
+        equalTo(DomainAndPhase(Some("NCTS"), Some("P6")))
       )
     )
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&phase=P6&domain=NCTS"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&domain=NCTS&phase=P6"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -1278,8 +1255,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some("GB000060")),
         equalTo(Some("GB")),
         equalTo(Some("Dover")),
-        equalTo(Some("P6")),
-        equalTo(Some("NCTS"))
+        equalTo(DomainAndPhase(Some("NCTS"), Some("P6")))
       )
     )
       .thenReturn(Future.successful(Seq(testSummary)))
@@ -1289,15 +1265,14 @@ class CustomsOfficeListsControllerSpec
         equalTo(Some("GB000060")),
         equalTo(Some("GB")),
         equalTo(Some("Dover")),
-        equalTo(Some("P6")),
-        equalTo(Some("NCTS"))
+        equalTo(DomainAndPhase(Some("NCTS"), Some("P6")))
       )
     )
       .thenReturn(Future.successful(1L))
 
     val response = httpClientV2
       .get(
-        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&referenceNumber=GB000060&countryCode=GB&officeName=Dover&phase=P6&domain=NCTS"
+        url"http://localhost:$port/crdl-cache/admin/offices/summaries?pageNum=1&pageSize=10&referenceNumber=GB000060&countryCode=GB&officeName=Dover&domain=NCTS&phase=P6"
       )
       .setHeader(HeaderNames.AUTHORIZATION -> "some-auth-token")
       .execute[HttpResponse]
@@ -1342,8 +1317,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.failed(new RuntimeException("Boom!!!")))
@@ -1353,8 +1327,7 @@ class CustomsOfficeListsControllerSpec
         equalTo(None),
         equalTo(None),
         equalTo(None),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(0L))

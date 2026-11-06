@@ -21,6 +21,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import play.api.libs.json.Json
 import uk.gov.hmrc.crdlcache.controllers.auth.Permissions.ReadCustomsOfficeLists
+import uk.gov.hmrc.crdlcache.models.DomainAndPhase
 import uk.gov.hmrc.crdlcache.models.formats.HttpFormats
 import uk.gov.hmrc.crdlcache.models.paging.PagedResult
 import uk.gov.hmrc.internalauth.client.*
@@ -39,20 +40,13 @@ class CustomsOfficeListsController @Inject() (
   extends BackendController(cc)
   with HttpFormats {
 
-  private def validatePhaseDomain(phase: Option[String], domain: Option[String]): Option[String] =
-    (phase, domain) match {
-      case (Some(_), None) | (None, Some(_)) =>
-        Some("Both phase and domain must be provided together, or neither should be provided")
-      case _ => None
-    }
-
   def fetchCustomsOfficeLists(
     referenceNumbers: Option[Set[String]],
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
     activeAt: Option[Instant],
-    phase: Option[String],
     domain: Option[String],
+    phase: Option[String],
     roleDate: Option[LocalDate]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
     if (roleDate.isDefined && roles.isEmpty)
@@ -62,7 +56,8 @@ class CustomsOfficeListsController @Inject() (
         )
       )
     else
-      validatePhaseDomain(phase, domain) match {
+      val domainAndPhase = DomainAndPhase(domain, phase)
+      domainAndPhase.validate() match {
         case Some(errorMessage) =>
           Future.successful(BadRequest(Json.obj("error" -> errorMessage)))
         case None =>
@@ -72,8 +67,7 @@ class CustomsOfficeListsController @Inject() (
               countryCodes,
               roles,
               activeAt.getOrElse(clock.instant()),
-              phase,
-              domain,
+              domainAndPhase,
               roleDate
             )
             .map { customsOfficeLists =>
@@ -100,10 +94,11 @@ class CustomsOfficeListsController @Inject() (
     referenceNumber: Option[String],
     countryCode: Option[String],
     officeName: Option[String],
-    phase: Option[String],
-    domain: Option[String]
+    domain: Option[String],
+    phase: Option[String]
   ): Action[AnyContent] = auth.authorizedAction(ReadCustomsOfficeLists).async { _ =>
     val resolvedActiveAt = activeAt.getOrElse(clock.instant())
+    val domainAndPhase = DomainAndPhase(domain, phase)
     val summariesFuture = customsOfficeListsRepository
       .fetchCustomsOfficeSummaries(
         activeAt.getOrElse(clock.instant()),
@@ -112,16 +107,14 @@ class CustomsOfficeListsController @Inject() (
         referenceNumber,
         countryCode,
         officeName,
-        phase,
-        domain
+        domainAndPhase
       )
     val officesCountFuture = customsOfficeListsRepository.customsOfficesCount(
       resolvedActiveAt,
       referenceNumber,
       countryCode,
       officeName,
-      phase,
-      domain
+      domainAndPhase
     )
 
     for {

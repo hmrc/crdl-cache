@@ -233,7 +233,7 @@ class ImportCorrespondenceListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any()))
       .thenReturn(Future.successful(None))
 
     when(
@@ -241,7 +241,6 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        any(),
         any(),
         any()
       )
@@ -253,8 +252,7 @@ class ImportCorrespondenceListsJobSpec
       correspondenceListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(E200),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
@@ -284,8 +282,7 @@ class ImportCorrespondenceListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(E200),
         equalTo(lastUpdatedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
@@ -315,7 +312,6 @@ class ImportCorrespondenceListsJobSpec
       equalTo(E200),
       anyLong(),
       any(),
-      any(),
       equalTo(fixedInstant)
     )
 
@@ -329,7 +325,7 @@ class ImportCorrespondenceListsJobSpec
 
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
-    when(lastUpdatedRepository.fetchLastUpdated(E200, None, None))
+    when(lastUpdatedRepository.fetchLastUpdated(E200, DomainAndPhase(None, None)))
       .thenReturn(Future.successful(Some(LastUpdated(E200, 1, None, None, storedInstant))))
 
     when(
@@ -337,7 +333,6 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        any(),
         any(),
         any()
       )
@@ -349,8 +344,7 @@ class ImportCorrespondenceListsJobSpec
       correspondenceListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(E200),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
@@ -388,8 +382,7 @@ class ImportCorrespondenceListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(E200),
         equalTo(storedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
@@ -410,8 +403,7 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       anyLong(),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(correspondenceListsJob.SeedExtractDate)
     )
 
@@ -429,8 +421,7 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       equalTo(2L),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -445,7 +436,7 @@ class ImportCorrespondenceListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any()))
       .thenReturn(Future.successful(None))
 
     when(
@@ -453,7 +444,6 @@ class ImportCorrespondenceListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        any(),
         any(),
         any()
       )
@@ -465,8 +455,7 @@ class ImportCorrespondenceListsJobSpec
       correspondenceListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(E200),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
@@ -496,8 +485,7 @@ class ImportCorrespondenceListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(E200),
         equalTo(lastUpdatedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
@@ -527,8 +515,7 @@ class ImportCorrespondenceListsJobSpec
       equalTo(clientSession),
       equalTo(E200),
       equalTo(1L),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -543,8 +530,7 @@ class ImportCorrespondenceListsJobSpec
       correspondenceListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(E200),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[(String, String)]))
@@ -629,8 +615,7 @@ class ImportCorrespondenceListsJobSpec
       correspondenceListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(E200),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(
@@ -710,8 +695,7 @@ class ImportCorrespondenceListsJobSpec
       correspondenceListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(E200),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(

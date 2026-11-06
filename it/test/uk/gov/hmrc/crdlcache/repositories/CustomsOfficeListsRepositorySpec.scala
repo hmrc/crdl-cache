@@ -972,7 +972,7 @@ class CustomsOfficeListsRepositorySpec
       .map(_ must contain(DK003102))
   }
 
-  it should "return only return entries matching matching phase and domain when both are provided" in withCustomsOfficeEntries(
+  it should "return only return entries matching matching domain and phase when both are provided" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
     repository
@@ -990,7 +990,7 @@ class CustomsOfficeListsRepositorySpec
       }
   }
 
-  it should "it should filter by phase and domain and exclude entries with different phase" in withCustomsOfficeEntries(
+  it should "it should filter by domain and phase and exclude entries with different phase" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
     repository
@@ -1008,7 +1008,7 @@ class CustomsOfficeListsRepositorySpec
       }
   }
 
-  it should "only return entries without phase and domain if neither are provided" in withCustomsOfficeEntries(
+  it should "only return entries without domain and phase if neither are provided" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
     repository
@@ -1080,7 +1080,7 @@ class CustomsOfficeListsRepositorySpec
       }
   }
 
-  it should "return empty if phase and domain combination do not match entries" in withCustomsOfficeEntries(
+  it should "return empty if domain and phase combination do not match entries" in withCustomsOfficeEntries(
     customsOffices
   ) { _ =>
     repository

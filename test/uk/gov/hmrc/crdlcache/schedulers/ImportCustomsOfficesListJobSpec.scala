@@ -404,17 +404,16 @@ class ImportCustomsOfficesListJobSpec
     when(clientSession.abortTransaction())
       .thenAnswer(_ => Source.empty[Void].runWith(Sink.asPublisher(fanout = false)))
 
-    when(customsOfficeListRepository.customsOfficesCount(any(), any(), any(), any(), any(), any()))
+    when(customsOfficeListRepository.customsOfficesCount(any(), any(), any(), any(), any()))
       .thenReturn(Future.successful(0L))
   }
 
   "ImportCustomsOfficeListJob.importCustomsOfficeLists" should "import the customs office lists" in {
-    val phase  = appConfig.importOfficesJobPhase
-    val domain = appConfig.importOfficesJobDomain
+    val domainAndPhase = appConfig.importOfficesJobDomainAndPhase
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    when(dpsConnector.fetchCustomsOfficeLists(any(), any())(using any()))
+    when(dpsConnector.fetchCustomsOfficeLists(any())(using any()))
       .thenReturn(Source(List(customsOfficeListPage1, customsOfficeListPage2)))
 
     when(
@@ -432,16 +431,16 @@ class ImportCustomsOfficesListJobSpec
       equalTo(
         List(
           UpsertCustomsOffice(
-            fromDpsCustomOfficeList(customsOfficeListPage1.elements.last, phase, domain)
+            fromDpsCustomOfficeList(customsOfficeListPage1.elements.last, domainAndPhase)
           ),
           UpsertCustomsOffice(
-            fromDpsCustomOfficeList(customsOfficeListPage2.elements.last, phase, domain)
+            fromDpsCustomOfficeList(customsOfficeListPage2.elements.last, domainAndPhase)
           ),
           UpsertCustomsOffice(
-            fromDpsCustomOfficeList(customsOfficeListPage1.elements.head, phase, domain)
+            fromDpsCustomOfficeList(customsOfficeListPage1.elements.head, domainAndPhase)
           ),
           UpsertCustomsOffice(
-            fromDpsCustomOfficeList(customsOfficeListPage2.elements.head, phase, domain)
+            fromDpsCustomOfficeList(customsOfficeListPage2.elements.head, domainAndPhase)
           )
         )
       )
@@ -479,7 +478,7 @@ class ImportCustomsOfficesListJobSpec
     when(customsOfficeListRepository.fetchCustomsOfficeReferenceNumbers(equalTo(clientSession)))
       .thenReturn(Future.successful(Set.empty[String]))
 
-    when(dpsConnector.fetchCustomsOfficeLists(any(), any())(using any()))
+    when(dpsConnector.fetchCustomsOfficeLists(any())(using any()))
       .thenReturn(Source(List(invalidCustomsOfficeResponse)))
 
     customsOfficeListsJob

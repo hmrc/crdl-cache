@@ -206,7 +206,7 @@ class ImportStandardCodeListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any()))
       .thenReturn(Future.successful(None))
 
     when(
@@ -214,8 +214,7 @@ class ImportStandardCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(fixedInstant)
       )
     )
@@ -226,8 +225,7 @@ class ImportStandardCodeListsJobSpec
       codeListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(BC08),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[String]))
@@ -251,8 +249,7 @@ class ImportStandardCodeListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(BC08),
         equalTo(lastUpdatedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
@@ -261,8 +258,7 @@ class ImportStandardCodeListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(BC66),
         equalTo(lastUpdatedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source.empty)
@@ -318,8 +314,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC08),
       anyLong(),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -328,8 +323,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC66),
       anyLong(),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -343,10 +337,10 @@ class ImportStandardCodeListsJobSpec
 
     when(appConfig.defaultLastUpdated).thenReturn(LocalDate.of(2025, 3, 12))
 
-    when(lastUpdatedRepository.fetchLastUpdated(BC08, None, None))
+    when(lastUpdatedRepository.fetchLastUpdated(BC08, DomainAndPhase(None, None)))
       .thenReturn(Future.successful(Some(LastUpdated(BC08, 1, None, None, storedInstant))))
 
-    when(lastUpdatedRepository.fetchLastUpdated(BC66, None, None))
+    when(lastUpdatedRepository.fetchLastUpdated(BC66, DomainAndPhase(None, None)))
       .thenReturn(Future.successful(Some(LastUpdated(BC66, 1, None, None, storedInstant))))
 
     when(
@@ -354,8 +348,7 @@ class ImportStandardCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(fixedInstant)
       )
     )
@@ -366,8 +359,7 @@ class ImportStandardCodeListsJobSpec
       codeListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(BC08),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[String]))
@@ -391,8 +383,7 @@ class ImportStandardCodeListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(BC08),
         equalTo(storedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
@@ -401,8 +392,7 @@ class ImportStandardCodeListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(BC66),
         equalTo(storedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source.empty)
@@ -420,8 +410,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC08),
       equalTo(2L),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -430,8 +419,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC66),
       anyLong(),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -446,7 +434,7 @@ class ImportStandardCodeListsJobSpec
     // Last updated date
     when(appConfig.defaultLastUpdated).thenReturn(lastUpdated)
 
-    when(lastUpdatedRepository.fetchLastUpdated(any(), any(), any()))
+    when(lastUpdatedRepository.fetchLastUpdated(any(), any()))
       .thenReturn(Future.successful(None))
 
     when(
@@ -454,8 +442,7 @@ class ImportStandardCodeListsJobSpec
         equalTo(clientSession),
         any(),
         anyLong(),
-        equalTo(None),
-        equalTo(None),
+        equalTo(DomainAndPhase(None, None)),
         equalTo(fixedInstant)
       )
     )
@@ -466,8 +453,7 @@ class ImportStandardCodeListsJobSpec
       codeListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(BC08),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[String]))
@@ -491,8 +477,7 @@ class ImportStandardCodeListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(BC08),
         equalTo(lastUpdatedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source(List(snapshotsPage1, snapshotsPage2)))
@@ -501,8 +486,7 @@ class ImportStandardCodeListsJobSpec
       dpsConnector.fetchCodeListSnapshots(
         equalTo(BC66),
         equalTo(lastUpdatedInstant),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )(using any())
     )
       .thenReturn(Source.empty)
@@ -559,8 +543,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC08),
       equalTo(1L),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -569,8 +552,7 @@ class ImportStandardCodeListsJobSpec
       equalTo(clientSession),
       equalTo(BC66),
       anyLong(),
-      equalTo(None),
-      equalTo(None),
+      equalTo(DomainAndPhase(None, None)),
       equalTo(fixedInstant)
     )
 
@@ -585,8 +567,7 @@ class ImportStandardCodeListsJobSpec
       codeListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(BC08),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set.empty[String]))
@@ -641,8 +622,7 @@ class ImportStandardCodeListsJobSpec
       codeListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(BC08),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(
@@ -729,8 +709,7 @@ class ImportStandardCodeListsJobSpec
       codeListsRepository.fetchEntryKeys(
         equalTo(clientSession),
         equalTo(BC36),
-        equalTo(None),
-        equalTo(None)
+        equalTo(DomainAndPhase(None, None))
       )
     )
       .thenReturn(Future.successful(Set(CodeListKey("E470", None, None))))

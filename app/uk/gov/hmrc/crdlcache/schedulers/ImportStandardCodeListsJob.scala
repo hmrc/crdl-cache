@@ -66,8 +66,8 @@ class ImportStandardCodeListsJob @Inject() (
     RecordMissingEntry(
       codeListCode,
       key.key,
-      key.phase,
       key.domain,
+      key.phase,
       removedAt = startOfToday.toInstant
     )
   }
@@ -84,8 +84,8 @@ class ImportStandardCodeListsJob @Inject() (
       None,
       newEntry.updatedAt,
       newEntry.properties,
-      newEntry.phase,
-      newEntry.domain
+      newEntry.domain,
+      newEntry.phase
     )
 
     newEntry.operation match {

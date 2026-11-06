@@ -85,8 +85,8 @@ class ImportCorrespondenceListsJob @Inject() (
       None,
       newEntry.updatedAt,
       newEntry.properties,
-      newEntry.phase,
-      newEntry.domain
+      newEntry.domain,
+      newEntry.phase
     )
 
     newEntry.operation match {

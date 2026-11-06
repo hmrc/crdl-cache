@@ -22,7 +22,7 @@ import uk.gov.hmrc.crdlcache.config.{
   CodeListConfig,
   CorrespondenceListConfig,
   ListConfig,
-  PhaseAndDomainListConfig
+  DomainAndPhaseListConfig
 }
 import uk.gov.hmrc.crdlcache.models.CodeListOrigin.{CSRD2, SEED}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.DpsCodeListEntry
@@ -68,7 +68,7 @@ object CodeListSnapshotEntry {
       .getOrElse(throw RequiredDataItemMissing(config.keyProperty, config.code.code))
 
     val value = config match {
-      case _: CodeListConfig | _: PhaseAndDomainListConfig =>
+      case _: CodeListConfig | _: DomainAndPhaseListConfig =>
         dpsEntry.language
           .find(_.lang_code.equalsIgnoreCase("en"))
           .map(_.lang_desc)
@@ -103,7 +103,7 @@ object CodeListSnapshotEntry {
 
     val usedProperties =
       config match {
-        case _: CodeListConfig | _: PhaseAndDomainListConfig =>
+        case _: CodeListConfig | _: DomainAndPhaseListConfig =>
           knownProperties.incl(config.keyProperty)
         case correspondence: CorrespondenceListConfig =>
           knownProperties.incl(config.keyProperty).incl(correspondence.valueProperty)

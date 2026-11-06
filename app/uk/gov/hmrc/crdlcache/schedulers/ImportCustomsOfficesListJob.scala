@@ -28,7 +28,7 @@ import uk.gov.hmrc.crdlcache.models.CustomsOfficeListsInstruction.{
   RecordMissingCustomsOffice,
   UpsertCustomsOffice
 }
-import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction}
+import uk.gov.hmrc.crdlcache.models.{CustomsOffice, CustomsOfficeListsInstruction, DomainAndPhase}
 import uk.gov.hmrc.crdlcache.repositories.CustomsOfficeListsRepository
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
@@ -54,8 +54,8 @@ class ImportCustomsOfficesListJob @Inject() (
   with Logging
   with Transactions {
 
-  protected val phase: Option[String]  = appConfig.importOfficesJobPhase
-  protected val domain: Option[String] = appConfig.importOfficesJobDomain
+  protected val importOfficesJobDomainAndPhase: DomainAndPhase =
+    appConfig.importOfficesJobDomainAndPhase
 
   given TransactionConfiguration = TransactionConfiguration.strict
 
@@ -65,16 +65,16 @@ class ImportCustomsOfficesListJob @Inject() (
   private[schedulers] def processCustomsOffices(
     session: ClientSession,
     customsOffices: List[CustomsOffice],
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   ): Future[List[CustomsOfficeListsInstruction]] = {
     logger.info("Importing customs office lists")
-    (phase, domain) match {
-      case (Some(_), None) | (None, Some(_)) =>
+    domainAndPhase match {
+      case DomainAndPhase(Some(_), None) | DomainAndPhase(None, Some(_)) =>
         throw IllegalArgumentException(
-          "Both phase and domain must be provided together, or neither should be provided"
+          "Both domain and phase must be provided together, or neither should be provided"
         )
       case _ =>
+        logger.warn("-------------> hiya")
         customsOfficeListsRepository.fetchCustomsOfficeReferenceNumbers(session).flatMap {
           existingReferenceNumbers =>
             val incomingCustomsOffices   = customsOffices.groupBy(_.referenceNumber)
@@ -91,15 +91,21 @@ class ImportCustomsOfficesListJob @Inject() (
               (hasExistingOffice, maybeNewOffice) match {
                 // First case is when there may or may not be an existing office with the reference number and new office details are available, we would Upsert.
                 case (_, Some(newOffice)) =>
-                  val pDOffice = (phase, domain) match {
-                    case (Some(phase), Some(domain)) =>
-                      newOffice.copy(phase = Some(phase), domain = Some(domain))
+                  logger.warn("-------------> case 1")
+                  val pDOffice = domainAndPhase match {
+                    case DomainAndPhase(Some(domain), Some(domainPhase)) => // Note: dodgy shadowing - this is the 3rd level of reusing domain and phase val names
+                      // update domain and phase in new office
+                      val xxxx = newOffice.copy(domain = Some(domain), phase = Some(domainPhase))
+                      logger.warn(s"==========> domain: ${xxxx.domain}, phase: ${xxxx.phase}") // not tested - never appears when running tests!
+                      xxxx
+//                      newOffice.copy(domain = Some(domain), phase = Some(phase))
                     case _ =>
                       newOffice
                   }
                   instructions += UpsertCustomsOffice(pDOffice)
                 // Second case is when we have an existing office and don't have new office details, we would need to mark this reference number as missing and expire it.
                 case (true, None) =>
+                  logger.warn("-------------> case 2")
                   val startOfToday = LocalDate.now(clock).atStartOfDay(ZoneOffset.UTC)
                   instructions += RecordMissingCustomsOffice(
                     referenceNumber,
@@ -118,19 +124,19 @@ class ImportCustomsOfficesListJob @Inject() (
 
   private[schedulers] def importCustomsOfficeLists(): Future[Unit] = {
     val job = for {
+      // explicitly count NCTS P6 Customs Offices!!
       preIngestOfficeCount <- customsOfficeListsRepository.customsOfficesCount(
         Instant.now(),
-        domain = Some("NCTS"),
-        phase = Some("P6")
+        domainAndPhase = DomainAndPhase(Some("NCTS"), Some("P6"))
       )
       _ = logger.warn(s"Number of NCTS P6 Customs Offices pre-ingest: ${preIngestOfficeCount}")
 
       customOfficeLists <- dpsConnector
-        .fetchCustomsOfficeLists(phase, domain)
+        .fetchCustomsOfficeLists(importOfficesJobDomainAndPhase)
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
         .map(customsOfficeList =>
-          CustomsOffice.fromDpsCustomOfficeList(customsOfficeList, phase, domain)
+          CustomsOffice.fromDpsCustomOfficeList(customsOfficeList, importOfficesJobDomainAndPhase)
         )
         .withAttributes(ActorAttributes.withSupervisionStrategy { err =>
           logger.error(

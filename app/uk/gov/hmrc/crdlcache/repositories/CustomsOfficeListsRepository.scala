@@ -35,7 +35,8 @@ import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
 import uk.gov.hmrc.crdlcache.models.{
   CustomsOffice,
   CustomsOfficeListsInstruction,
-  CustomsOfficeSummary
+  CustomsOfficeSummary,
+  DomainAndPhase
 }
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
@@ -53,6 +54,8 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     mongoComponent,
     collectionName = "customsOfficeLists",
     domainFormat = MongoFormats.customsOfficeFormat,
+    // Note: logically, domain is more significant than phase, but I don't know if we can swap
+    // them without recreating the existing Mongo collection, and currently it's not a problem
     indexes = Seq(
       IndexModel(
         Indexes.ascending("referenceNumber", "activeFrom", "phase", "domain"),
@@ -162,8 +165,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     countryCodes: Option[Set[String]],
     roles: Option[Set[String]],
     activeAt: Instant,
-    phase: Option[String],
-    domain: Option[String],
+    domainAndPhase: DomainAndPhase,
     roleDate: Option[LocalDate] = None
   ): Future[Seq[CustomsOffice]] = {
     val mandatoryFilters =
@@ -208,10 +210,10 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
       case _ => List.empty
     }
 
-    val phaseDomainFilter = (phase, domain) match {
-      case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
-      case (None, None)       => List(exists("phase", false), exists("domain", false))
-      case _                  => List.empty
+    val phaseDomainFilter = domainAndPhase match {
+      case DomainAndPhase(Some(domain), Some(phase)) => List(equal("phase", phase), equal("domain", domain))
+      case DomainAndPhase(None, None)                => List(exists("phase", false), exists("domain", false))
+      case _                                         => List.empty
     }
 
     val allFilters =
@@ -241,8 +243,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     referenceNumber: Option[String] = None,
     countryCode: Option[String] = None,
     officeName: Option[String] = None,
-    phase: Option[String],
-    domain: Option[String]
+    domainAndPhase: DomainAndPhase
   ): List[Bson] = {
 
     val mandatoryFilters = List(
@@ -255,9 +256,9 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     val officeNameFilter =
       officeName.map(n => regex("customsOfficeLsd.customsOfficeUsualName", n, "i")).toList
 
-    val phaseDomainFilters = (phase, domain) match {
-      case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
-      case _                  => List.empty
+    val phaseDomainFilters = domainAndPhase match {
+      case DomainAndPhase(Some(domain), Some(phase)) => List(equal("phase", phase), equal("domain", domain))
+      case _                                         => List.empty
     }
 
     mandatoryFilters ++ referenceNumberFilter ++ countryCodeFilter ++ officeNameFilter ++ phaseDomainFilters
@@ -270,8 +271,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     referenceNumber: Option[String] = None,
     countryCode: Option[String] = None,
     officeName: Option[String] = None,
-    phase: Option[String],
-    domain: Option[String]
+    domainAndPhase: DomainAndPhase
   ): Future[Seq[CustomsOfficeSummary]] =
     collection
       .find[CustomsOfficeSummary](
@@ -281,8 +281,7 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
             referenceNumber,
             countryCode,
             officeName,
-            phase,
-            domain
+            domainAndPhase
           )*
         )
       )
@@ -292,8 +291,8 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
             "referenceNumber",
             "countryCode",
             "customsOfficeLsd.customsOfficeUsualName",
-            "phase",
-            "domain"
+            "domain",
+            "phase"
           ),
           excludeId()
         )
@@ -307,12 +306,11 @@ class CustomsOfficeListsRepository @Inject() (val mongoComponent: MongoComponent
     referenceNumber: Option[String] = None,
     countryCode: Option[String] = None,
     officeName: Option[String] = None,
-    phase: Option[String],
-    domain: Option[String]
+    domainAndPhase: DomainAndPhase
   ): Future[Long] =
     collection
       .countDocuments(
-        and(summaryFilters(activeAt, referenceNumber, countryCode, officeName, phase, domain)*)
+        and(summaryFilters(activeAt, referenceNumber, countryCode, officeName, domainAndPhase)*)
       )
       .toFuture()
 }

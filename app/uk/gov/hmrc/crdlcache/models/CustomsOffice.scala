@@ -62,8 +62,7 @@ object CustomsOffice {
 
   def fromDpsCustomOfficeList(
     dpsCustomOfficeList: DpsCustomsOffice,
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   ): CustomsOffice = {
     CustomsOffice(
       dpsCustomOfficeList.referencenumber,
@@ -98,8 +97,8 @@ object CustomsOffice {
           .getOrElse(throw CustomsOfficeDetailMissing(dpsCustomOfficeList.referencenumber))
       ),
       fromDpsCustomsOfficeTimetable(dpsCustomOfficeList.customsofficetimetable, basicIsoDate),
-      phase,
-      domain
+      domainAndPhase.maybeDomainPhase,
+      domainAndPhase.maybeDomain
     )
   }
 }

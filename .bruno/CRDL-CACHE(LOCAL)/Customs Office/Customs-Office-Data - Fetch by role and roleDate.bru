@@ -1,18 +1,18 @@
 meta {
-  name: Customs-Office - Data - Fetch by role & roleDate
+  name: Customs-Office-Data - Fetch by role and roleDate
   type: http
   seq: 4
 }
 
 get {
-  url: http://localhost:7252/crdl-cache/offices?phase=P6&domain=NCTS&roles=DEP&roleDate=2026-01-30
+  url: http://localhost:7252/crdl-cache/offices?domain=NCTS&phase=P6&roles=DEP&roleDate=2026-01-30
   body: none
   auth: inherit
 }
 
 params:query {
-  phase: P6
   domain: NCTS
+  phase: P6
   roles: DEP
   roleDate: 2026-01-30
 }

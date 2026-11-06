@@ -18,10 +18,10 @@ package uk.gov.hmrc.crdlcache.config
 
 import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
 
-case class PhaseAndDomainListConfig(
+case class DomainAndPhaseListConfig(
   code: CodeListCode,
   origin: CodeListOrigin,
   keyProperty: String,
-  phase: String,
-  domain: String
+  domain: String,
+  phase: String
 ) extends ListConfig

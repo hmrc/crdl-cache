@@ -22,10 +22,9 @@ import org.apache.pekko.stream.{ActorAttributes, DelayOverflowStrategy, Supervis
 import org.mongodb.scala.ClientSession
 import org.quartz.{DisallowConcurrentExecution, Job, JobExecutionContext}
 import play.api.Logging
-import uk.gov.hmrc.crdlcache.config.{AppConfig, ListConfig, PhaseAndDomainListConfig}
+import uk.gov.hmrc.crdlcache.config.{AppConfig, DomainAndPhaseListConfig, ListConfig}
 import uk.gov.hmrc.crdlcache.connectors.DpsConnector
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListSnapshot, CodeListSnapshotEntry}
-import uk.gov.hmrc.crdlcache.models.Instruction
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListSnapshot, CodeListSnapshotEntry, DomainAndPhase, Instruction}
 import uk.gov.hmrc.crdlcache.repositories.{CodeListsRepository, LastUpdatedRepository}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.lock.{LockService, MongoLockRepository}
@@ -69,26 +68,26 @@ abstract class ImportCodeListsJob[K, I](
     session: ClientSession,
     listConfig: ListConfig,
     newSnapshot: CodeListSnapshot,
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   ): Future[List[I]] = {
     logger.info(
       s"Importing ${listConfig.origin} codelist ${listConfig.code.code} (${newSnapshot.name}) version ${newSnapshot.version}"
     )
-    (phase, domain) match {
-      case (Some(_), None) | (None, Some(_)) =>
+    domainAndPhase match {
+      case DomainAndPhase(Some(_), None) | DomainAndPhase(None, Some(_)) =>
         throw IllegalArgumentException(
-          "Both phase and domain must be provided together, or neither should be provided"
+          "Both domain and phase must be provided together, or neither should be provided"
         )
       case _ =>
-        repository.fetchEntryKeys(session, listConfig.code, phase, domain).map { currentKeySet =>
+        repository.fetchEntryKeys(session, listConfig.code, domainAndPhase).map { currentKeySet =>
           {
-            val incomingKeySet =
-              newSnapshot.entries.map(_.copy(phase = phase, domain = domain)).map(keyOfEntry)
+            val incomingKeySet = newSnapshot.entries
+              .map(_.copy(domain = domainAndPhase.maybeDomain, phase = domainAndPhase.maybeDomainPhase))
+              .map(keyOfEntry)
             val mergedKeySet = currentKeySet.union(incomingKeySet)
 
             val groupedEntries = newSnapshot.entries.toList
-              .map(_.copy(phase = phase, domain = domain))
+              .map(_.copy(domain = domainAndPhase.maybeDomain, phase = domainAndPhase.maybeDomainPhase))
               .groupBy(keyOfEntry)
 
             val instructions = List.newBuilder[I]
@@ -117,9 +116,9 @@ abstract class ImportCodeListsJob[K, I](
 
               (hasExistingEntry, entriesByDate) match {
                 case (_, Some(newEntries)) =>
-                  val pDEntries = (phase, domain) match {
-                    case (Some(phase), Some(domain)) =>
-                      newEntries.map(_.copy(phase = Some(phase), domain = Some(domain)))
+                  val pDEntries = domainAndPhase match {
+                    case DomainAndPhase(Some(domain), Some(domainPhase)) =>
+                      newEntries.map(_.copy(domain = Some(domain), phase = Some(domainPhase)))
                     case _ =>
                       newEntries
                   }
@@ -155,21 +154,17 @@ abstract class ImportCodeListsJob[K, I](
   }
 
   protected def importCodeList(codeListConfig: ListConfig): Future[Unit] = {
-    val phase = codeListConfig match {
-      case c: PhaseAndDomainListConfig => Some(c.phase)
-      case _                           => None
+    val domainAndPhase = codeListConfig match {
+      case c: DomainAndPhaseListConfig => DomainAndPhase(Some(c.domain), Some(c.phase))
+      case _                           => DomainAndPhase(None, None)
     }
-    val domain = codeListConfig match {
-      case c: PhaseAndDomainListConfig => Some(c.domain)
-      case _                           => None
-    }
+
     for {
       // Fetch last updated timestamp
       preIngestCodeListCount <- repository.countEntries(codeListConfig.code, Instant.now())
       storedLastUpdated <- lastUpdatedRepository.fetchLastUpdated(
         codeListConfig.code,
-        phase,
-        domain
+        domainAndPhase
       )
       defaultLastUpdated = appConfig.defaultLastUpdated.atStartOfDay(ZoneOffset.UTC).toInstant
       lastUpdated        = storedLastUpdated.map(_.lastUpdated).getOrElse(defaultLastUpdated)
@@ -178,20 +173,15 @@ abstract class ImportCodeListsJob[K, I](
         s"Importing codelist ${codeListConfig.code.code} from DPS with last updated timestamp $lastUpdated - existing entry count: $preIngestCodeListCount"
       )
 
-      (phase, domain) = codeListConfig match {
-        case pd: PhaseAndDomainListConfig => (Some(pd.phase), Some(pd.domain))
-        case _                            => (None, None)
-      }
-
       _ <- dpsConnector
-        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated, phase, domain)
+        .fetchCodeListSnapshots(codeListConfig.code, lastUpdated, domainAndPhase)
         // Add a delay between calls to avoid overwhelming DPS
         .delay(1.second, DelayOverflowStrategy.backpressure)
         .mapConcat(_.elements)
         .dropWhile { snapshot =>
           // Ignore snapshot versions that we already have
           storedLastUpdated.exists(s =>
-            s.snapshotVersion >= snapshot.snapshotversion && s.phase == phase && s.domain == domain
+            s.snapshotVersion >= snapshot.snapshotversion && s.domain == domainAndPhase.maybeDomain && s.phase == domainAndPhase.maybeDomainPhase
           )
         }
         .map(CodeListSnapshot.fromDpsSnapshot(codeListConfig, _))
@@ -199,14 +189,13 @@ abstract class ImportCodeListsJob[K, I](
           // Ensure that we roll back if something goes wrong processing the snapshot
           withSessionAndTransaction { session =>
             for {
-              instructions <- processSnapshot(session, codeListConfig, snapshot, phase, domain)
+              instructions <- processSnapshot(session, codeListConfig, snapshot, domainAndPhase)
               _            <- repository.executeInstructions(session, instructions)
               _ <- lastUpdatedRepository.setLastUpdated(
                 session,
                 codeListConfig.code,
                 snapshot.version,
-                phase,
-                domain,
+                domainAndPhase,
                 clock.instant()
               )
             } yield ()

@@ -18,11 +18,12 @@ package uk.gov.hmrc.crdlcache.config
 
 import com.typesafe.config.Config
 import play.api.Configuration
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListOrigin, DomainAndPhase, DomainAndPhaseJob}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
+import scala.jdk.CollectionConverters.ListHasAsScala
 
 @Singleton
 class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(config) {
@@ -36,55 +37,81 @@ class AppConfig @Inject() (val config: Configuration) extends ServicesConfig(con
   val dpsClientSecret: String = config.get[String]("microservice.services.dps-api.clientSecret")
 
   val importCodeListsSchedule: String           = config.get[String]("import-codelists.schedule")
-  val importPhaseAndDomainListsSchedule: String = config.get[String]("import-pd-lists.schedule")
+//  val importPhaseAndDomainListsSchedule: String = config.get[String]("import-pd-lists.schedule")
   val importOfficesSchedule: String             = config.get[String]("import-offices.schedule")
   val importCorrespondenceListsSchedule: String =
     config.get[String]("import-correspondence-lists.schedule")
 
-  val importOfficesJobPhase: Option[String]  = config.get[Option[String]]("import-offices.phase")
-  val importOfficesJobDomain: Option[String] = config.get[Option[String]]("import-offices.domain")
+  val importOfficesJobDomainAndPhase: DomainAndPhase =
+    DomainAndPhase(
+      config.get[Option[String]]("import-offices.domain"),
+      config.get[Option[String]]("import-offices.phase")
+    )
 
   val defaultLastUpdated: LocalDate =
     LocalDate.parse(config.get[String]("last-updated-date.default"))
 
   val customsOfficesPageSize = config.get[Int]("customsOfficesPageSize")
 
-  private def loadListConfigs[T](configPath: String)(mapper: Config => T): List[T] = {
-    val listElementName = configPath.split("import-").last
-    config
-      .get[Seq[Config]](s"$configPath.$listElementName")
-      .toList
-      .map(mapper)
-  }
-
   val codeListConfigs: List[CodeListConfig] =
-    loadListConfigs("import-codelists") { codeListConfig =>
-      CodeListConfig(
-        CodeListCode.fromString(codeListConfig.getString("code")),
-        CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-        codeListConfig.getString("keyProperty")
-      )
-    }.toList
+    config
+      .get[Seq[Config]]("import-codelists.codelists")
+      .toList
+      .map { codeListConfig =>
+        CodeListConfig(
+          CodeListCode.fromString(codeListConfig.getString("code")),
+          CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+          codeListConfig.getString("keyProperty")
+        )
+      }
 
-  val phaseAndDomainListConfigs: List[PhaseAndDomainListConfig] =
-    loadListConfigs("import-pd-lists") { codeListConfig =>
-      PhaseAndDomainListConfig(
-        CodeListCode.fromString(codeListConfig.getString("code")),
-        CodeListOrigin.valueOf(codeListConfig.getString("origin")),
-        codeListConfig.getString("keyProperty"),
-        config.get[String]("import-pd-lists.phase"),
-        config.get[String]("import-pd-lists.domain")
-      )
-    }.toList
+  val domainAndPhaseConfigs: List[DomainAndPhaseJob] =
+    config
+      .get[Seq[Config]]("domain-and-phase-jobs")
+      .toList
+      .zipWithIndex
+      .map { (domainAndPhaseJobConfig, idx) =>
+        val schedule = domainAndPhaseJobConfig.getString("schedule")
+        val codelists = domainAndPhaseJobConfig
+          .getConfigList("codelists")
+          .asScala
+          .toList
+          .map { codeListConfig =>
+            DomainAndPhaseListConfig(CodeListCode.fromString(codeListConfig.getString("code")), CodeListOrigin.valueOf(codeListConfig.getString("origin")), codeListConfig.getString("keyProperty"), domainAndPhaseJobConfig.getString("domain"), domainAndPhaseJobConfig.getString("phase"))
+          }
+        DomainAndPhaseJob(
+          s"domain-and-phase-job-${idx + 1}",
+          schedule,
+//          domainAndPhaseJobConfig.getString("domain"),
+//          domainAndPhaseJobConfig.getString("phase"),
+          codelists
+        )
+      }
+
+//  val phaseAndDomainListConfigs: List[DomainAndPhaseListConfig] =
+//    config
+//      .get[Seq[Config]]("import-pd-lists.pd-lists")
+//      .toList
+//      .map { codeListConfig =>
+//        DomainAndPhaseListConfig(
+//          CodeListCode.fromString(codeListConfig.getString("code")),
+//          CodeListOrigin.valueOf(codeListConfig.getString("origin")),
+//          codeListConfig.getString("keyProperty"),
+//          config.get[String]("import-pd-lists.phase"),
+//          config.get[String]("import-pd-lists.domain")
+//        ) }
 
   val correspondenceListConfigs: List[CorrespondenceListConfig] =
-    loadListConfigs("import-correspondence-lists") { correspondenceListConfig =>
-      CorrespondenceListConfig(
-        CodeListCode.fromString(correspondenceListConfig.getString("code")),
-        CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
-        correspondenceListConfig.getString("keyProperty"),
-        correspondenceListConfig.getString("valueProperty")
-      )
-    }.toList
+    config
+      .get[Seq[Config]]("import-correspondence-lists.correspondence-lists")
+      .toList
+      .map { correspondenceListConfig =>
+        CorrespondenceListConfig(
+          CodeListCode.fromString(correspondenceListConfig.getString("code")),
+          CodeListOrigin.valueOf(correspondenceListConfig.getString("origin")),
+          correspondenceListConfig.getString("keyProperty"),
+          correspondenceListConfig.getString("valueProperty")
+        )
+      }
 
 }

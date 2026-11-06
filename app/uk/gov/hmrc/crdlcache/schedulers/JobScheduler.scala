@@ -19,7 +19,7 @@ package uk.gov.hmrc.crdlcache.schedulers
 import org.quartz.JobBuilder.newJob
 import org.quartz.TriggerBuilder.newTrigger
 import org.quartz.impl.StdSchedulerFactory
-import org.quartz.{CronScheduleBuilder, Scheduler, SchedulerFactory, Trigger}
+import org.quartz.{CronScheduleBuilder, JobDetail, Scheduler, SchedulerFactory, Trigger}
 import play.api.Logging
 import play.api.inject.ApplicationLifecycle
 import uk.gov.hmrc.crdlcache.config.AppConfig
@@ -51,27 +51,14 @@ class JobScheduler @Inject() (
     .withSchedule(codeListsJobSchedule)
     .build()
 
-  // Phase and Domain Code Lists
-  private val phaseAndDomainListsJobDetail = newJob(classOf[ImportPhaseAndDomainCodeListsJob])
-    .withIdentity("import-pd-lists")
-    .build()
-
-  private val phaseAndDomainListsJobSchedule = CronScheduleBuilder
-    .cronSchedule(config.importPhaseAndDomainListsSchedule)
-
-  private val phaseAndDomainListsJobTrigger = newTrigger()
-    .forJob(phaseAndDomainListsJobDetail)
-    .withSchedule(phaseAndDomainListsJobSchedule)
-    .build()
-
   // Customs Office List
-  val customsOfficeListJobDetail = newJob(classOf[ImportCustomsOfficesListJob])
+  private val customsOfficeListJobDetail = newJob(classOf[ImportCustomsOfficesListJob])
     .withIdentity("import-offices")
     .build()
 
-  val customsOfficeListSchedule = CronScheduleBuilder.cronSchedule(config.importOfficesSchedule)
+  private val customsOfficeListSchedule = CronScheduleBuilder.cronSchedule(config.importOfficesSchedule)
 
-  val customsOfficesJobTrigger =
+  private val customsOfficesJobTrigger =
     newTrigger()
       .forJob(customsOfficeListJobDetail)
       .withSchedule(customsOfficeListSchedule)
@@ -90,13 +77,27 @@ class JobScheduler @Inject() (
     .withSchedule(correspondenceListsJobSchedule)
     .build()
 
+  // Domain and Phase Code Lists
+  private val domainAndPhaseJobDetailsAndTriggers =
+    config.domainAndPhaseConfigs.map { domainAndPhaseConfig =>
+      val jobDetail = newJob(classOf[ImportDomainAndPhaseCodeListJobs])
+        .withIdentity(domainAndPhaseConfig.name)
+        .build()
+      val jobSchedule = CronScheduleBuilder
+        .cronSchedule(domainAndPhaseConfig.schedule)
+      val jobTrigger = newTrigger()
+        .forJob(jobDetail)
+        .withSchedule(jobSchedule)
+        .build()
+      (jobDetail, jobTrigger)
+    }
+
+  private val (domainAndPhaseJobDetails, domainAndPhaseJobTriggers) =
+    domainAndPhaseJobDetailsAndTriggers.unzip
+
   // Start Triggers
   def startCodeListImport(): Unit = {
     quartz.triggerJob(codeListsJobDetail.getKey)
-  }
-
-  def startPhaseAndDomainListImport(): Unit = {
-    quartz.triggerJob(phaseAndDomainListsJobDetail.getKey)
   }
 
   def startCustomsOfficeListImport(): Unit = {
@@ -107,16 +108,15 @@ class JobScheduler @Inject() (
     quartz.triggerJob(correspondenceListsJobDetail.getKey)
   }
 
+  def startDomainAndPhaseListImport(): Unit =
+    domainAndPhaseJobDetails.foreach(jobDetail => quartz.triggerJob(jobDetail.getKey))
+
   // Job Statuses
   private def getJobStatus(trigger: Trigger): JobStatus =
     JobStatus(quartz.getTriggerState(trigger.getKey))
 
   def codeListImportStatus(): JobStatus = {
     getJobStatus(codeListsJobTrigger)
-  }
-
-  def phaseAndDomainListImportStatus(): JobStatus = {
-    getJobStatus(phaseAndDomainListsJobTrigger)
   }
 
   def correspondenceListImportStatus(): JobStatus = {
@@ -127,6 +127,9 @@ class JobScheduler @Inject() (
     getJobStatus(customsOfficesJobTrigger)
   }
 
+  def domainAndPhaseListImportStatus(): List[JobStatus] =
+    domainAndPhaseJobTriggers.map(getJobStatus)
+
   // Start Scheduler
   private def startScheduler(): Unit = {
     val quartz = StdSchedulerFactory.getDefaultScheduler
@@ -136,9 +139,11 @@ class JobScheduler @Inject() (
     lifecycle.addStopHook(() => Future(quartz.shutdown()))
 
     quartz.scheduleJob(codeListsJobDetail, codeListsJobTrigger)
-    quartz.scheduleJob(phaseAndDomainListsJobDetail, phaseAndDomainListsJobTrigger)
     quartz.scheduleJob(correspondenceListsJobDetail, correspondenceListsJobTrigger)
     quartz.scheduleJob(customsOfficeListJobDetail, customsOfficesJobTrigger)
+    domainAndPhaseJobDetailsAndTriggers.foreach {
+      (jobDetail, jobTrigger) => quartz.scheduleJob(jobDetail, jobTrigger)
+    }
     quartz.start()
   }
 

@@ -71,11 +71,11 @@ class LastUpdatedRepositorySpec
       } yield lastUpdated mustBe Some(LastUpdated(BC08, 1, None, None, inputInstant))
   }
 
-  "LastUpdatedRepository.setLastUpdated" should "upsert the value for codelists with phase and domain" in withSession {
+  "LastUpdatedRepository.setLastUpdated" should "upsert the value for codelists with domain and phase" in withSession {
     session =>
       val inputInstant = clock.instant()
       for {
-        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), inputInstant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), inputInstant)
         lastUpdated <- repository.fetchLastUpdated(CL251, None, None)
       } yield lastUpdated mustBe Some(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), inputInstant))
   }
@@ -144,7 +144,7 @@ class LastUpdatedRepositorySpec
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _           <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
-        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), instant)
         lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10, codeListCode = Some("bc"))
       } yield {
         lastUpdated mustBe List(LastUpdated(BC08, 1, None, None, instant), LastUpdated(BC66, 1, None, None, instant))
@@ -156,7 +156,7 @@ class LastUpdatedRepositorySpec
       val instant = clock.instant()
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
-        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), instant)
         lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10, phase = Some("P6"))
       } yield {
         lastUpdated mustBe List(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), instant))
@@ -168,7 +168,7 @@ class LastUpdatedRepositorySpec
       val instant = clock.instant()
       for {
         _           <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
-        _           <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        _           <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), instant)
         lastUpdated <- repository.fetchAllLastUpdatedPaged(1, 10, domain = Some("NCTS"))
       } yield {
         lastUpdated mustBe List(LastUpdated(CL251, 1, Some("P6"), Some("NCTS"), instant))
@@ -205,7 +205,7 @@ class LastUpdatedRepositorySpec
       for {
         _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
         _     <- repository.setLastUpdated(session, BC66, 1, None, None, instant)
-        _     <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        _     <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), instant)
         count <- repository.codeListCount(codeListCode = Some("BC"))
       } yield {
         count mustBe 2L
@@ -217,7 +217,7 @@ class LastUpdatedRepositorySpec
       val instant = clock.instant()
       for {
         _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
-        _     <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        _     <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), instant)
         count <- repository.codeListCount(phase = Some("P6"))
       } yield {
         count mustBe 1L
@@ -229,7 +229,7 @@ class LastUpdatedRepositorySpec
       val instant = clock.instant()
       for {
         _     <- repository.setLastUpdated(session, BC08, 1, None, None, instant)
-        _     <- repository.setLastUpdated(session, CL251, 1, Some("P6"), Some("NCTS"), instant)
+        _     <- repository.setLastUpdated(session, CL251, 1, Some("NCTS"), Some("P6"), instant)
         count <- repository.codeListCount(domain = Some("NCTS"))
       } yield {
         count mustBe 1L

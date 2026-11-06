@@ -43,7 +43,7 @@ Insert the new case in `models/CodeListCode`:
   case CL141 extends CodeListCode("CL141")
 ```
 
-If it’s a **codelist with phase and domain**, include the `listType` as the second parameter. As CL012 is not an example of a correspondence list, we will use the existing CL010 code as an example here:
+If it’s a **codelist with domain and phase**, include the `listType` as the second parameter. As CL012 is not an example of a correspondence list, we will use the existing CL010 code as an example here:
 
 
 ```scala
@@ -73,7 +73,7 @@ object CodeListCode {
 
 Add a new codelist configuration to the appropriate config block to ensure it gets added to the daily import job.
 
-* For a code list, if it has a phase and domain, add it to `import-pd-lists`. Otherwise, add it to `import-codelists`.
+* For a code list, if it has a domain and phase, add it to `import-pd-lists`. Otherwise, add it to `import-codelists`.
 
   You will need a `keyProperty` which determines the data item in the DPS API response to use as the `key` of the entry. The NCTS entity definitions contain an `isprimarykey` attribute which can help to identify the `keyProperty`.
   

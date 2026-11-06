@@ -1,18 +1,20 @@
 meta {
-  name: Pdlists - Data - Phase & Domain Parameters provided
+  name: Pdlists-Data - Fetch By Keys
   type: http
-  seq: 2
+  seq: 4
 }
 
 get {
-  url: http://localhost:7252/crdl-cache/lists/CL009?phase=P6&domain=NCTS
+  url: http://localhost:7252/crdl-cache/lists/CL056?domain=NCTS&phase=P6&keys=SDE&keys=TEA
   body: none
   auth: inherit
 }
 
 params:query {
-  phase: P6
   domain: NCTS
+  phase: P6
+  keys: SDE
+  keys: TEA
 }
 
 headers {

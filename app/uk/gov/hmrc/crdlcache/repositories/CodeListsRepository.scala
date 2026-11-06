@@ -27,7 +27,7 @@ import play.api.libs.json.*
 import uk.gov.hmrc.crdlcache.models
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, CodeListEntry, DomainAndPhase}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.transaction.Transactions
@@ -73,8 +73,7 @@ abstract class CodeListsRepository[K, I](
   def fetchEntryKeys(
     session: ClientSession,
     code: CodeListCode,
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   ): Future[Set[K]] =
     collection
       .find(
@@ -84,9 +83,9 @@ abstract class CodeListsRepository[K, I](
             equal("codeListCode", code.code),
             equal("activeTo", null)
           )
-            ++ phase.fold(None)(p =>
-              Seq(equal("phase", p))
-                ++ domain.fold(None)(d => Seq(equal("domain", d)))
+            ++ domainAndPhase.maybeDomain.fold(None)(domain =>
+              Seq(equal("domain", domain))
+                ++ domainAndPhase.maybeDomainPhase.fold(None)(phase => Seq(equal("phase", phase)))
             )*
         )
       )
@@ -99,8 +98,7 @@ abstract class CodeListsRepository[K, I](
     filterKeys: Option[Set[String]],
     filterProperties: Option[Map[String, JsValue]],
     activeAt: Instant,
-    phase: Option[String],
-    domain: Option[String]
+    domainAndPhase: DomainAndPhase,
   ): Future[Seq[CodeListEntry]] = {
     val mandatoryFilters = List(
       equal("codeListCode", code.code),
@@ -124,10 +122,10 @@ abstract class CodeListsRepository[K, I](
       }
       .getOrElse(List.empty)
 
-    val phaseDomainFilters = (phase, domain) match {
-      case (Some(p), Some(d)) => List(equal("phase", p), equal("domain", d))
-      case (None, None)       => List(exists("phase", false), exists("domain", false))
-      case _                  => List.empty
+    val phaseDomainFilters = domainAndPhase match {
+      case DomainAndPhase(Some(domain), Some(phase)) => List(equal("phase", phase), equal("domain", domain))
+      case DomainAndPhase(None, None)                => List(exists("phase", false), exists("domain", false))
+      case _                                         => List.empty
     }
 
     val allFilters = mandatoryFilters ++ keyFilters ++ propertyFilters ++ phaseDomainFilters

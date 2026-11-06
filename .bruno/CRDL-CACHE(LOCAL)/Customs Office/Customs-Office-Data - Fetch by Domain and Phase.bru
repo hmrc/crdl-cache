@@ -1,16 +1,17 @@
 meta {
-  name: Customs-Office- 400 - When only Phase or Domain provided
+  name: Customs-Office-Data - Fetch by Domain and Phase
   type: http
-  seq: 7
+  seq: 3
 }
 
 get {
-  url: http://localhost:7252/crdl-cache/offices?phase=P6
+  url: http://localhost:7252/crdl-cache/offices?domain=NCTS&phase=P6
   body: none
   auth: inherit
 }
 
 params:query {
+  domain: NCTS
   phase: P6
 }
 

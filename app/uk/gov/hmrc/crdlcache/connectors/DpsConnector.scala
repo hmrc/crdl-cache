@@ -22,8 +22,9 @@ import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.scaladsl
 import org.apache.pekko.stream.scaladsl.Source
 import play.api.Logging
+import play.utils.Colors
 import uk.gov.hmrc.crdlcache.config.AppConfig
-import uk.gov.hmrc.crdlcache.models.CodeListCode
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, DomainAndPhase}
 import uk.gov.hmrc.crdlcache.models.dps.codelist.CodeListResponse
 import uk.gov.hmrc.crdlcache.models.dps.col.CustomsOfficeListResponse
 import uk.gov.hmrc.http.HttpReads.Implicits.*
@@ -37,7 +38,6 @@ import uk.gov.hmrc.http.{
   StringContextOps,
   UpstreamErrorResponse
 }
-
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -60,6 +60,8 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   private val baseCustomsOfficeUrl =
     url"${appConfig.dpsUrl}/${appConfig.dpsCustomsOfficesPath.split('/')}"
 
+  println(Colors.green(s"=============> baseCustomsOfficeUrl: $baseCustomsOfficeUrl"))
+
   private lazy val basicAuthSecret = {
     val clientIdAndSecret =
       s"${appConfig.dpsClientId}:${appConfig.dpsClientSecret}"
@@ -72,8 +74,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     code: CodeListCode,
     lastUpdatedDate: Instant,
     startIndex: Int,
-    businessDomainPhase: Option[String] = None,
-    businessDomain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   )(using ec: ExecutionContext): Future[CodeListResponse] = {
     val baseQueryParams = Map(
       "code_list_code"    -> code.code,
@@ -84,8 +85,8 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     )
 
     val queryParams = baseQueryParams ++
-      businessDomainPhase.map("business_domain_phase" -> _).toMap ++
-      businessDomain.map("business_domain" -> _).toMap
+      domainAndPhase.maybeDomain.map("business_domain" -> _).toMap ++
+      domainAndPhase.maybeDomainPhase.map("business_domain_phase" -> _).toMap
 
     val dpsUrl        = url"$baseRefDataUrl?$queryParams"
     val correlationId = UUID.randomUUID().toString
@@ -121,13 +122,12 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
   def fetchCodeListSnapshots(
     code: CodeListCode,
     lastUpdatedDate: Instant,
-    businessDomainPhase: Option[String] = None,
-    businessDomain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   )(using
     ec: ExecutionContext
   ): Source[CodeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CodeListResponse](0) { startIndex =>
-      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex, businessDomainPhase, businessDomain)
+      fetchCodeListSnapshot(code, lastUpdatedDate, startIndex, domainAndPhase)
         .map { response =>
           if (response.elements.isEmpty)
             None
@@ -137,13 +137,12 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     }
 
   def fetchCustomsOfficeLists(
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   )(using
     ec: ExecutionContext
   ): Source[CustomsOfficeListResponse, NotUsed] = Source
     .unfoldAsync[Int, CustomsOfficeListResponse](0) { startIndex =>
-      fetchCustomsOfficeList(startIndex, phase, domain).map { response =>
+      fetchCustomsOfficeList(startIndex, domainAndPhase).map { response =>
         if (response.elements.isEmpty)
           None
         else
@@ -153,8 +152,7 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
 
   private def fetchCustomsOfficeList(
     startIndex: Int,
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase = DomainAndPhase(None, None)
   )(using ec: ExecutionContext): Future[CustomsOfficeListResponse] = {
     val baseQueryParams = Map(
       "$start_index" -> startIndex,
@@ -163,11 +161,13 @@ class DpsConnector @Inject() (httpClient: HttpClientV2, appConfig: AppConfig)(us
     )
 
     val queryParams = baseQueryParams ++
-      phase.map("business_domain_phase" -> _).toMap ++
-      domain.map("business_domain" -> _).toMap
+      domainAndPhase.maybeDomain.map("business_domain" -> _).toMap ++
+      domainAndPhase.maybeDomainPhase.map("business_domain_phase" -> _).toMap
 
     val correlationId = UUID.randomUUID().toString
     val dpsUrl        = url"$baseCustomsOfficeUrl?$queryParams"
+
+    logger.warn(s"-------------> fetchCustomsOfficeList(startIndex: $startIndex, domainAndPhase: $domainAndPhase)")
 
     logger.info(
       s"Fetching customs office list at index $startIndex with correlationId $correlationId"

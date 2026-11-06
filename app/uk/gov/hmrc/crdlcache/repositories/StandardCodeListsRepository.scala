@@ -41,6 +41,8 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
     extraCodecs =
       Codecs.playFormatSumCodecs[JsValue](Format(Reads.JsValueReads, Writes.jsValueWrites)) ++
         Codecs.playFormatSumCodecs[JsBoolean](Format(Reads.JsBooleanReads, Writes.jsValueWrites)),
+    // Note: logically, domain is more significant than phase, but I don't know if we can swap
+    // them without recreating the existing Mongo collection, and currently it's not a problem
     indexes = Seq(
       IndexModel(
         Indexes.ascending("codeListCode", "phase", "domain", "key", "activeFrom"),
@@ -65,8 +67,8 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
 
   override def filtersForKey(key: CodeListKey): Seq[Bson] =
     Seq(equal("key", key.key))
-      ++ key.phase.fold(None)(p => Seq(equal("phase", p)))
       ++ key.domain.fold(None)(d => Seq(equal("domain", d)))
+      ++ key.phase.fold(None)(p => Seq(equal("phase", p)))
 
   def executeInstruction(session: ClientSession, instruction: Instruction): Future[Unit] =
     instruction match {
@@ -95,12 +97,12 @@ class StandardCodeListsRepository @Inject() (mongoComponent: MongoComponent)(usi
           codeListEntry.activeFrom,
           includeActiveFrom = true
         )
-      case RecordMissingEntry(codeListCode, key, phase, domain, removedAt) =>
+      case RecordMissingEntry(codeListCode, key, domain, phase, removedAt) =>
         logger.debug(s"Recording removal of entry in codelist ${codeListCode.code} with key $key")
         supersedePreviousEntries(
           session,
           codeListCode,
-          CodeListKey(key, phase, domain),
+          CodeListKey(key, domain, phase),
           removedAt,
           includeActiveFrom = true
         )

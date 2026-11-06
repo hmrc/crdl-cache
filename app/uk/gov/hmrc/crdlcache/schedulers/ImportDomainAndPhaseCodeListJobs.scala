@@ -30,7 +30,7 @@ import java.time.{Clock, LocalDate, ZoneOffset}
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class ImportPhaseAndDomainCodeListsJob @Inject() (
+class ImportDomainAndPhaseCodeListJobs @Inject()(
   mongoComponent: MongoComponent,
   lockRepository: MongoLockRepository,
   lastUpdatedRepository: LastUpdatedRepository,
@@ -40,7 +40,7 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
   clock: Clock
 )(using system: ActorSystem, ec: ExecutionContext)
   extends ImportCodeListsJob[CodeListKey, Instruction](
-    "import-pd-lists",
+    "domain-and-phase-jobs",
     mongoComponent,
     lockRepository,
     lastUpdatedRepository,
@@ -50,8 +50,13 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
     clock
   ) {
 
+//  override protected def listConfigs: List[ListConfig] = {
+//    val xxx: List[DomainAndPhaseJob] = appConfig.domainAndPhaseConfigs
+//    xxx.flatMap(_.codeList)
+//  }
+
   override protected def listConfigs: List[ListConfig] =
-    appConfig.phaseAndDomainListConfigs
+    appConfig.domainAndPhaseConfigs.flatMap(_.codeList)
 
   override protected def keyOfEntry(snapshotEntry: CodeListSnapshotEntry): CodeListKey =
     CodeListKey(snapshotEntry.key, snapshotEntry.phase, snapshotEntry.domain)
@@ -66,8 +71,8 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
     RecordMissingEntry(
       codeListCode,
       key.key,
-      key.phase,
       key.domain,
+      key.phase,
       removedAt = startOfToday.toInstant
     )
   }
@@ -84,8 +89,8 @@ class ImportPhaseAndDomainCodeListsJob @Inject() (
       None,
       newEntry.updatedAt,
       newEntry.properties,
-      newEntry.phase,
-      newEntry.domain
+      newEntry.domain,
+      newEntry.phase
     )
 
     newEntry.operation match {

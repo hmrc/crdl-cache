@@ -23,7 +23,7 @@ import org.mongodb.scala.model.Filters.*
 import org.mongodb.scala.model.{Filters, Indexes, Updates}
 import uk.gov.hmrc.crdlcache.models.errors.MongoError
 import uk.gov.hmrc.crdlcache.models.formats.MongoFormats
-import uk.gov.hmrc.crdlcache.models.{CodeListCode, LastUpdated}
+import uk.gov.hmrc.crdlcache.models.{CodeListCode, DomainAndPhase, LastUpdated}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.mongo.transaction.Transactions
@@ -40,6 +40,8 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     mongoComponent,
     collectionName = "last-updated",
     domainFormat = MongoFormats.lastUpdatedFormat,
+    // Note: logically, domain is more significant than phase, but I don't know if we can swap
+    // them without recreating the existing Mongo collection, and currently it's not a problem
     indexes = Seq(
       IndexModel(Indexes.ascending("codeListCode", "phase", "domain"), IndexOptions().unique(true)),
       IndexModel(Indexes.ascending("codeListCode"), IndexOptions().unique(false)),
@@ -55,15 +57,14 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 
   def fetchLastUpdated(
     codeListCode: CodeListCode,
-    phase: Option[String],
-    domain: Option[String]
+    domainAndPhase: DomainAndPhase
   ): Future[Option[LastUpdated]] = {
     collection
       .find(
         and(
           Seq(equal("codeListCode", codeListCode.code))
-            ++ phase.fold(None)(p => Seq(equal("phase", p)))
-            ++ domain.fold(None)(d => Seq(equal("domain", d)))*
+            ++ domainAndPhase.maybeDomain.fold(None)(domain => Seq(equal("domain", domain)))
+            ++ domainAndPhase.maybeDomainPhase.fold(None)(phase => Seq(equal("phase", phase)))*
         )
       )
       .headOption()
@@ -77,21 +78,20 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
     session: ClientSession,
     codeListCode: CodeListCode,
     snapshotVersion: Long,
-    phase: Option[String],
-    domain: Option[String],
+    domainAndPhase: DomainAndPhase,
     lastUpdated: Instant
   ): Future[Unit] = {
-    val filter = (phase, domain) match {
-      case (Some(phase), Some(domain)) =>
+    val filter = domainAndPhase match {
+      case DomainAndPhase(Some(domain), Some(phase)) =>
         and(
           equal("codeListCode", codeListCode.code),
-          equal("phase", phase),
-          equal("domain", domain)
+          equal("domain", domain),
+          equal("phase", phase)
         )
-      case (None, None) => equal("codeListCode", codeListCode.code)
+      case DomainAndPhase(None, None) => equal("codeListCode", codeListCode.code)
       case _ =>
         throw Exception(
-          "Both phase and domain must be provided together, or neither should be provided"
+          "Both domain and phase must be provided together, or neither should be provided"
         )
     }
 
@@ -116,23 +116,21 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 
   private def snapshotFilters(
     codeListCode: Option[String],
-    phase: Option[String],
-    domain: Option[String]
+    domainAndPhase: DomainAndPhase
   ): Seq[org.mongodb.scala.bson.conversions.Bson] = {
     val codeFilter   = codeListCode.map(c => regex("codeListCode", c, "i")).toSeq
-    val phaseFilter  = phase.map(p => equal("phase", p)).toSeq
-    val domainFilter = domain.map(d => equal("domain", d)).toSeq
-    codeFilter ++ phaseFilter ++ domainFilter
+    val domainFilter = domainAndPhase.maybeDomain.map(d => equal("domain", d)).toSeq
+    val phaseFilter  = domainAndPhase.maybeDomainPhase.map(p => equal("phase", p)).toSeq
+    codeFilter ++ domainFilter ++ phaseFilter
   }
 
   def fetchAllLastUpdatedPaged(
     pageNum: Int,
     pageSize: Int,
     codeListCode: Option[String] = None,
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase
   ): Future[Seq[LastUpdated]] = {
-    val filters = snapshotFilters(codeListCode, phase, domain)
+    val filters = snapshotFilters(codeListCode, domainAndPhase)
     val query   = if (filters.isEmpty) collection.find() else collection.find(and(filters*))
     query
       .sort(Sorts.ascending("codeListCode"))
@@ -143,10 +141,9 @@ class LastUpdatedRepository @Inject() (val mongoComponent: MongoComponent)(using
 
   def codeListCount(
     codeListCode: Option[String] = None,
-    phase: Option[String] = None,
-    domain: Option[String] = None
+    domainAndPhase: DomainAndPhase
   ): Future[Long] = {
-    val filters = snapshotFilters(codeListCode, phase, domain)
+    val filters = snapshotFilters(codeListCode, domainAndPhase)
     if (filters.isEmpty) collection.countDocuments().toFuture()
     else collection.countDocuments(and(filters*)).toFuture()
   }
